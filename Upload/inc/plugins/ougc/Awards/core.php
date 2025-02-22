@@ -782,34 +782,6 @@ function pluginLibraryRequirements(): stdClass
     return (object)pluginInfo()['pl'];
 }
 
-function loadPluginLibrary(): bool
-{
-    global $PL, $lang;
-
-    loadLanguage();
-
-    $fileExists = file_exists(PLUGINLIBRARY);
-
-    if ($fileExists && !($PL instanceof PluginLibrary)) {
-        require_once PLUGINLIBRARY;
-    }
-
-    if (!$fileExists || $PL->version < pluginLibraryRequirements()->version) {
-        flash_message(
-            $lang->sprintf(
-                $lang->ougcAwardsPluginLibrary,
-                pluginLibraryRequirements()->url,
-                pluginLibraryRequirements()->version
-            ),
-            'error'
-        );
-
-        admin_redirect('index.php?module=config-plugins');
-    }
-
-    return true;
-}
-
 function urlHandler(string $newUrl = ''): string
 {
     static $setUrl = URL;
@@ -2478,19 +2450,37 @@ function cacheUpdate(): bool
         'last' => [],
     ];
 
+    $queryFieldsCategories = ['cid', 'name', 'description', 'allowrequests'];
+
+    $queryFieldsAwards = [
+        'aid',
+        'cid',
+        'name',
+        'template',
+        'description',
+        'image',
+        'allowrequests',
+        'type',
+        'disporder',
+        'visible'
+    ];
+
+    $hookArguments = [
+        'queryFieldsCategories' => &$queryFieldsCategories,
+        'queryFieldsAwards' => &$queryFieldsAwards
+    ];
+
+    $hookArguments = runHooks('cache_update', $hookArguments);
+
     $query = $db->simple_select(
         'ougc_awards_categories',
-        'cid, name, description, allowrequests',
+        implode(',', $queryFieldsCategories),
         "visible='1'",
         ['order_by' => 'disporder']
     );
 
     while ($categoryData = $db->fetch_array($query)) {
-        $cacheData['categories'][(int)$categoryData['cid']] = [
-            'name' => (string)$categoryData['name'],
-            'description' => (string)$categoryData['description'],
-            'allowrequests' => (int)$categoryData['allowrequests']
-        ];
+        $cacheData['categories'][(int)$categoryData['cid']] = $categoryData;
     }
 
     if ($categoryIDs = array_keys($cacheData['categories'])) {
@@ -2501,23 +2491,13 @@ function cacheUpdate(): bool
 
         $query = $db->simple_select(
             'ougc_awards',
-            'aid, cid, name, template, description, image, allowrequests, type, disporder, visible',
+            implode(',', $queryFieldsAwards),
             implode(' AND ', $whereClauses),
             ['order_by' => 'disporder']
         );
 
         while ($awardData = $db->fetch_array($query)) {
-            $cacheData['awards'][(int)$awardData['aid']] = [
-                'cid' => (int)$awardData['cid'],
-                'name' => (string)$awardData['name'],
-                'template' => (int)$awardData['template'],
-                'description' => (string)$awardData['description'],
-                'image' => (string)$awardData['image'],
-                'allowrequests' => (int)$awardData['allowrequests'],
-                'type' => (int)$awardData['type'],
-                'disporder' => (int)$awardData['disporder'],
-                'visible' => (int)$awardData['visible']
-            ];
+            $cacheData['awards'][(int)$awardData['aid']] = $awardData;
         }
     }
 
@@ -2580,10 +2560,7 @@ function cacheUpdate(): bool
     $query = $db->simple_select('ougc_awards_tasks', 'tid, name, reason', '', ['order_by' => 'disporder']);
 
     while ($task = $db->fetch_array($query)) {
-        $cacheData['tasks'][(int)$task['tid']] = [
-            'name' => (string)$task['name'],
-            'reason' => (string)$task['reason']
-        ];
+        $cacheData['tasks'][(int)$task['tid']] = $task;
     }
 
     $mybb->cache->update('ougc_awards', $cacheData);

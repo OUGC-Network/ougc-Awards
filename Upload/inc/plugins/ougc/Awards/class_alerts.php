@@ -43,15 +43,15 @@ class MyAlertsFormatter extends MybbStuff_MyAlerts_Formatter_AbstractFormatter
     /**
      * Format an alert into it's output string to be used in both the main alerts listing page and the popup.
      *
-     * @param MybbStuff_MyAlerts_Entity_Alert $alertToParse The alert to format.
+     * @param MybbStuff_MyAlerts_Entity_Alert $alert The alert to format.
      *
      * @return string The formatted alert string.
      */
-    public function formatAlert(MybbStuff_MyAlerts_Entity_Alert $alertToParse, array $outputAlert)
+    public function formatAlert(MybbStuff_MyAlerts_Entity_Alert $alert, array $outputAlert): string
     {
-        $Details = $alertToParse->toArray();
+        $Details = $alert->toArray();
 
-        $ExtraDetails = $alertToParse->getExtraDetails();
+        $ExtraDetails = $alert->getExtraDetails();
 
         $awardData = awardGet((int)$Details['object_id']);
 

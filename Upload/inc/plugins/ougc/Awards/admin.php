@@ -39,7 +39,6 @@ use function ougc\Awards\Core\cacheUpdate;
 use function ougc\Awards\Core\categoryInsert;
 use function ougc\Awards\Core\getSetting;
 use function ougc\Awards\Core\loadLanguage;
-use function ougc\Awards\Core\loadPluginLibrary;
 
 use const MYBB_ROOT;
 use const ougc\Awards\Core\ADMIN_PERMISSION_DELETE;
@@ -322,17 +321,17 @@ function pluginUninstall(): bool
 
     loadPluginLibrary();
 
-    foreach (dbTables() as $tableName => $tableData) {
+    foreach (TABLES_DATA as $tableName => $tableData) {
         if ($db->table_exists($tableName)) {
             $db->drop_table($tableName);
         }
     }
 
-    foreach (FIELDS_DATA as $table => $columns) {
-        if ($db->table_exists($table)) {
-            foreach ($columns as $field => $definition) {
-                if ($db->field_exists($field, $table)) {
-                    $db->drop_column($table, $field);
+    foreach (FIELDS_DATA as $tableName => $tableColumns) {
+        if ($db->table_exists($tableName)) {
+            foreach ($tableColumns as $fieldName => $fieldDefinition) {
+                if ($db->field_exists($fieldName, $tableName)) {
+                    $db->drop_column($tableName, $fieldName);
                 }
             }
         }
@@ -368,6 +367,34 @@ function pluginUninstall(): bool
         $cache->update('ougc_plugins', $plugins);
     } else {
         $cache->delete('ougc_plugins');
+    }
+
+    return true;
+}
+
+function loadPluginLibrary(): bool
+{
+    global $PL, $lang;
+
+    loadLanguage();
+
+    $fileExists = file_exists(PLUGINLIBRARY);
+
+    if ($fileExists && !($PL instanceof PluginLibrary)) {
+        require_once PLUGINLIBRARY;
+    }
+
+    if (!$fileExists || $PL->version < pluginLibraryRequirements()->version) {
+        flash_message(
+            $lang->sprintf(
+                $lang->ougcAwardsPluginLibrary,
+                pluginLibraryRequirements()->url,
+                pluginLibraryRequirements()->version
+            ),
+            'error'
+        );
+
+        admin_redirect('index.php?module=config-plugins');
     }
 
     return true;
@@ -551,11 +578,11 @@ function dbVerifyIndexes(): bool
     return true;
 }
 
-function dbVerifyColumns(): bool
+function dbVerifyColumns(array $fields_data = FIELDS_DATA): bool
 {
     global $db;
 
-    foreach (FIELDS_DATA as $tableName => $tableColumns) {
+    foreach ($fields_data as $tableName => $tableColumns) {
         foreach ($tableColumns as $fieldName => $fieldData) {
             if (!isset($fieldData['type'])) {
                 continue;

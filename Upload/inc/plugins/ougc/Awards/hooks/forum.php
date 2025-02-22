@@ -567,7 +567,6 @@ function member_profile_end(): bool
     }
 
     if (!$maximumAwardsInProfile && !$maximumAwardsInProfilePresets) {
-        _dump(1);
         return false;
     }
 

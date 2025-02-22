@@ -1712,6 +1712,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $awardData = awardGet($awardID);
 
+        $categoryID = (int)$awardData['cid'];
+
+        $categoryData = categoryGet($categoryID);
+
         $awardName = htmlspecialchars_uni($awardData['name']);
 
         $awardImage = $awardClass = awardGetIcon($awardID);
