@@ -75,6 +75,10 @@ $l = [
     'setting_ougc_awards_uploadSize_desc' => 'Type the maximum size in bytes for the awards images. Default <code>50</code>.',
     'setting_ougc_awards_privateMessageSenderUserID' => 'Private Message Sender User ID',
     'setting_ougc_awards_privateMessageSenderUserID_desc' => 'Select the user identifier (UID) that will send the private messages to users when receiving an award. Default is <code>0</code>.',
+    'setting_ougc_awards_groupsTasks' => 'Tasks View Groups',
+    'setting_ougc_awards_groupsTasks_desc' => 'Allowed groups to view the awards tasks page.',
+    'setting_ougc_awards_groupsMyAwards' => 'My Awards View Groups',
+    'setting_ougc_awards_groupsMyAwards_desc' => 'Allowed groups to view the My Awards page.',
 
     'ougcAwardsTaskRan' => 'The awards task ran successfully.',
 

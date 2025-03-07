@@ -1602,6 +1602,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = eval(getTemplate('controlPanelConfirmation'));
 } elseif ($mybb->get_input('action') === 'myAwards') {
+    if (!is_member(getSetting('groupsMyAwards'))) {
+        error_no_permission();
+    }
+
     if ($mybb->request_method === 'post') {
         $displayOrders = $mybb->get_input('displayOrder', MyBB::INPUT_ARRAY);
 
@@ -1800,11 +1804,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $columnHeader = $grantForm = $revokeForm = '';
 
     if (is_member(getSetting('groupsPresets'))) {
-        $buttonUrl = urlHandlerBuild(['action' => 'viewPresets']);
+        $actionButtons[] =
+            (function () use ($lang): string {
+                $buttonUrl = urlHandlerBuild(['action' => 'viewPresets']);
 
-        $buttonText = $lang->ougcAwardsControlPanelButtonManagePresets;
+                $buttonText = $lang->ougcAwardsControlPanelButtonManagePresets;
 
-        $actionButtons[] = eval(getTemplate('controlPanelButtons'));
+                return eval(getTemplate('controlPanelButtons'));
+            })();
     }
 
     $pageContents = eval(getTemplate('controlPanelMyAwards'));
@@ -3557,6 +3564,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = eval(getTemplate('controlPanelConfirmation'));
 } elseif ($mybb->get_input('action') === 'viewTasks') {
+    if (!is_member(getSetting('groupsTasks'))) {
+        error_no_permission();
+    }
+    
     $alternativeBackground = alt_trow(true);
 
     $taskRows = '';
@@ -3664,11 +3675,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     }
 
     if ($isModerator) {
-        $buttonUrl = urlHandlerBuild(['action' => 'newTask']);
+        $actionButtons[] =
+            (function () use ($lang): string {
+                $buttonUrl = urlHandlerBuild(['action' => 'newTask']);
 
-        $buttonText = $lang->ougcAwardsControlPanelButtonNewTask;
+                $buttonText = $lang->ougcAwardsControlPanelButtonNewTask;
 
-        $actionButtons[] = eval(getTemplate('controlPanelButtons'));
+                return eval(getTemplate('controlPanelButtons'));
+            })();
     }
 
     $pageTitle = $lang->ougcAwardsControlPanelTasksTitle;
@@ -3967,34 +3981,37 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     }
 
     if ($isModerator) {
-        $buttonUrl = urlHandlerBuild(['action' => 'newCategory']);
+        $actionButtons[] =
+            (function () use ($lang): string {
+                $buttonUrl = urlHandlerBuild(['action' => 'newCategory']);
 
-        $buttonText = $lang->ougcAwardsControlPanelButtonNewCategory;
+                $buttonText = $lang->ougcAwardsControlPanelButtonNewCategory;
 
-        $actionButtons[] = eval(getTemplate('controlPanelButtons'));
-        /*
-                $buttonUrl = urlHandlerBuild(['action' => 'newAward']);
-
-                $buttonText = $lang->ougcAwardsControlPanelButtonNewAward;
-
-                $actionButtons[] = eval(getTemplate('controlPanelButtons'));
-        */
+                return eval(getTemplate('controlPanelButtons'));
+            })();
     }
 
-    $buttonUrl = urlHandlerBuild(['action' => 'viewTasks']);
+    if (is_member(getSetting('groupsTasks'))) {
+        $actionButtons[] =
+            (function () use ($lang): string {
+                $buttonUrl = urlHandlerBuild(['action' => 'viewTasks']);
 
-    $buttonText = $lang->ougcAwardsControlPanelButtonManageTasks;
+                $buttonText = $lang->ougcAwardsControlPanelButtonManageTasks;
 
-    $actionButtons[] = eval(getTemplate('controlPanelButtons'));
+                return eval(getTemplate('controlPanelButtons'));
+            })();
+    }
 
-    $actionButtons[] =
-        (function () use ($lang): string {
-            $buttonUrl = urlHandlerBuild(['action' => 'myAwards']);
+    if (is_member(getSetting('groupsMyAwards'))) {
+        $actionButtons[] =
+            (function () use ($lang): string {
+                $buttonUrl = urlHandlerBuild(['action' => 'myAwards']);
 
-            $buttonText = $lang->ougcAwardsControlPanelButtonManageMyAwards;
+                $buttonText = $lang->ougcAwardsControlPanelButtonManageMyAwards;
 
-            return eval(getTemplate('controlPanelButtons'));
-        })();
+                return eval(getTemplate('controlPanelButtons'));
+            })();
+    }
 
     $pageTitle = $lang->ougcAwardsControlPanelTitle;
 }

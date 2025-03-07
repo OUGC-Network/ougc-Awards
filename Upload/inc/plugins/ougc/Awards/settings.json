@@ -66,5 +66,13 @@
   "privateMessageSenderUserID": {
     "optionscode": "numeric",
     "value": 0
+  },
+  "groupsTasks": {
+    "optionscode": "groupselect",
+    "value": -1
+  },
+  "groupsMyAwards": {
+    "optionscode": "groupselect",
+    "value": -1
   }
 }

@@ -294,6 +294,10 @@ function postbit(array &$postData): array
 
     $postUserID = (int)$postData['uid'];
 
+    if (!isset($postData['additionalgroups'])) {
+        $postData['additionalgroups'] = '';
+    }
+
     if (getSetting('showInPostsPresets') && is_member(getSetting('groupsPresets'), $postData)) {
         global $db;
 

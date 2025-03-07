@@ -34,12 +34,9 @@ use MyBB;
 use MybbStuff_MyAlerts_AlertManager;
 use MybbStuff_MyAlerts_AlertTypeManager;
 use MybbStuff_MyAlerts_Entity_Alert;
-use PluginLibrary;
 use pluginSystem;
 use postParser;
-use stdClass;
 
-use function ougc\Awards\Admin\pluginInfo;
 use function ougc\Awards\Hooks\Forum\myalerts_register_client_alert_formatters;
 
 use const ougc\Awards\ROOT;
@@ -775,11 +772,6 @@ function loadLanguage(bool $isDataHandler = false): bool
     }
 
     return true;
-}
-
-function pluginLibraryRequirements(): stdClass
-{
-    return (object)pluginInfo()['pl'];
 }
 
 function urlHandler(string $newUrl = ''): string

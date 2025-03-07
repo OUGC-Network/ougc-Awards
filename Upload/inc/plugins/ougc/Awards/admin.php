@@ -33,6 +33,8 @@ namespace ougc\Awards\Admin;
 use DirectoryIterator;
 use MybbStuff_MyAlerts_AlertTypeManager;
 use MybbStuff_MyAlerts_Entity_AlertType;
+use PluginLibrary;
+use stdClass;
 
 use function ougc\Awards\Core\allowImports;
 use function ougc\Awards\Core\cacheUpdate;
@@ -370,6 +372,11 @@ function pluginUninstall(): bool
     }
 
     return true;
+}
+
+function pluginLibraryRequirements(): stdClass
+{
+    return (object)pluginInfo()['pl'];
 }
 
 function loadPluginLibrary(): bool
