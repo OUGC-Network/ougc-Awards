@@ -1301,7 +1301,7 @@ function executeTask(array $awardTaskData = []): bool
                 if (grantInsert(
                     $taskGrantAwardID,
                     $userID,
-                    '',
+                    (string)$awardTaskData['reason'],
                     $taskThreadID,
                     $taskID
                 )) {
@@ -2283,7 +2283,7 @@ function taskDelete(int $taskID): bool
 
     $db->delete_query('ougc_awards_tasks', "tid='{$taskID}'");
 
-    $db->delete_query('ougc_awards_tasks_logs', "tid='{$taskID}'");
+    logDelete(["tid='{$taskID}'"]);
 
     return true;
 }
@@ -2333,6 +2333,15 @@ function logGet(array $whereClauses = [], string $queryFields = '*', array $quer
     }
 
     return $cacheObjects;
+}
+
+function logDelete(array $whereClauses): bool
+{
+    global $db;
+
+    $db->delete_query('ougc_awards_tasks_logs', implode(' AND ', $whereClauses));
+
+    return true;
 }
 
 function sendPrivateMessage(array $privateMessage, int $fromUserID = 0, bool $adminOverride = false): bool

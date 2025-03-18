@@ -58,6 +58,7 @@ use function ougc\Awards\Core\grantUpdate;
 use function ougc\Awards\Core\isModerator;
 use function ougc\Awards\Core\isVisibleAward;
 use function ougc\Awards\Core\isVisibleCategory;
+use function ougc\Awards\Core\logDelete;
 use function ougc\Awards\Core\logGet;
 use function ougc\Awards\Core\ownerCategoryDelete;
 use function ougc\Awards\Core\ownerCategoryFind;
@@ -3567,14 +3568,18 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     if (!is_member(getSetting('groupsTasks'))) {
         error_no_permission();
     }
-    
+
     $alternativeBackground = alt_trow(true);
+
+    $columnCount = 5;
 
     $taskRows = '';
 
     $optionsThead = '';
 
     if ($isModerator) {
+        ++$columnCount;
+
         $optionsThead = eval(getTemplate('controlPanelTasksThead'));
     }
 
@@ -3674,6 +3679,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $alternativeBackground = alt_trow();
     }
 
+    if (!$taskRows) {
+        $taskRows = eval(getTemplate('controlPanelTasksEmpty'));
+    }
+
     if ($isModerator) {
         $actionButtons[] =
             (function () use ($lang): string {
@@ -3699,6 +3708,25 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         error($lang->ougcAwardsErrorInvalidTask);
     }
 
+    $urlParams = [
+        'action' => 'taskLogs',
+        'taskID' => $taskID
+    ];
+
+    if ($mybb->request_method === 'post') {
+        verify_post_check($mybb->get_input('my_post_key'));
+
+        $logID = $mybb->get_input('logID', MyBB::INPUT_INT);
+
+        if (!logGet(["lid='{$logID}'"])) {
+            error_no_permission();
+        }
+
+        logDelete(["lid='{$logID}'"]);
+
+        redirect(urlHandlerBuild($urlParams), $lang->ougcAwardsRedirectLogDeleted);
+    }
+
     add_breadcrumb(htmlspecialchars_uni($taskData['name']), urlHandlerBuild(['action' => 'viewTasks']));
 
     $alternativeBackground = alt_trow(true);
@@ -3711,6 +3739,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $userID = (int)$logData['uid'];
 
         $userData = get_user($userID);
+
+        $urlParams['logID'] = $logID;
+
+        $formUrl = urlHandlerBuild($urlParams);
 
         if (!empty($userData['uid'])) {
             $userName = htmlspecialchars_uni($userData['username']);

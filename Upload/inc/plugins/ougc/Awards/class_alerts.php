@@ -35,9 +35,11 @@ use MybbStuff_MyAlerts_Formatter_AbstractFormatter;
 
 class MyAlertsFormatter extends MybbStuff_MyAlerts_Formatter_AbstractFormatter
 {
-    public function init()
+    public function init(): bool
     {
         loadLanguage();
+
+        return true;
     }
 
     /**
@@ -81,7 +83,7 @@ class MyAlertsFormatter extends MybbStuff_MyAlerts_Formatter_AbstractFormatter
      *
      * @return string The built alert, preferably an absolute link.
      */
-    public function buildShowLink(MybbStuff_MyAlerts_Entity_Alert $alert)
+    public function buildShowLink(MybbStuff_MyAlerts_Entity_Alert $alert): string
     {
         global $settings;
 

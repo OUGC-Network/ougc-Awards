@@ -277,6 +277,7 @@ Custom Icon (Advanced): A custom template for this award.
 
     'ougcAwardsControlPanelTasksTitle' => 'Award Tasks',
     'ougcAwardsControlPanelTasksTableTitle' => 'Award Tasks',
+    'ougcAwardsControlPanelTasksTableEmpty' => 'There are currently no tasks to display.',
     'ougcAwardsControlPanelTasksTableName' => 'Name',
     'ougcAwardsControlPanelTasksTableDescription' => 'Description',
     'ougcAwardsControlPanelTasksTableRequirements' => 'Requirements',
@@ -291,9 +292,11 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelLogsTitle' => 'Award Logs',
     'ougcAwardsControlPanelLogsTableTitle' => 'Award Logs',
     'ougcAwardsControlPanelLogsTableUser' => 'User',
-    'ougcAwardsControlPanelLogsTableGave' => 'Gave',
+    'ougcAwardsControlPanelLogsTableGranted' => 'Granted',
     'ougcAwardsControlPanelLogsTableRevoked' => 'Revoked',
     'ougcAwardsControlPanelLogsTableDate' => 'Date',
+    'ougcAwardsControlPanelLogsTableOptions' => 'Options',
+    'ougcAwardsControlPanelLogsTableOptionsDeleteLog' => 'Delete Log',
 
     'ougcAwardsControlPanelButtonManageTasks' => 'View Tasks',
     'ougcAwardsControlPanelButtonNewTask' => 'New Task',
@@ -335,7 +338,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelNewTaskTableTitle' => 'New Task',
     'ougcAwardsControlPanelNewTaskTableDescription' => 'Use the form below to create a new award task.',
     'ougcAwardsControlPanelNewTaskName' => 'Name',
-    'ougcAwardsControlPanelNewTaskNameDescription' => 'Select a short name for this award',
+    'ougcAwardsControlPanelNewTaskNameDescription' => 'Select a short name for this task',
     'ougcAwardsControlPanelNewTaskDescription' => 'Description',
     'ougcAwardsControlPanelNewTaskDescriptionDescription' => 'Select a short description for this task.',
     'ougcAwardsControlPanelNewTaskEnabled' => 'Enabled',
@@ -490,6 +493,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsRedirectPresetCreated' => 'The award preset was created successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectPresetUpdated' => 'The award preset was updated successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectPresetDeleted' => 'The award preset was deleted successfully.<br />You will now be redirected back.',
+    'ougcAwardsRedirectLogDeleted' => 'The task log was deleted successfully.<br />You will now be redirected back.',
 
     'ougcAwardsRedirectRequest' => 'The award request was sent successfully.',
 

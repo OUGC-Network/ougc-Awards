@@ -1,20 +1,25 @@
 <table border="0" cellspacing="{$theme['borderwidth']}" cellpadding="{$theme['tablespace']}" class="tborder">
     <tr>
-        <td class="thead" colspan="7">
+        <td class="thead" colspan="{$columnCount}">
             <strong>{$lang->ougcAwardsControlPanelTasksTableTitle}</strong>
         </td>
     </tr>
     <tr>
-        <td class="tcat smalltext" width="15%"><strong>{$lang->ougcAwardsControlPanelTasksTableName}</strong></td>
-        <td class="tcat smalltext" width="30%"><strong>{$lang->ougcAwardsControlPanelTasksTableDescription}</strong>
+        <td class="tcat smalltext" width="15%">
+            <strong>{$lang->ougcAwardsControlPanelTasksTableName}</strong>
+        </td>
+        <td class="tcat smalltext" width="30%">
+            <strong>{$lang->ougcAwardsControlPanelTasksTableDescription}</strong>
         </td>
         <td class="tcat smalltext">
             <strong>{$lang->ougcAwardsControlPanelTasksTableRequirements}</strong>
         </td>
         <td class="tcat smalltext" width="5%" align="center">
-            <strong>{$lang->ougcAwardsControlPanelTasksTableGrant}</strong></td>
+            <strong>{$lang->ougcAwardsControlPanelTasksTableGrant}</strong>
+        </td>
         <td class="tcat smalltext" width="5%" align="center">
-            <strong>{$lang->ougcAwardsControlPanelTasksTableRevoke}</strong></td>
+            <strong>{$lang->ougcAwardsControlPanelTasksTableRevoke}</strong>
+        </td>
         {$optionsThead}
     </tr>
     {$taskRows}
