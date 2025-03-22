@@ -37,6 +37,7 @@ use function ougc\Awards\Core\grantInsert;
 use function ougc\Awards\Core\awardInsert;
 use function ougc\Awards\Core\categoryInsert;
 use function ougc\Awards\Core\loadLanguage;
+use function ougc\Awards\Core\runHooks;
 
 function admin_config_plugins_deactivate()
 {
@@ -78,7 +79,7 @@ function admin_config_settings_change()
 
 function admin_config_plugins_begin()
 {
-    global $mybb, $plugins;
+    global $mybb;
 
     if (!allowImports() || !($type = $mybb->get_input('ougc_awards_import'))) {
         return false;
@@ -119,14 +120,14 @@ function admin_config_plugins_begin()
             break;
     }
 
-    $args = [
+    $hookArguments = [
         'tables' => &$tables,
         'keys' => &$keys,
         'img_prefix' => &$img_prefix,
         'lang_var' => &$lang_var,
     ];
 
-    $plugins->run_hooks('ougc_awards_importer_start', $args);
+    $hookArguments = runHooks('importer_start', $hookArguments);
 
     global $lang, $mybb, $page;
 
@@ -165,9 +166,9 @@ function admin_config_plugins_begin()
         while ($award = $db->fetch_array($query)) {
             $insert_award = [
                 'cid' => $categoryID,
-                'name' => $db->escape_string($award[$keys['name']]),
-                'description' => $db->escape_string($award[$keys['description']]),
-                'image' => $db->escape_string($img_prefix . $award[$keys['image']]),
+                'name' => $award[$keys['name']],
+                'description' => $award[$keys['description']],
+                'image' => $img_prefix . $award[$keys['image']],
                 'disporder' => isset($award[$keys['disporder']]) ? (int)$award[$keys['disporder']] : ++$disporder,
                 'allowrequests' => 0,
                 'pm' => ''
@@ -199,7 +200,7 @@ function admin_config_plugins_begin()
             );
         }
 
-        $plugins->run_hooks('ougc_awards_importer_end', $args);
+        $hookArguments = runHooks('importer_end', $hookArguments);
 
         flash_message($lang->ougc_awards_import_end, 'success');
         admin_redirect('index.php?module=config-plugins');

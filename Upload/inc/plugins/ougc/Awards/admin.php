@@ -188,6 +188,28 @@ function pluginActivate(): bool
 
     /*~*~* RUN UPDATES START *~*~*/
 
+    if ($db->table_exists('ougc_awards_tasks')) {
+        if ($db->field_exists('ougc_customrepids_r', 'ougc_awards_tasks')) {
+            $db->drop_column('ougc_awards_tasks', 'ougc_customrepids_r');
+        }
+    }
+
+    if ($db->table_exists('ougc_awards_tasks')) {
+        if ($db->field_exists('ougc_customrepids_g', 'ougc_awards_tasks')) {
+            $db->drop_column('ougc_awards_tasks', 'ougc_customrepids_g');
+        }
+    }
+
+    if ($db->table_exists('ougc_awards_tasks')) {
+        if ($db->index_exists('ougc_awards_users', 'uidaid')) {
+            $db->drop_index('ougc_awards_users', 'uidaid');
+        }
+
+        if ($db->index_exists('ougc_awards_users', 'aiduid')) {
+            $db->drop_index('ougc_awards_users', 'uidaid');
+        }
+    }
+
     if ($plugins['awards'] <= 1834) {
         $db->update_query('ougc_awards_tasks', ['active' => TASK_STATUS_DISABLED], "give LIKE '%,%'");
 

@@ -51,6 +51,10 @@ $l = [
     'ougcAwardsControlPanelRequestsFilterStatusRejected' => 'Rejected',
 
     'ougcAwardsErrorRequestsNoneSelected' => 'No awards were selected.',
+    'ougcAwardsErrorUploadFailed' => 'The award image upload failed.',
+    'ougcAwardsErrorUploadInvalidType' => 'The award image type is invalid.',
+    'ougcAwardsErrorUploadReize' => 'The award image resize failed.',
+    'ougcAwardsErrorUploadSize' => 'The award image size is invalid.',
 
     'ougcAwardsControlPanelNavigation' => 'Awards',
     'ougcAwardsControlPanelButtonNewCategory' => 'New Category',
@@ -530,6 +534,7 @@ Greetings.',
     'ougcAwardsViewUserTitle' => "{1}'s Awards",
     'ougcAwardsViewUserEmpty' => 'There are currently no awards to display.',
     'ougcAwardsMyAlerts' => '{1}, you were granted the {3} award by {2}.',
+    
     // {4} outputs the award formatted image
     'myalerts_setting_ougc_awards' => 'Receive alert when an award is granted or an award request is rejected?',
 ];

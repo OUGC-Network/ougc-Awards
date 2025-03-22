@@ -46,6 +46,8 @@ const URL = 'awards.php';
 
 const ADMIN_PERMISSION_DELETE = -1;
 
+const AWARD_TEMPLATE_TYPE_IMAGE = 0;
+
 const AWARD_TEMPLATE_TYPE_CLASS = 1;
 
 const AWARD_TEMPLATE_TYPE_CUSTOM = 2;
@@ -375,11 +377,11 @@ const TABLES_DATA = [
             'unsigned' => true,
             'default' => 0
         ],
-        'allowmultiple' => [
+        /*'allowmultiple' => [
             'type' => 'SMALLINT',
             'unsigned' => true,
             'default' => 0
-        ],
+        ],*/
         'revoke' => [
             'type' => 'TEXT',
             'null' => true,
@@ -744,7 +746,7 @@ function addHooks(string $namespace)
     }
 }
 
-function runHooks(string $hookName, array &$hookArguments)
+function runHooks(string $hookName, array &$hookArguments = []): array
 {
     if (getSetting('disablePlugins') !== false) {
         return $hookArguments;
@@ -756,7 +758,7 @@ function runHooks(string $hookName, array &$hookArguments)
         $hookArguments = $plugins->run_hooks('ougc_awards_' . $hookName, $hookArguments);
     }
 
-    return $hookArguments;
+    return (array)$hookArguments;
 }
 
 function loadLanguage(bool $isDataHandler = false): bool
@@ -1203,7 +1205,8 @@ function executeTask(array $awardTaskData = []): bool
     $queryTasks = $db->simple_select(
         'ougc_awards_tasks',
         '*',
-        "active='1'"
+        "active='1'",
+        ['order_by' => 'disporder']
     );
 
     while ($awardTaskData = $db->fetch_array($queryTasks)) {
@@ -1234,7 +1237,7 @@ function executeTask(array $awardTaskData = []): bool
 					GROUP BY uid
 				) a ON (u.uid=a.uid)";
 
-                $whereClauses[] = "a.totalUserGrants>'1'";
+                $whereClauses[] = "(a.totalUserGrants<'1' || a.totalUserGrants IS NULL)";
             }
 
             $taskRevokeAwardID = 0;
@@ -1281,8 +1284,6 @@ function executeTask(array $awardTaskData = []): bool
         $taskLogObjects = [];
 
         $hookArguments = runHooks('task_intermediate', $hookArguments);
-
-        // todo: $whereClauses to ignore users who already received this task
 
         $queryUsers = $db->simple_select(
             implode(' LEFT JOIN ', $tableLeftJoins),
@@ -1669,12 +1670,45 @@ function ownerCategoryFind(int $categoryID, int $userID): array
     return [];
 }
 
-function categoryInsert(array $insertData, int $categoryID = null, bool $updateCategory = false): int
+function categoryInsert(array $categoryData, int $categoryID = null, bool $isUpdate = false): int
 {
     global $db;
 
-    if ($updateCategory) {
-        return (int)$db->update_query('ougc_awards_categories', $insertData, "cid='{$categoryID}'");
+    $insertData = [];
+
+    $hookArguments = [
+        'categoryData' => &$categoryData,
+        'insertData' => &$insertData,
+        'categoryID' => $categoryID,
+        'isUpdate' => $isUpdate,
+    ];
+
+    if (isset($awardData['name'])) {
+        $insertData['name'] = $db->escape_string($awardData['name']);
+    }
+
+    if (isset($awardData['description'])) {
+        $insertData['description'] = $db->escape_string($awardData['description']);
+    }
+
+    if (isset($awardData['disporder'])) {
+        $insertData['disporder'] = (int)$awardData['disporder'];
+    }
+
+    if (isset($awardData['allowrequests'])) {
+        $insertData['allowrequests'] = (int)$awardData['allowrequests'];
+    }
+
+    if (isset($awardData['visible'])) {
+        $insertData['visible'] = (int)$awardData['visible'];
+    }
+
+    $hookArguments = runHooks('insert_update_category_end', $hookArguments);
+
+    if ($isUpdate) {
+        $db->update_query('ougc_awards_categories', $insertData, "cid='{$categoryID}'");
+
+        return $categoryID;
     }
 
     return (int)$db->insert_query('ougc_awards_categories', $insertData);
@@ -1753,15 +1787,72 @@ function categoryGetCache(array $whereClauses = [], string $queryFields = '*', a
     return $cacheObjects;
 }
 
-function awardInsert(array $insertData, int $awardID = 0, bool $updateAward = false): int
+function awardInsert(array $awardData, int $awardID = 0, bool $isUpdate = false): int
 {
     global $db;
 
-    if ($updateAward) {
-        return (int)$db->update_query('ougc_awards', $insertData, "aid='{$awardID}'");
+    $insertData = [];
+
+    $hookArguments = [
+        'awardData' => &$awardData,
+        'insertData' => &$insertData,
+        'awardID' => $awardID,
+        'isUpdate' => $isUpdate,
+    ];
+
+    if (isset($awardData['cid'])) {
+        $insertData['cid'] = (int)$awardData['cid'];
     }
 
-    return (int)$db->insert_query('ougc_awards', $insertData);
+    if (isset($awardData['name'])) {
+        $insertData['name'] = $db->escape_string($awardData['name']);
+    }
+
+    if (isset($awardData['description'])) {
+        $insertData['description'] = $db->escape_string($awardData['description']);
+    }
+
+    if (isset($awardData['award_file'])) {
+        $insertData['award_file'] = $db->escape_string($awardData['award_file']);
+    }
+
+    if (isset($awardData['image'])) {
+        $insertData['image'] = $db->escape_string($awardData['image']);
+    }
+
+    if (isset($awardData['template'])) {
+        $insertData['template'] = (int)$awardData['template'];
+    }
+
+    if (isset($awardData['disporder'])) {
+        $insertData['disporder'] = (int)$awardData['disporder'];
+    }
+
+    if (isset($awardData['allowrequests'])) {
+        $insertData['allowrequests'] = (int)$awardData['allowrequests'];
+    }
+
+    if (isset($awardData['visible'])) {
+        $insertData['visible'] = (int)$awardData['visible'];
+    }
+
+    if (isset($awardData['pm'])) {
+        $insertData['pm'] = $db->escape_string($awardData['pm']);
+    }
+
+    if (isset($awardData['type'])) {
+        $insertData['type'] = (int)$awardData['type'];
+    }
+
+    $hookArguments = runHooks('insert_update_award_end', $hookArguments);
+
+    if ($isUpdate) {
+        $db->update_query('ougc_awards', $awardData, "aid='{$awardID}'");
+
+        return $awardID;
+    }
+
+    return (int)$db->insert_query('ougc_awards', $awardData);
 }
 
 function awardUpdate(array $updateData, int $awardID = 0): int
@@ -1835,8 +1926,10 @@ function awardGetIcon(int $awardID): string
         '{cid}' => $awardData['cid']
     ];
 
-    if (empty($awardData['image'])) {
-        $awardData['image'] = $mybb->get_asset_url(getSetting('uploadPath') . $awardData['award_file']);
+    if ((int)$awardData['template'] === AWARD_TEMPLATE_TYPE_IMAGE) {
+        if (!my_validate_url($awardData['image'])) {
+            $awardData['image'] = $mybb->get_asset_url(getSetting('uploadPath') . $awardData['award_file']);
+        }
     }
 
     return str_replace(
@@ -1916,7 +2009,7 @@ function grantInsert(
     $insertData = [
         'aid' => $awardID,
         'uid' => $userID,
-        'oid' => (int)$mybb->user['uid'],
+        'oid' => $taskID ? 0 : (int)$mybb->user['uid'],
         'tid' => $taskID,
         'thread' => $threadID,
         'rid' => $requestID,
@@ -2193,7 +2286,7 @@ function taskInsert(array $taskData, int $taskID = 0, bool $updateTask = false):
             'give',
             'revoke',
             'thread',
-            'allowmultiple',
+            //'allowmultiple',
             'disporder',
             'additionalgroups',
             'threads',
@@ -2264,6 +2357,12 @@ function taskInsert(array $taskData, int $taskID = 0, bool $updateTask = false):
     !isset($taskData['requirements']) || $insertData['requirements'] = $db->escape_string(
         implode(',', array_filter(array_unique((array)$taskData['requirements'])))
     );
+
+    if ($db->table_exists('ougc_awards_tasks')) {
+        if ($db->field_exists('ougc_customrepids_g', 'ougc_awards_tasks')) {
+            $db->drop_column('ougc_awards_tasks', 'ougc_customrepids_g');
+        }
+    }
 
     if ($updateTask) {
         return (int)$db->update_query('ougc_awards_tasks', $insertData, "tid='{$taskID}'");
@@ -2581,16 +2680,29 @@ function generateSelectAwards(string $inputName, array $selectedIDs = [], array 
 
     $selectCode .= '>';
 
-    $dbQuery = $db->simple_select('ougc_awards', '*', '', ['order_by' => 'disporder']);
+    $dbQuery = $db->simple_select(
+        'ougc_awards',
+        'name, aid, cid',
+        '',
+        ['order_by' => 'cid asc, disporder', 'order_dir' => 'asc']
+    );
+
+    $awardsCache = [];
 
     while ($awardData = $db->fetch_array($dbQuery)) {
-        $selectedElement = '';
+        $awardsCache[(int)$awardData['cid']][(int)$awardData['aid']] = htmlspecialchars_uni($awardData['name']);
+    }
 
-        if (in_array($awardData['aid'], $selectedIDs)) {
-            $selectedElement = 'selected="selected"';
+    foreach ($awardsCache as $categoryID => $categoryAwards) {
+        foreach ($categoryAwards as $awardID => $awardName) {
+            $selectedElement = '';
+
+            if (in_array($awardID, $selectedIDs)) {
+                $selectedElement = 'selected="selected"';
+            }
+
+            $selectCode .= "<option value=\"{$awardID}\"{$selectedElement}>{$awardName}</option>";
         }
-
-        $selectCode .= "<option value=\"{$awardData['aid']}\"{$selectedElement}>{$awardData['name']}</option>";
     }
 
     $selectCode .= '</select>';

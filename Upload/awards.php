@@ -83,6 +83,7 @@ use function ougc\Awards\Core\requestGetPending;
 use function ougc\Awards\Core\requestGetPendingTotal;
 use function ougc\Awards\Core\requestInsert;
 use function ougc\Awards\Core\requestReject;
+use function ougc\Awards\Core\runHooks;
 use function ougc\Awards\Core\taskDelete;
 use function ougc\Awards\Core\taskGet;
 use function ougc\Awards\Core\taskInsert;
@@ -99,6 +100,10 @@ use const ougc\Awards\Core\AWARD_STATUS_DISABLED;
 use const ougc\Awards\Core\AWARD_STATUS_ENABLED;
 use const ougc\Awards\Core\AWARD_TEMPLATE_TYPE_CLASS;
 use const ougc\Awards\Core\AWARD_TEMPLATE_TYPE_CUSTOM;
+use const ougc\Awards\Core\FILE_UPLOAD_ERROR_FAILED;
+use const ougc\Awards\Core\FILE_UPLOAD_ERROR_INVALID_TYPE;
+use const ougc\Awards\Core\FILE_UPLOAD_ERROR_RESIZE;
+use const ougc\Awards\Core\FILE_UPLOAD_ERROR_UPLOAD_SIZE;
 use const ougc\Awards\Core\GRANT_STATUS_NOT_VISIBLE;
 use const ougc\Awards\Core\GRANT_STATUS_POSTS;
 use const ougc\Awards\Core\GRANT_STATUS_PROFILE;
@@ -191,7 +196,7 @@ $validActions = [
 
 $isCustomPage = false;
 
-$plugins->run_hooks('ougc_awards_start');
+runHooks('start');
 
 $isCategoryOwner = false;
 
@@ -323,12 +328,12 @@ switch ($mybb->get_input('action')) {
         add_breadcrumb($lang->ougcAwardsControlPanelTasksTitle, urlHandlerBuild(['action' => 'viewTasks']));
         break;
     case 'newTask':
-        add_breadcrumb($lang->ougcAwardsControlPanelTasksTitle);
+        add_breadcrumb($lang->ougcAwardsControlPanelTasksTitle, urlHandlerBuild(['action' => 'viewTasks']));
 
         add_breadcrumb($lang->ougcAwardsControlPanelNewTaskTitle);
         break;
     case 'editTask':
-        add_breadcrumb($lang->ougcAwardsControlPanelTasksTitle);
+        add_breadcrumb($lang->ougcAwardsControlPanelTasksTitle, urlHandlerBuild(['action' => 'viewTasks']));
 
         add_breadcrumb($lang->ougcAwardsControlPanelEditTaskTitle);
         break;
@@ -1184,7 +1189,7 @@ $requirementCriteria = [
 
 $perPage = (int)getSetting('perPage');
 
-$plugins->run_hooks('ougc_awards_intermediate');
+runHooks('intermediate');
 
 if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     if (!$isModerator) {
@@ -1195,7 +1200,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $inputData = [];
 
-    $plugins->run_hooks('ougc_awards_edit_category_start');
+    runHooks('edit_category_start');
 
     foreach (['name', 'description', 'allowrequests', 'visible', 'disporder'] as $inputKey) {
         if ($mybb->request_method === 'post') {
@@ -1220,14 +1225,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         if (empty($errorMessages)) {
             $categoryData = [
-                'name' => $db->escape_string($inputData['name']),
-                'description' => $db->escape_string($inputData['description']),
+                'name' => $inputData['name'],
+                'description' => $inputData['description'],
                 'disporder' => (int)$inputData['disporder'],
                 'allowrequests' => (int)$inputData['allowrequests'],
                 'visible' => (int)$inputData['visible'],
             ];
 
-            $plugins->run_hooks('ougc_awards_edit_category_commit_start');
+            runHooks('edit_category_commit_start');
 
             if ($newCategoryPage) {
                 categoryInsert($categoryData);
@@ -1301,7 +1306,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $rowBackground = alt_trow(true);
 
-    $plugins->run_hooks('ougc_awards_edit_category_end');
+    runHooks('edit_category_end');
 
     $additionalRows = implode(' ', $additionalRows);
 
@@ -1381,7 +1386,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $inputData = [];
 
-    $plugins->run_hooks('ougc_awards_edit_award_start');
+    runHooks('edit_award_start');
 
     foreach (
         [
@@ -1426,25 +1431,42 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         if (empty($errorMessages) && !empty($_FILES['award_file']['name'])) {
             $upload = uploadAward($_FILES['award_file'], $awardID);
+
+            if (!empty($upload['error'])) {
+                switch ($upload['error']) {
+                    case FILE_UPLOAD_ERROR_FAILED:
+                        $errorMessages[] = $lang->ougcAwardsErrorUploadFailed;
+                        break;
+                    case FILE_UPLOAD_ERROR_INVALID_TYPE:
+                        $errorMessages[] = $lang->ougcAwardsErrorUploadInvalidType;
+                        break;
+                    case FILE_UPLOAD_ERROR_RESIZE:
+                        $errorMessages[] = $lang->ougcAwardsErrorUploadReize;
+                        break;
+                    case FILE_UPLOAD_ERROR_UPLOAD_SIZE:
+                        $errorMessages[] = $lang->ougcAwardsErrorUploadSize;
+                        break;
+                }
+            }
         }
 
         if (empty($errorMessages)) {
             $awardData = [
-                'name' => $db->escape_string($inputData['name']),
-                'cid' => (int)$inputData['categoryID'],
-                'description' => $db->escape_string($inputData['description']),
-                'image' => $db->escape_string($inputData['image']),
-                'template' => (int)$inputData['template'],
+                'name' => $inputData['name'],
+                'cid' => $inputData['categoryID'],
+                'description' => $inputData['description'],
+                'image' => $inputData['image'],
+                'template' => $inputData['template'],
                 'allowrequests' => (int)$inputData['allowrequests'],
-                'pm' => $db->escape_string($inputData['pm']),
-                'type' => (int)$inputData['type'],
+                'pm' => $inputData['pm'],
+                'type' => $inputData['type'],
             ];
 
             if (!empty($upload['fileName'])) {
                 $awardData['award_file'] = $db->escape_string($upload['fileName']);
             }
 
-            $plugins->run_hooks('ougc_awards_edit_award_commit_start');
+            runHooks('edit_award_commit_start');
 
             if ($newAwardPage) {
                 awardInsert($awardData);
@@ -1549,7 +1571,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $rowBackground = alt_trow(true);
 
-    $plugins->run_hooks('ougc_awards_edit_award_end');
+    runHooks('edit_award_end');
 
     $additionalRows = implode(' ', $additionalRows);
 
@@ -1623,7 +1645,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 $updateData['visible'] = GRANT_STATUS_NOT_VISIBLE;
             }
 
-            $plugins->run_hooks('ougc_awards_my_awards_update_end');
+            runHooks('my_awards_update_end');
 
             grantUpdate($updateData, $grantID);
         }
@@ -1670,8 +1692,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         [
             'limit' => $perPage,
             'limit_start' => $startPage,
-            'order_by' => 'disporder asc, date',
-            'order_dir' => 'desc'
+            'order_by' => 'disporder asc, date asc, gid',
+            'order_dir' => 'asc'
         ]
     );
 
@@ -1779,7 +1801,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $rowColumnsExtra = [];
 
-        $plugins->run_hooks('ougc_awards_my_awards_row_end');
+        runHooks('my_awards_row_end');
 
         $rowColumnsExtra = implode(' ', $rowColumnsExtra);
 
@@ -1790,7 +1812,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $rowHeadColumnsExtra = [];
 
-    $plugins->run_hooks('ougc_awards_my_awards_end');
+    runHooks('my_awards_end');
 
     $rowHeadColumnsExtra = implode(' ', $rowHeadColumnsExtra);
 
@@ -3249,7 +3271,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             'give',
             'revoke',
             'thread',
-            'allowmultiple',
+            //'allowmultiple',
             'disporder',
             'additionalgroups',
             'threads',
@@ -3321,7 +3343,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 'give' => $inputData['give'],
                 'reason' => $inputData['reason'],
                 'thread' => $inputData['thread'],
-                'allowmultiple' => $inputData['allowmultiple'],
+                //'allowmultiple' => $inputData['allowmultiple'],
                 'revoke' => $inputData['revoke'],
                 'disporder' => $inputData['disporder'],
                 'usergroups' => $inputData['usergroups'],
@@ -3476,7 +3498,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $awardsGrantSelect = generateSelectAwards('give', (array)$inputData['give']);
 
-    $selectedElementMultipleYes = $selectedElementMultipleNo = '';
+    /*$selectedElementMultipleYes = $selectedElementMultipleNo = '';
 
     switch ($inputData['allowmultiple']) {
         case TASK_ALLOW_MULTIPLE:
@@ -3485,7 +3507,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         default:
             $selectedElementMultipleNo = 'checked="checked"';
             break;
-    }
+    }*/
 
     $awardsRevokeSelect = generateSelectAwards('revoke', (array)$inputData['revoke']);
 
@@ -3815,7 +3837,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
 
         foreach ($mybb->get_input('display', MyBB::INPUT_ARRAY) as $awardID => $displayOrder) {
-            awardUpdate(['disporder' => (int)$displayOrder], (int)$awardID);
+            awardUpdate(['disporder' => $displayOrder], (int)$awardID);
         }
 
         $awardIDs = implode("','", $awardIDs);
@@ -3962,7 +3984,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
             $rowColumnExtra = [];
 
-            $plugins->run_hooks('ougc_awards_main_category_award_end');
+            runHooks('main_category_award_end');
 
             $rowColumnExtra = implode(' ', $rowColumnExtra);
 
@@ -3973,7 +3995,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $moderationColumnExtra = [];
 
-        $plugins->run_hooks('ougc_awards_main_category_end');
+        runHooks('main_category_end');
 
         if (!$awardsList) {
             $awardsList = eval(getTemplate('controlPanelListRowEmpty'));
@@ -4060,7 +4082,7 @@ $pageContents = eval(getTemplate('controlPanelContents'));
 
 $pageContents = eval(getTemplate('controlPanel'));
 
-$plugins->run_hooks('ougc_awards_end');
+runHooks('end');
 
 output_page($pageContents);
 
