@@ -77,6 +77,8 @@ function global_start05(): bool
         $templatelist = '';
     }
 
+    $templatelist = 'ougcawards_js, ougcawards_css, ougcawards_global_menu, ougcawards_viewAll, ougcawards_awardImage, ougcawards_awardWrapper, ougcawards_streamItem';
+
     return true;
 }
 
@@ -85,6 +87,10 @@ function global_intermediate(): bool
     global $mybb, $db, $lang, $templates, $ougcAwardsMenu, $ougcAwardsGlobalNotificationRequests, $ougcAwardsViewAll, $ougcAwardsJavaScript, $ougcAwardsCSS;
 
     loadLanguage();
+
+    if (getSetting('enableDvzStream') && isset($mybb->settings['dvz_stream_active_streams'])) {
+        $mybb->settings['dvz_stream_active_streams'] .= ',ougcAwards';
+    }
 
     $currentUserID = (int)$mybb->user['uid'];
 
@@ -198,6 +204,12 @@ function build_friendly_wol_location_end(array &$locationArguments): array
 
 function xmlhttp_02(): bool
 {
+    global $mybb;
+
+    if (getSetting('enableDvzStream') && isset($mybb->settings['dvz_stream_active_streams'])) {
+        $mybb->settings['dvz_stream_active_streams'] .= ',ougcAwards';
+    }
+
     myAlertsInitiate();
 
     return true;

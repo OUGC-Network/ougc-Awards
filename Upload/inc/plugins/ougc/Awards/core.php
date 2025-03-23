@@ -2061,6 +2061,32 @@ function grantUpdate(array $updateData, int $grantID): bool
     return true;
 }
 
+function grantGet(array $whereClauses, array $queryFields = [], array $queryOptions = []): array
+{
+    global $db;
+
+    $queryFields[] = 'gid';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_users',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
+
+    if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
+        return (array)$db->fetch_array($dbQuery);
+    }
+
+    $grantObjects = [];
+
+    while ($grantData = $db->fetch_array($dbQuery)) {
+        $grantObjects[(int)$grantData['gid']] = $grantData;
+    }
+
+    return $grantObjects;
+}
+
 function grantDelete(int $grantID): bool
 {
     global $db;

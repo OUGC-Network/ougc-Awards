@@ -79,6 +79,8 @@ $l = [
     'setting_ougc_awards_groupsTasks_desc' => 'Allowed groups to view the awards tasks page.',
     'setting_ougc_awards_groupsMyAwards' => 'My Awards View Groups',
     'setting_ougc_awards_groupsMyAwards_desc' => 'Allowed groups to view the My Awards page.',
+    'setting_ougc_awards_enableDvzStream' => 'Enable DVZ Stream Integration',
+    'setting_ougc_awards_enableDvzStream_desc' => 'Enable DVZ Stream integration for granted awards.',
 
     'ougcAwardsTaskRan' => 'The awards task ran successfully.',
 
