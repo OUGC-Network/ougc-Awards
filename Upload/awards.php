@@ -231,11 +231,11 @@ if (in_array($mybb->get_input('action'), $validActions)) {
     }
 
     if (($isModerator || $isCategoryOwner) && $mybb->get_input('action') === 'deleteOwner') {
-        if (empty($ownerData)) {
+        if (empty($ownerData['aid'])) {
             error($lang->ougcAwardsErrorInvalidOwner);
+        } else {
+            $awardID = (int)$ownerData['aid'];
         }
-
-        $awardID = (int)$ownerData['aid'];
     }
 
     if (($isModerator || $isCategoryOwner) && $mybb->get_input('action') === 'editGrant') {
@@ -3102,7 +3102,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    $paginationMenu || $paginationMenu = '&nbsp;';
+    $paginationMenu = $paginationMenu ?? '&nbsp;';
 
     $pageContents = eval(getTemplate('viewUser', false));
 
@@ -3114,7 +3114,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $errorMessages[] = $lang->ougcAwardsRequestErrorNoPermission;
     }
 
-    $categoryID = (int)$awardData['cid'];
+    $categoryID = (int)($awardData['cid'] ?? 0);
 
     if (!($categoryData = categoryGet($categoryID)) || !isVisibleCategory($categoryID)) {
         $errorMessages[] = $lang->ougcAwardsErrorInvalidCategory;

@@ -693,7 +693,7 @@ function member_profile_end(): bool
 
         if ($maximumAwardsInProfilePresets) {
             $presetAwards = array_filter(
-                (array)my_unserialize($presetData['visible'])
+                !empty($presetData['visible']) ? (array)my_unserialize($presetData['visible']) : []
             );
 
             require_once MYBB_ROOT . 'inc/class_parser.php';
@@ -727,7 +727,7 @@ function member_profile_end(): bool
     if ($presetList) {
         $alternativeBackground = alt_trow(true);
 
-        $presetName = $presetData['name'] = htmlspecialchars_uni($presetData['name']);
+        $presetName = $presetData['name'] = htmlspecialchars_uni($presetData['name'] ?? '');
 
         $memprofile['ougc_awards_preset'] = eval(getTemplate('profilePresets'));
     }
