@@ -1683,24 +1683,24 @@ function categoryInsert(array $categoryData, int $categoryID = null, bool $isUpd
         'isUpdate' => $isUpdate,
     ];
 
-    if (isset($awardData['name'])) {
-        $insertData['name'] = $db->escape_string($awardData['name']);
+    if (isset($categoryData['name'])) {
+        $insertData['name'] = $db->escape_string($categoryData['name']);
     }
 
-    if (isset($awardData['description'])) {
-        $insertData['description'] = $db->escape_string($awardData['description']);
+    if (isset($categoryData['description'])) {
+        $insertData['description'] = $db->escape_string($categoryData['description']);
     }
 
-    if (isset($awardData['disporder'])) {
-        $insertData['disporder'] = (int)$awardData['disporder'];
+    if (isset($categoryData['disporder'])) {
+        $insertData['disporder'] = (int)$categoryData['disporder'];
     }
 
-    if (isset($awardData['allowrequests'])) {
-        $insertData['allowrequests'] = (int)$awardData['allowrequests'];
+    if (isset($categoryData['allowrequests'])) {
+        $insertData['allowrequests'] = (int)$categoryData['allowrequests'];
     }
 
-    if (isset($awardData['visible'])) {
-        $insertData['visible'] = (int)$awardData['visible'];
+    if (isset($categoryData['visible'])) {
+        $insertData['visible'] = (int)$categoryData['visible'];
     }
 
     $hookArguments = runHooks('insert_update_category_end', $hookArguments);
