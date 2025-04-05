@@ -1670,7 +1670,7 @@ function ownerCategoryFind(int $categoryID, int $userID): array
     return [];
 }
 
-function categoryInsert(array $categoryData, int $categoryID = null, bool $isUpdate = false): int
+function categoryInsert(array $categoryData, int $categoryID = 0, bool $isUpdate = false): int
 {
     global $db;
 
@@ -1921,22 +1921,18 @@ function awardGetIcon(int $awardID): string
     $replaceObjects = [
         '{bburl}' => $mybb->settings['bburl'],
         '{homeurl}' => $mybb->settings['homeurl'],
-        '{imgdir}' => !empty($theme['imgdir']) ? $theme['imgdir'] : '',
+        '{imgdir}' => $theme['imgdir'] ?? '',
         '{aid}' => $awardID,
-        '{cid}' => $awardData['cid']
+        '{cid}' => (int)$awardData['cid']
     ];
 
-    if ((int)$awardData['template'] === AWARD_TEMPLATE_TYPE_IMAGE) {
-        if (!my_validate_url($awardData['image'])) {
-            $awardData['image'] = $mybb->get_asset_url(getSetting('uploadPath') . $awardData['award_file']);
-        }
+    $awardImage = str_replace(array_keys($replaceObjects), array_values($replaceObjects), $awardData['image']);
+
+    if ((int)$awardData['template'] === AWARD_TEMPLATE_TYPE_IMAGE && !my_validate_url($awardImage)) {
+        $awardImage = $mybb->get_asset_url(getSetting('uploadPath') . $awardData['award_file']);
     }
 
-    return str_replace(
-        array_keys($replaceObjects),
-        array_values($replaceObjects),
-        $awardData['image']
-    );
+    return $awardImage;
 }
 
 function awardGetUser(
