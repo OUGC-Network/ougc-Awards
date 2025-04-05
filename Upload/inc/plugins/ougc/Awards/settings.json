@@ -19,6 +19,10 @@
     "optionscode": "numeric",
     "value": 10
   },
+  "perPageViewUsers": {
+    "optionscode": "numeric",
+    "value": 10
+  },
   "groupsView": {
     "optionscode": "groupselect",
     "value": -1

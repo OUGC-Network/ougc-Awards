@@ -26,6 +26,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 
+declare(strict_types=1);
+
 use function ougc\Awards\Core\awardDelete;
 use function ougc\Awards\Core\awardGet;
 use function ougc\Awards\Core\awardGetIcon;
@@ -2971,6 +2973,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = eval(getTemplate('controlPanelPresets'));
 } elseif ($mybb->get_input('action') === 'viewUser') {
+    $perPage = (int)getSetting('perPageViewUsers');
+
     $userID = $mybb->get_input('userID', MyBB::INPUT_INT);
 
     if (!($userData = getUser($userID))) {
