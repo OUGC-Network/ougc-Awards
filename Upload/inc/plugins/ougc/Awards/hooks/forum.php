@@ -621,6 +621,10 @@ function member_profile_end(): bool
 
     $totalGrantedCount = awardGetUser($whereClauses, 'COUNT(gid) AS totalGranted', ['limit' => 1]);
 
+    if ($totalGrantedCount > $maximumAwardsInProfile) {
+        $memprofile['ougc_awards_view_all'] = eval(getTemplate('profileViewAll'));
+    }
+
     if (empty($totalGrantedCount['totalGranted'])) {
         $totalGrantedCount = 0;
     } else {
@@ -756,10 +760,6 @@ function member_profile_end(): bool
         echo json_encode(['content' => $memprofile['ougc_awards']]);
 
         exit;
-    }
-
-    if ($totalGrantedCount > $maximumAwardsInProfile) {
-        $memprofile['ougc_awards_view_all'] = eval(getTemplate('profileViewAll'));
     }
 
     return true;
