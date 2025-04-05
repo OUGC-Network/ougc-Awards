@@ -77,7 +77,7 @@ function global_start05(): bool
         $templatelist = '';
     }
 
-    $templatelist = 'ougcawards_js, ougcawards_css, ougcawards_global_menu, ougcawards_viewAll, ougcawards_awardImage, ougcawards_awardWrapper, ougcawards_streamItem';
+    $templatelist .= 'ougcawards_js, ougcawards_css, ougcawards_global_menu, ougcawards_viewAll, ougcawards_awardImage, ougcawards_awardWrapper, ougcawards_streamItem';
 
     return true;
 }
