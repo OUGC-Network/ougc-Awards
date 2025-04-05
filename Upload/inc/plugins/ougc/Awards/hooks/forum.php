@@ -723,7 +723,8 @@ function member_profile_end(): bool
                 '*',
                 [
                     'order_by' => 'disporder, date',
-                    'order_dir' => 'desc'
+                    'order_dir' => 'desc',
+                    'limit' => $maximumAwardsInProfilePresets,
                 ]
             );
 
