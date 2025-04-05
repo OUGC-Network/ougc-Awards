@@ -1,3 +1,9 @@
+<p align="center">
+    <a href="" rel="noopener">
+        <img width="700" height="400" src="https://github.com/user-attachments/assets/802dbbc3-baeb-423b-b297-5afa607cc8cd" alt="Project logo">
+    </a>
+</p>
+
 <h3 align="center">ougc Awards</h3>
 
 <div align="center">
