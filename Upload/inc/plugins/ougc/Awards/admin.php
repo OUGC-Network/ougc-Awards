@@ -489,54 +489,29 @@ function deleteTask(): bool
 
 function dbTables(): array
 {
-    $tablesData = [];
+    $tables_data = [];
 
-    foreach (TABLES_DATA as $tableName => $fieldsData) {
-        foreach ($fieldsData as $fieldName => $fieldData) {
-            $fieldDefinition = '';
-
+    foreach (TABLES_DATA as $tableName => $tableColumns) {
+        foreach ($tableColumns as $fieldName => $fieldData) {
             if (!isset($fieldData['type'])) {
                 continue;
             }
 
-            $fieldDefinition .= $fieldData['type'];
-
-            if (isset($fieldData['size'])) {
-                $fieldDefinition .= "({$fieldData['size']})";
-            }
-
-            if (isset($fieldData['unsigned'])) {
-                $fieldDefinition .= ' UNSIGNED';
-            }
-
-            if (!isset($fieldData['null'])) {
-                $fieldDefinition .= ' NOT';
-            }
-
-            $fieldDefinition .= ' NULL';
-
-            if (isset($fieldData['auto_increment'])) {
-                $fieldDefinition .= ' AUTO_INCREMENT';
-            }
-
-            if (isset($fieldData['default'])) {
-                $fieldDefinition .= " DEFAULT '{$fieldData['default']}'";
-            }
-
-            $tablesData[$tableName][$fieldName] = $fieldDefinition;
+            $tables_data[$tableName][$fieldName] = dbBuildFieldDefinition($fieldData);
         }
 
-        foreach ($fieldsData as $fieldName => $fieldData) {
+        foreach ($tableColumns as $fieldName => $fieldData) {
             if (isset($fieldData['primary_key'])) {
-                $tablesData[$tableName]['primary_key'] = $fieldName;
+                $tables_data[$tableName]['primary_key'] = $fieldName;
             }
+
             if ($fieldName === 'unique_key') {
-                $tablesData[$tableName]['unique_key'] = $fieldData;
+                $tables_data[$tableName]['unique_key'] = $fieldData;
             }
         }
     }
 
-    return $tablesData;
+    return $tables_data;
 }
 
 function dbVerifyTables(): bool
@@ -545,35 +520,33 @@ function dbVerifyTables(): bool
 
     $collation = $db->build_create_table_collation();
 
-    $tablePrefix = $db->table_prefix;
-
-    foreach (dbTables() as $tableName => $tableData) {
+    foreach (dbTables() as $tableName => $tableColumns) {
         if ($db->table_exists($tableName)) {
-            foreach ($tableData as $field => $definition) {
-                if ($field == 'primary_key' || $field == 'unique_key') {
+            foreach ($tableColumns as $fieldName => $fieldData) {
+                if ($fieldName == 'primary_key' || $fieldName == 'unique_key') {
                     continue;
                 }
 
-                if ($db->field_exists($field, $tableName)) {
-                    $db->modify_column($tableName, "`{$field}`", $definition);
+                if ($db->field_exists($fieldName, $tableName)) {
+                    $db->modify_column($tableName, "`{$fieldName}`", $fieldData);
                 } else {
-                    $db->add_column($tableName, $field, $definition);
+                    $db->add_column($tableName, $fieldName, $fieldData);
                 }
             }
         } else {
-            $query = "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$tableName}` (";
+            $query_string = "CREATE TABLE IF NOT EXISTS `{$db->table_prefix}{$tableName}` (";
 
-            foreach ($tableData as $field => $definition) {
-                if ($field == 'primary_key') {
-                    $query .= "PRIMARY KEY (`{$definition}`)";
-                } elseif ($field != 'unique_key') {
-                    $query .= "`{$field}` {$definition},";
+            foreach ($tableColumns as $fieldName => $fieldData) {
+                if ($fieldName == 'primary_key') {
+                    $query_string .= "PRIMARY KEY (`{$fieldData}`)";
+                } elseif ($fieldName != 'unique_key') {
+                    $query_string .= "`{$fieldName}` {$fieldData},";
                 }
             }
 
-            $query .= ") ENGINE=MyISAM{$collation};";
+            $query_string .= ") ENGINE=MyISAM{$collation};";
 
-            $db->write_query($query);
+            $db->write_query($query_string);
         }
     }
 
@@ -586,20 +559,20 @@ function dbVerifyIndexes(): bool
 {
     global $db;
 
-    $tablePrefix = $db->table_prefix;
-
-    foreach (dbTables() as $tableName => $tableData) {
+    foreach (dbTables() as $tableName => $tableColumns) {
         if (!$db->table_exists($tableName)) {
             continue;
         }
 
-        if (isset($tableData['unique_key'])) {
-            foreach ($tableData['unique_key'] as $keyName => $keyValue) {
-                if ($db->index_exists($tableName, $keyName)) {
+        if (isset($tableColumns['unique_key'])) {
+            foreach ($tableColumns['unique_key'] as $key_name => $key_value) {
+                if ($db->index_exists($tableName, $key_name)) {
                     continue;
                 }
 
-                $db->write_query("ALTER TABLE {$tablePrefix}{$tableName} ADD UNIQUE KEY {$keyName} ({$keyValue})");
+                $db->write_query(
+                    "ALTER TABLE {$db->table_prefix}{$tableName} ADD UNIQUE KEY {$key_name} ({$key_value})"
+                );
             }
         }
     }
@@ -607,11 +580,15 @@ function dbVerifyIndexes(): bool
     return true;
 }
 
-function dbVerifyColumns(array $fields_data = FIELDS_DATA): bool
+function dbVerifyColumns(array $fieldsData = FIELDS_DATA): bool
 {
     global $db;
 
-    foreach ($fields_data as $tableName => $tableColumns) {
+    foreach ($fieldsData as $tableName => $tableColumns) {
+        if (!$db->table_exists($tableName)) {
+            continue;
+        }
+
         foreach ($tableColumns as $fieldName => $fieldData) {
             if (!isset($fieldData['type'])) {
                 continue;
@@ -630,35 +607,35 @@ function dbVerifyColumns(array $fields_data = FIELDS_DATA): bool
 
 function dbBuildFieldDefinition(array $fieldData): string
 {
-    $fieldDefinition = '';
+    $field_definition = '';
 
-    $fieldDefinition .= $fieldData['type'];
+    $field_definition .= $fieldData['type'];
 
     if (isset($fieldData['size'])) {
-        $fieldDefinition .= "({$fieldData['size']})";
+        $field_definition .= "({$fieldData['size']})";
     }
 
     if (isset($fieldData['unsigned'])) {
         if ($fieldData['unsigned'] === true) {
-            $fieldDefinition .= ' UNSIGNED';
+            $field_definition .= ' UNSIGNED';
         } else {
-            $fieldDefinition .= ' SIGNED';
+            $field_definition .= ' SIGNED';
         }
     }
 
     if (!isset($fieldData['null'])) {
-        $fieldDefinition .= ' NOT';
+        $field_definition .= ' NOT';
     }
 
-    $fieldDefinition .= ' NULL';
+    $field_definition .= ' NULL';
 
     if (isset($fieldData['auto_increment'])) {
-        $fieldDefinition .= ' AUTO_INCREMENT';
+        $field_definition .= ' AUTO_INCREMENT';
     }
 
     if (isset($fieldData['default'])) {
-        $fieldDefinition .= " DEFAULT '{$fieldData['default']}'";
+        $field_definition .= " DEFAULT '{$fieldData['default']}'";
     }
 
-    return $fieldDefinition;
+    return $field_definition;
 }
