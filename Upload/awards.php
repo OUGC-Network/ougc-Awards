@@ -141,7 +141,7 @@ require_once './global.php';
 
 require_once MYBB_ROOT . 'inc/class_parser.php';
 
-global $parser, $lang, $mybb, $plugins, $db, $templates;
+global $parser, $lang, $mybb, $plugins, $db, $templates, $theme;
 
 if (!pluginIsInstalled() || !canViewMainPage()) {
     error_no_permission();
@@ -1627,7 +1627,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = eval(getTemplate('controlPanelConfirmation'));
 } elseif ($mybb->get_input('action') === 'myAwards') {
-    if (!is_member(getSetting('groupsMyAwards'))) {
+    if (!$currentUserID || !is_member(getSetting('groupsMyAwards'))) {
         error_no_permission();
     }
 
@@ -1828,9 +1828,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $columnHeader = $grantForm = $revokeForm = '';
 
-    if (is_member(getSetting('groupsPresets'))) {
+    if ($currentUserID && is_member(getSetting('groupsPresets'))) {
         $actionButtons[] =
-            (function () use ($lang): string {
+            (function () use ($lang, $theme): string {
                 $buttonUrl = urlHandlerBuild(['action' => 'viewPresets']);
 
                 $buttonText = $lang->ougcAwardsControlPanelButtonManagePresets;
@@ -2807,7 +2807,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = eval(getTemplate('controlPanelGrantEdit'));
 } elseif ($mybb->get_input('action') === 'viewPresets') {
-    if (!is_member(getSetting('groupsPresets'))) {
+    if (!$currentUserID || !is_member(getSetting('groupsPresets'))) {
         error_no_permission();
     }
 
@@ -3682,6 +3682,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             }
         }
 
+        if (!$taskGrantAwards) {
+            $taskGrantAwards = '-';
+        }
+
+        if (!$taskRevokeAwards) {
+            $taskRevokeAwards = '-';
+        }
+
         if (!empty($taskData['active'])) {
             $checkedElement = 'checked="$checkedElement"';
         }
@@ -3711,7 +3719,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     if ($isModerator) {
         $actionButtons[] =
-            (function () use ($lang): string {
+            (function () use ($lang, $theme): string {
                 $buttonUrl = urlHandlerBuild(['action' => 'newTask']);
 
                 $buttonText = $lang->ougcAwardsControlPanelButtonNewTask;
@@ -4040,7 +4048,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     if ($isModerator) {
         $actionButtons[] =
-            (function () use ($lang): string {
+            (function () use ($lang, $theme): string {
                 $buttonUrl = urlHandlerBuild(['action' => 'newCategory']);
 
                 $buttonText = $lang->ougcAwardsControlPanelButtonNewCategory;
@@ -4051,7 +4059,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     if (is_member(getSetting('groupsTasks'))) {
         $actionButtons[] =
-            (function () use ($lang): string {
+            (function () use ($lang, $theme): string {
                 $buttonUrl = urlHandlerBuild(['action' => 'viewTasks']);
 
                 $buttonText = $lang->ougcAwardsControlPanelButtonManageTasks;
@@ -4060,9 +4068,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             })();
     }
 
-    if (is_member(getSetting('groupsMyAwards'))) {
+    if ($currentUserID && is_member(getSetting('groupsMyAwards'))) {
         $actionButtons[] =
-            (function () use ($lang): string {
+            (function () use ($lang, $theme): string {
                 $buttonUrl = urlHandlerBuild(['action' => 'myAwards']);
 
                 $buttonText = $lang->ougcAwardsControlPanelButtonManageMyAwards;
