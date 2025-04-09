@@ -1856,6 +1856,12 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             }
         }
 
+        if ($mybb->get_input('thread')) {
+            if (!($threadData = getThreadByUrl($mybb->get_input('thread')))) {
+                $errorMessages[] = $lang->ougcAwardsErrorInvalidThread;
+            }
+        }
+
         foreach ($usersCache as $userData) {
             if (!canManageUsers((int)$userData['uid'])) {
                 $errorMessages[] = $lang->ougcAwardsErrorNoUsersPermission;
@@ -1865,6 +1871,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
 
         if (isset($mybb->input['revoke'])) {
+            foreach ($usersCache as $userData) {
+                if (!canManageUsers((int)$userData['uid'])) {
+                    $errorMessages[] = $lang->ougcAwardsErrorNoUsersPermission;
+
+                    break;
+                }
+            }
+
             foreach ($usersCache as $userData) {
                 if (!grantFind($awardID, (int)$userData['uid'])) {
                     $errorMessages[] = $lang->ougcAwardsErrorInvalidGrant;
@@ -1893,7 +1907,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                     grantInsert(
                         $awardID,
                         (int)$userData['uid'],
-                        $mybb->get_input('reason')
+                        $mybb->get_input('reason'),
+                        !empty($threadData['tid']) ? (int)$threadData['tid'] : 0
                     );
 
                     logAction();
@@ -1904,50 +1919,6 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                     $lang->ougcAwardsRedirectGranted
                 );
             }
-        }
-
-        $usersCache = [];
-
-        foreach ($userNames as $userName) {
-            if ($userData = getUserByUserName($userName)) {
-                $usersCache[] = $userData;
-            } else {
-                $errorMessages[] = $lang->ougcAwardsErrorInvalidUsers;
-
-                break;
-            }
-        }
-
-        foreach ($usersCache as $userData) {
-            if (!canManageUsers((int)$userData['uid'])) {
-                $errorMessages[] = $lang->ougcAwardsErrorNoUsersPermission;
-
-                break;
-            }
-        }
-
-        if ($mybb->get_input('thread')) {
-            if (!($threadData = getThreadByUrl($mybb->get_input('thread')))) {
-                $errorMessages[] = $lang->ougcAwardsErrorInvalidThread;
-            }
-        }
-
-        if (empty($errorMessages)) {
-            foreach ($usersCache as $userData) {
-                grantInsert(
-                    $awardID,
-                    (int)$userData['uid'],
-                    $mybb->get_input('reason'),
-                    !empty($threadData['tid']) ? (int)$threadData['tid'] : 0
-                );
-
-                logAction();
-            }
-
-            redirect(
-                urlHandlerBuild(['action' => 'viewUsers', 'awardID' => $awardID]),
-                $lang->ougcAwardsRedirectGranted
-            );
         }
     }
 
