@@ -72,6 +72,8 @@ $l = [
     'ougcAwardsControlPanelNewCategoryEnabledDescription' => 'Habilitar esta categoría.',
     'ougcAwardsControlPanelNewCategoryDisplayOrder' => 'Orden de Visualización',
     'ougcAwardsControlPanelNewCategoryDisplayOrderDescription' => 'Selecciona el orden de visualización para esta categoría.',
+    'ougcAwardsControlPanelNewCategoryOutputInCustomSection' => 'Mostrar en Seccion Personalizada',
+    'ougcAwardsControlPanelNewCategoryOutputInCustomSectionDescription' => 'Habilitar esto para mostrar premios de esta categoría en su seccion personalizada.',
     'ougcAwardsControlPanelNewCategoryButton' => 'Crear Categoría',
 
     'ougcAwardsControlPanelEditCategoryTitle' => 'Editar Categoría',
@@ -528,6 +530,7 @@ Saludos.',
 
     'ougcAwardsProfileViewAll' => 'Ver Todo',
     'ougcAwardsProfileTitle' => 'Premios de {1}',
+    'ougcAwardsProfileTitleSection' => 'Premios de {1} en {2}',
     'ougcAwardsProfileEmpty' => 'Actualmente no hay premios para mostrar.',
     'ougcAwardsViewUser' => 'Ver Premios del Usuario',
     'ougcAwardsViewUserTitle' => 'Premios de {1}',

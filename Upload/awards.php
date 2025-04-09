@@ -135,7 +135,7 @@ const IN_MYBB = true;
 
 define('THIS_SCRIPT', substr($_SERVER['SCRIPT_NAME'], -strpos(strrev($_SERVER['SCRIPT_NAME']), '/')));
 
-$templatelist = '';
+$templatelist = 'ougcawards_controlPanel, ougcawards_controlPanelButtons, ougcawards_controlPanelCategoryOwners, ougcawards_controlPanelConfirmation, ougcawards_controlPanelConfirmationDeleteAward, ougcawards_controlPanelConfirmationDeleteCategory, ougcawards_controlPanelConfirmationDeleteOwner, ougcawards_controlPanelContents, ougcawards_controlPanelEmpty, ougcawards_controlPanelGrantEdit, ougcawards_controlPanelList, ougcawards_controlPanelListButtonUpdateCategory, ougcawards_controlPanelListCategoryLinks, ougcawards_controlPanelListCategoryLinksModerator, ougcawards_controlPanelListColumnDisplayOrder, ougcawards_controlPanelListColumnEnabled, ougcawards_controlPanelListColumnOptions, ougcawards_controlPanelListColumnRequest, ougcawards_controlPanelListRow, ougcawards_controlPanelListRowDisplayOrder, ougcawards_controlPanelListRowEmpty, ougcawards_controlPanelListRowEnabled, ougcawards_controlPanelListRowOptions, ougcawards_controlPanelListRowRequest, ougcawards_controlPanelListRowRequestButton, ougcawards_controlPanelLogs, ougcawards_controlPanelLogsRow, ougcawards_controlPanelMyAwards, ougcawards_controlPanelMyAwardsEmpty, ougcawards_controlPanelMyAwardsRow, ougcawards_controlPanelMyAwardsRowLink, ougcawards_controlPanelNewEditAwardForm, ougcawards_controlPanelNewEditAwardFormUpload, ougcawards_controlPanelNewEditCategoryForm, ougcawards_controlPanelNewEditTaskForm, ougcawards_controlPanelNewEditTaskFormRequirementRow, ougcawards_controlPanelOwners, ougcawards_controlPanelOwnersEmpty, ougcawards_controlPanelOwnersRow, ougcawards_controlPanelPresets, ougcawards_controlPanelPresetsAward, ougcawards_controlPanelPresetsDefault, ougcawards_controlPanelPresetsForm, ougcawards_controlPanelPresetsRow, ougcawards_controlPanelPresetsSelect, ougcawards_controlPanelRequests, ougcawards_controlPanelRequestsEmpty, ougcawards_controlPanelRequestsRow, ougcawards_controlPanelTasks, ougcawards_controlPanelTasksEmpty, ougcawards_controlPanelTasksRow, ougcawards_controlPanelTasksRowOptions, ougcawards_controlPanelTasksRowRequirement, ougcawards_controlPanelTasksThead, ougcawards_controlPanelUsers, ougcawards_controlPanelUsersColumnOptions, ougcawards_controlPanelUsersEmpty, ougcawards_controlPanelUsersFormGrant, ougcawards_controlPanelUsersFormRevoke, ougcawards_controlPanelUsersRow, ougcawards_controlPanelUsersRowLink, ougcawards_controlPanelUsersRowOptions, ougcawards_inputField, ougcawards_modcp_requests_buttons, ougcawards_page, ougcawards_pageRequest, ougcawards_pageRequestButton, ougcawards_pageRequestError, ougcawards_pageRequestForm, ougcawards_pageRequestSuccess, ougcawards_radioField, ougcawards_selectField, ougcawards_selectFieldOption, ougcawards_textAreaField, ougcawards_viewUser, ougcawards_viewUserEmpty, ougcawards_viewUserError, ougcawards_viewUserRow';
 
 require_once './global.php';
 
@@ -1204,7 +1204,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     runHooks('edit_category_start');
 
-    foreach (['name', 'description', 'allowrequests', 'visible', 'disporder'] as $inputKey) {
+    foreach (['name', 'description', 'allowrequests', 'visible', 'disporder', 'outputInCustomSection'] as $inputKey) {
         if ($mybb->request_method === 'post') {
             $inputData[$inputKey] = $mybb->get_input($inputKey);
         } elseif (isset($categoryData[$inputKey])) {
@@ -1232,6 +1232,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 'disporder' => (int)$inputData['disporder'],
                 'allowrequests' => (int)$inputData['allowrequests'],
                 'visible' => (int)$inputData['visible'],
+                'outputInCustomSection' => (int)$inputData['outputInCustomSection'],
             ];
 
             runHooks('edit_category_commit_start');
@@ -1254,7 +1255,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    foreach (['name', 'description', 'allowrequests', 'visible', 'disporder'] as $inputKey) {
+    foreach (['name', 'description', 'allowrequests', 'visible', 'disporder', 'outputInCustomSection'] as $inputKey) {
         if ($mybb->request_method === 'post') {
             $inputData[$inputKey] = htmlspecialchars_uni($mybb->get_input($inputKey));
         } elseif (isset($categoryData[$inputKey])) {
@@ -1283,6 +1284,17 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             break;
         default:
             $selectedElementEnabledNo = 'checked="checked"';
+            break;
+    }
+
+    $selectedElementOutputInCustomSectionYes = $selectedElementOutputInCustomSectionNo = '';
+
+    switch ($inputData['outputInCustomSection']) {
+        case AWARD_STATUS_ENABLED:
+            $selectedElementOutputInCustomSectionYes = 'checked="checked"';
+            break;
+        default:
+            $selectedElementOutputInCustomSectionNo = 'checked="checked"';
             break;
     }
 
@@ -1699,6 +1711,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         ]
     );
 
+    foreach ($grantCacheData as $v) {
+        if (!is_array($v)) {
+            $grantCacheData = [$grantCacheData];
+
+            break;
+        }
+    }
+
     foreach ($grantCacheData as $grantData) {
         if (!empty($grantData['uid'])) {
             $userIDs[] = (int)$grantData['uid'];
@@ -1922,9 +1942,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    $totalGrantedCount = awardGetUser(["aid='{$awardID}'"],
+    $totalGrantedCount = awardGetUser(
+        ["aid='{$awardID}'"],
         'COUNT(gid) AS totalGranted',
-        ['limit' => 1]);
+        ['limit' => 1]
+    );
 
     if (empty($totalGrantedCount['totalGranted'])) {
         $totalGrantedCount = 0;
@@ -1959,6 +1981,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             'order_dir' => 'desc'
         ]
     );
+
+    foreach ($grantCacheData as $v) {
+        if (!is_array($v)) {
+            $grantCacheData = [$grantCacheData];
+
+            break;
+        }
+    }
 
     foreach ($grantCacheData as $grantData) {
         if (!empty($grantData['uid'])) {
@@ -2994,7 +3024,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             "visible='{$grantStatusVisible}'",
         ];
 
-        $totalGrantedCount = awardGetUser($whereClauses, 'COUNT(gid) AS totalGranted', ['limit' => 1]
+        $totalGrantedCount = awardGetUser(
+            $whereClauses,
+            'COUNT(gid) AS totalGranted',
+            ['limit' => 1]
         );
 
         if (empty($totalGrantedCount['totalGranted'])) {
@@ -3048,6 +3081,15 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             $queryOptions
         );
 
+        // todo, this here is in case admins set a limit of 1, which of now throws off an error
+        foreach ($grantCacheData as $v) {
+            if (!is_array($v)) {
+                $grantCacheData = [$grantCacheData];
+
+                break;
+            }
+        }
+
         $grantedList = $presetList = '';
 
         if (!$totalGrantedCount) {
@@ -3055,22 +3097,6 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 $grantedList = eval(getTemplate('viewUserEmpty'));
             }
         } else {
-            $threadIDs = array_filter(array_map('intval', array_column($grantCacheData, 'thread')));
-
-            if ($threadIDs) {
-                $threadIDs = implode("','", $threadIDs);
-
-                $dbQuery = $db->simple_select(
-                    'threads',
-                    'tid, subject, prefix',
-                    "visible>0  AND closed NOT LIKE 'moved|%' AND tid IN ('{$threadIDs}')"
-                );
-
-                while ($threadData = $db->fetch_array($dbQuery)) {
-                    $threadsCache[(int)$threadData['tid']] = $threadData;
-                }
-            }
-
             if ($perPage) {
                 parseUserAwards($grantedList, $grantCacheData, 'viewUserRow');
             }

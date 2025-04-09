@@ -44,6 +44,8 @@ use function ougc\Awards\Core\loadLanguage;
 
 use const MYBB_ROOT;
 use const ougc\Awards\Core\ADMIN_PERMISSION_DELETE;
+use const ougc\Awards\Core\PLUGIN_VERSION;
+use const ougc\Awards\Core\PLUGIN_VERSION_CODE;
 use const ougc\Awards\Core\REQUEST_STATUS_REJECTED;
 use const ougc\Awards\Core\TABLES_DATA;
 use const ougc\Awards\Core\FIELDS_DATA;
@@ -75,8 +77,8 @@ function pluginInfo(): array
         'website' => 'https://ougc.network',
         'author' => 'Omar G.',
         'authorsite' => 'https://ougc.network',
-        'version' => '1.8.35',
-        'versioncode' => 1835,
+        'version' => PLUGIN_VERSION,
+        'versioncode' => PLUGIN_VERSION_CODE,
         'compatibility' => '18*',
         'myalerts' => getSetting('myAlertsVersion'),
         'codename' => 'ougc_awards',

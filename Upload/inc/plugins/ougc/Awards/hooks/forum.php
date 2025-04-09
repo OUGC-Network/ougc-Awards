@@ -39,7 +39,6 @@ use function ougc\Awards\Core\awardGetIcon;
 use function ougc\Awards\Core\awardGetUser;
 use function ougc\Awards\Core\awardsCacheGet;
 use function ougc\Awards\Core\awardsGetCache;
-use function ougc\Awards\Core\categoryGetCache;
 use function ougc\Awards\Core\cacheUpdate;
 use function ougc\Awards\Core\executeTask;
 use function ougc\Awards\Core\isModerator;
@@ -54,12 +53,13 @@ use function ougc\Awards\Core\getTemplate;
 use function ougc\Awards\Core\urlHandlerGet;
 use function ougc\Awards\Core\getSetting;
 
+use const ougc\Awards\Core\PLUGIN_VERSION_CODE;
+use const TIME_NOW;
 use const ougc\Awards\Core\AWARD_TEMPLATE_TYPE_CLASS;
 use const ougc\Awards\Core\DEBUG;
 use const ougc\Awards\Core\GRANT_STATUS_POSTS;
 use const ougc\Awards\Core\GRANT_STATUS_VISIBLE;
 use const ougc\Awards\Core\REQUEST_STATUS_PENDING;
-use const TIME_NOW;
 
 function global_start05(): bool
 {
@@ -77,7 +77,7 @@ function global_start05(): bool
         $templatelist = '';
     }
 
-    $templatelist .= 'ougcawards_js, ougcawards_css, ougcawards_global_menu, ougcawards_viewAll, ougcawards_awardImage, ougcawards_awardWrapper, ougcawards_streamItem';
+    $templatelist .= 'ougcawards_awardImage, ougcawards_awardImageClass, ougcawards_awardWrapper, ougcawards_css, ougcawards_global_menu, ougcawards_globalNotification, ougcawards_globalPagination, ougcawards_js,, ougcawards_postBitPreset, ougcawards_postBitViewAll, ougcawards_profile, ougcawards_profile_row, ougcawards_profile_rowLink, ougcawards_profileContent, ougcawards_profileEmpty, ougcawards_profilePagination, ougcawards_profilePresets, ougcawards_profilePresetsRow, ougcawards_profilePresetsRowLink, ougcawards_profileViewAll, ougcawards_stats, ougcawards_stats_empty, ougcawards_statsUserRow, ougcawards_streamItem, ougcawards_viewAll';
 
     return true;
 }
@@ -93,6 +93,12 @@ function global_intermediate(): bool
     }
 
     $currentUserID = (int)$mybb->user['uid'];
+
+    $fileVersion = PLUGIN_VERSION_CODE;
+
+    if (DEBUG) {
+        $fileVersion = TIME_NOW;
+    }
 
     $ougcAwardsJavaScript = eval(getTemplate('js'));
 
@@ -582,6 +588,14 @@ function member_profile_end(): bool
         }
     }
 
+    $categoryIDs = [];
+
+    $awardsCategoriesCache = awardsCacheGet()['categories'];
+
+    foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
+        $memprofile["ougcAwardsSection{$categoryID}"] = '';
+    }
+
     if (!$maximumAwardsInProfile && !$maximumAwardsInProfilePresets) {
         return false;
     }
@@ -590,77 +604,68 @@ function member_profile_end(): bool
 
     //urlHandlerSet(get_profile_link($profileUserID));
 
-    $categoryIDs = $awardIDs = [];
+    $primarySectionAwardsIDs = $categorySectionsAwardsIDs = $userAllAwardsIDs = [];
 
-    $categoriesCache = categoryGetCache();
-
-    foreach ($categoriesCache as $categoryID => $categoryData) {
-        $categoryIDs[$categoryID] = $categoryID;
-    }
+    $categoriesIDs = implode("','", array_keys($awardsCategoriesCache));
 
     $awardsCache = awardsGetCache();
 
     foreach ($awardsCache as $awardID => $awardData) {
-        if (!empty($categoryIDs[$awardData['cid']]) && (int)$awardData['type'] !== GRANT_STATUS_POSTS) {
-            $awardIDs[$awardID] = $awardID;
+        $categoryID = (int)$awardData['cid'];
+
+        if (!empty($awardsCategoriesCache[$categoryID]) &&
+            (int)$awardData['type'] !== GRANT_STATUS_POSTS) {
+            if (empty($awardsCategoriesCache[$categoryID]['outputInCustomSection'])) {
+                $primarySectionAwardsIDs[$awardID] = $userAllAwardsIDs[] = $awardID;
+            } else {
+                $categorySectionsAwardsIDs[$categoryID][$awardID] = $userAllAwardsIDs[] = $awardID;
+            }
         }
-        $awardIDs[$awardID] = $awardID;
     }
 
-    $categoryIDs = implode("','", $categoryIDs);
-
-    $awardIDs = implode("','", $awardIDs);
+    $primarySectionAwardsIDs = implode("','", $primarySectionAwardsIDs);
 
     $grantStatusVisible = GRANT_STATUS_VISIBLE;
 
     $whereClauses = [
-        "aid IN ('{$awardIDs}')",
         "uid='{$profileUserID}'",
         "visible='{$grantStatusVisible}'",
     ];
 
-    $totalGrantedCount = awardGetUser($whereClauses, 'COUNT(gid) AS totalGranted', ['limit' => 1]);
+    $presetList = '';
 
-    if ($totalGrantedCount > $maximumAwardsInProfile) {
-        $memprofile['ougc_awards_view_all'] = eval(getTemplate('profileViewAll'));
-    }
+    if (/*$totalGrantedCount &&*/ $maximumAwardsInProfilePresets) {
+        $presetAwards = array_filter(
+            !empty($presetData['visible']) ? (array)my_unserialize($presetData['visible']) : []
+        );
 
-    if (empty($totalGrantedCount['totalGranted'])) {
-        $totalGrantedCount = 0;
-    } else {
-        $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
-    }
+        require_once MYBB_ROOT . 'inc/class_parser.php';
 
-    $startPage = 0;
+        is_object($parser) || $parser = new postParser();
 
-    $currentPage = 1;
+        $presetAwards = implode("','", $presetAwards);
 
-    $paginationMenu = '';
+        $userAllAwardsIDs = implode("','", $userAllAwardsIDs);
 
-    if ($maximumAwardsInProfile && $totalGrantedCount) {
-        $currentPage = $mybb->get_input('view') == 'awards' ? $mybb->get_input('page', MyBB::INPUT_INT) : 1;
+        $grantPresetsCacheData = awardGetUser(
+            array_merge($whereClauses, ["gid IN ('{$presetAwards}')", "aid IN ('{$userAllAwardsIDs}')"]),
+            '*',
+            [
+                'order_by' => 'disporder, date',
+                'order_dir' => 'desc',
+                'limit' => $maximumAwardsInProfilePresets,
+            ]
+        );
 
-        if ($currentPage > 0) {
-            $startPage = ($currentPage - 1) * $maximumAwardsInProfile;
+        foreach ($grantPresetsCacheData as $v) {
+            if (!is_array($v)) {
+                $grantPresetsCacheData = [$grantPresetsCacheData];
 
-            if ($currentPage > ceil($totalGrantedCount / $maximumAwardsInProfile)) {
-                $startPage = 0;
-
-                $currentPage = 1;
+                break;
             }
         }
 
-        $paginationMenu = (string)multipage(
-            $totalGrantedCount,
-            $maximumAwardsInProfile,
-            $currentPage,
-            "javascript: ougcAwards.ViewAwards('{$profileUserID}', '{page}');"
-        //urlHandlerBuild(['view' => 'awards'])
-        );
-
-        if ($paginationMenu) {
-            $paginationMenu = eval(getTemplate('profilePagination'));
-        }
+        parseUserAwards($presetList, $grantPresetsCacheData, 'profilePresetsRow');
     }
 
     $queryOptions = [
@@ -668,77 +673,147 @@ function member_profile_end(): bool
         'order_dir' => 'desc'
     ];
 
-    $queryOptions['limit'] = $maximumAwardsInProfile;
+    $sectionObjects = [
+        0 => [
+            'whereClauses' => array_merge($whereClauses, ["aid IN ('{$primarySectionAwardsIDs}')"]),
+            'queryFields' => '*',
+            'sectionVariable' => &$memprofile['ougc_awards']
+        ]
+    ];
 
-    $queryOptions['limit_start'] = $startPage;
+    foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
+        if (!empty($categoryData['outputInCustomSection']) && !empty($categorySectionsAwardsIDs[$categoryID])) {
+            $sectionAwardsIDs = implode("','", $categorySectionsAwardsIDs[$categoryID]);
 
-    $grantCacheData = awardGetUser(
-        $whereClauses,
-        '*',
-        $queryOptions
-    );
-
-    //$_awards = [];
-
-    $grantedList = $presetList = '';
-
-    if (!$totalGrantedCount) {
-        if ($maximumAwardsInProfile) {
-            $grantedList = eval(getTemplate('profileEmpty'));
-        }
-    } else {
-        $threadIDs = array_filter(array_map('intval', array_column($grantCacheData, 'thread')));
-
-        if ($threadIDs) {
-            $threadIDs = implode("','", $threadIDs);
-
-            $dbQuery = $db->simple_select(
-                'threads',
-                'tid, subject, prefix',
-                "visible>0  AND closed NOT LIKE 'moved|%' AND tid IN ('{$threadIDs}')"
-            );
-
-            while ($threadData = $db->fetch_array($dbQuery)) {
-                $threadsCache[(int)$threadData['tid']] = $threadData;
-            }
-        }
-
-        if ($maximumAwardsInProfile) {
-            parseUserAwards($grantedList, $grantCacheData);
-        }
-
-        if ($maximumAwardsInProfilePresets) {
-            $presetAwards = array_filter(
-                !empty($presetData['visible']) ? (array)my_unserialize($presetData['visible']) : []
-            );
-
-            require_once MYBB_ROOT . 'inc/class_parser.php';
-
-            is_object($parser) || $parser = new postParser();
-
-            $presetAwards = implode("','", $presetAwards);
-
-            $grantPresetsCacheData = awardGetUser(
-                array_merge($whereClauses, ["gid IN ('{$presetAwards}')"]),
-                '*',
-                [
-                    'order_by' => 'disporder, date',
-                    'order_dir' => 'desc',
-                    'limit' => $maximumAwardsInProfilePresets,
-                ]
-            );
-
-            parseUserAwards($presetList, $grantPresetsCacheData, 'profilePresetsRow');
+            $sectionObjects[$categoryID] = [
+                'whereClauses' => array_merge($whereClauses, ["aid IN ('{$sectionAwardsIDs}')"]),
+                'queryFields' => '*',
+                'sectionVariable' => &$memprofile["ougcAwardsSection{$categoryID}"]
+            ];
         }
     }
 
-    if ($maximumAwardsInProfile) {
-        $lang->ougcAwardsProfileTitle = $lang->sprintf(
-            $lang->ougcAwardsProfileTitle,
-            htmlspecialchars_uni($memprofile['username'])
+    $isAjaxCall = $mybb->get_input('ajax', MyBB::INPUT_INT) === 1;
+
+    $currentSectionID = $mybb->get_input('sectionID', MyBB::INPUT_INT);
+
+    foreach ($sectionObjects as $sectionID => $sectionData) {
+        if ($isAjaxCall && $currentSectionID !== $sectionID) {
+            continue;
+        }
+
+        $grantedList = '';
+
+        $totalGrantedCount = awardGetUser($sectionData['whereClauses'], 'COUNT(gid) AS totalGranted', ['limit' => 1]);
+
+        if ($totalGrantedCount > $maximumAwardsInProfile && empty($memprofile['ougc_awards_view_all'])) {
+            $memprofile['ougc_awards_view_all'] = eval(getTemplate('profileViewAll'));
+        }
+
+        if (empty($totalGrantedCount['totalGranted'])) {
+            $totalGrantedCount = 0;
+        } else {
+            $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
+        }
+
+        $paginationMenu = '';
+
+        $startPage = 0;
+
+        if ($maximumAwardsInProfile && $totalGrantedCount) {
+            $currentPage = $mybb->get_input('view') === 'awards' ? $mybb->get_input(
+                'page' . $sectionID,
+                MyBB::INPUT_INT
+            ) : 1;
+
+            if ($currentPage > 0) {
+                $startPage = ($currentPage - 1) * $maximumAwardsInProfile;
+
+                if ($currentPage > ceil($totalGrantedCount / $maximumAwardsInProfile)) {
+                    $startPage = 0;
+
+                    $currentPage = 1;
+                }
+            }
+
+            $paginationMenu = (string)multipage(
+                $totalGrantedCount,
+                $maximumAwardsInProfile,
+                $currentPage,
+                "javascript: ougcAwards.ViewAwards('{$profileUserID}', '{page}', '{$sectionID}');"
+            //urlHandlerBuild(['view' => 'awards'])
+            );
+
+            if ($paginationMenu) {
+                $paginationMenu = eval(getTemplate('profilePagination'));
+            }
+        }
+
+        $queryOptions['limit'] = $maximumAwardsInProfile;
+
+        $queryOptions['limit_start'] = $startPage;
+
+        $grantCacheData = awardGetUser(
+            $sectionData['whereClauses'],
+            $sectionData['queryFields'],
+            $queryOptions
         );
 
-        $memprofile['ougc_awards'] = eval(getTemplate('profile'));
+        foreach ($grantCacheData as $v) {
+            if (!is_array($v)) {
+                $grantCacheData = [$grantCacheData];
+
+                break;
+            }
+        }
+
+        if (!$totalGrantedCount) {
+            if ($maximumAwardsInProfile) {
+                $grantedList = eval(getTemplate('profileEmpty'));
+            }
+        } elseif ($maximumAwardsInProfile) {
+            parseUserAwards($grantedList, $grantCacheData);
+        }
+
+        if ($maximumAwardsInProfile) {
+            $userName = htmlspecialchars_uni($memprofile['username']);
+
+            if ($sectionID === 0) {
+                $sectionName = '';
+
+                $sectionTitle = $lang->sprintf(
+                    $lang->ougcAwardsProfileTitle,
+                    $userName
+                );
+            } else {
+                $sectionName = htmlspecialchars_uni($awardsCategoriesCache[$sectionID]['name']);
+
+                $sectionTitle = $lang->sprintf(
+                    $lang->ougcAwardsProfileTitleSection,
+                    $userName,
+                    $sectionName
+                );
+            }
+
+            $sectionContents = eval(getTemplate('profileContent'));
+
+            $sectionData['sectionVariable'] = eval(getTemplate('profile'));
+
+            if ($isAjaxCall && $currentSectionID === $sectionID) {
+                break;
+            }
+        }
+    }
+
+    global $templates;
+
+    foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
+        if (my_strpos(
+                $templates->cache['member_profile'],
+                '{$memprofile[\'ougcAwardsSection' . $categoryID . '\']}'
+            ) === false) {
+            $memprofile['ougc_awards'] .= $memprofile["ougcAwardsSection{$categoryID}"];
+        }
     }
 
     if ($presetList) {
@@ -749,7 +824,7 @@ function member_profile_end(): bool
         $memprofile['ougc_awards_preset'] = eval(getTemplate('profilePresets'));
     }
 
-    if ($mybb->get_input('ajax', MyBB::INPUT_INT)) {
+    if ($isAjaxCall && isset($sectionContents)) {
         if (!empty($lang->settings['charset'])) {
             $charset = $lang->settings['charset'];
         } else {
@@ -758,7 +833,7 @@ function member_profile_end(): bool
 
         header("Content-type: application/json; charset={$charset}");
 
-        echo json_encode(['content' => $memprofile['ougc_awards']]);
+        echo json_encode(['content' => $sectionContents, 'pagination' => $mybb->input]);
 
         exit;
     }

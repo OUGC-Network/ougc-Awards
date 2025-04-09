@@ -42,6 +42,10 @@ use function ougc\Awards\Hooks\Forum\myalerts_register_client_alert_formatters;
 use const ougc\Awards\ROOT;
 use const TIME_NOW;
 
+const PLUGIN_VERSION = '1.8.35';
+
+const PLUGIN_VERSION_CODE = 1835;
+
 const URL = 'awards.php';
 
 const ADMIN_PERMISSION_DELETE = -1;
@@ -124,6 +128,11 @@ const TABLES_DATA = [
             'type' => 'TINYINT',
             'unsigned' => true,
             'default' => 1
+        ],
+        'outputInCustomSection' => [
+            'type' => 'TINYINT',
+            'unsigned' => true,
+            'default' => 0
         ],
     ],
     'ougc_awards' => [
@@ -1703,6 +1712,10 @@ function categoryInsert(array $categoryData, int $categoryID = 0, bool $isUpdate
         $insertData['visible'] = (int)$categoryData['visible'];
     }
 
+    if (isset($categoryData['outputInCustomSection'])) {
+        $insertData['outputInCustomSection'] = (int)$categoryData['outputInCustomSection'];
+    }
+
     $hookArguments = runHooks('insert_update_category_end', $hookArguments);
 
     if ($isUpdate) {
@@ -1944,15 +1957,11 @@ function awardGetUser(
 
     $usersData = [];
 
-    if (isset($queryOptions['limit'])) {
-        $queryOptions['limit'] = (int)$queryOptions['limit'];
-    }
-
     $dbQuery = $db->simple_select('ougc_awards_users', $queryFields, implode(' AND ', $whereClauses), $queryOptions);
 
     if ($db->num_rows($dbQuery)) {
         if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
-            $usersData = $db->fetch_array($dbQuery);
+            $usersData = (array)$db->fetch_array($dbQuery);
         } else {
             while ($userData = $db->fetch_array($dbQuery)) {
                 $usersData[] = $userData;
@@ -2572,7 +2581,7 @@ function cacheUpdate(): bool
         'last' => [],
     ];
 
-    $queryFieldsCategories = ['cid', 'name', 'description', 'allowrequests'];
+    $queryFieldsCategories = ['cid', 'name', 'description', 'allowrequests', 'outputInCustomSection'];
 
     $queryFieldsAwards = [
         'aid',
@@ -2993,6 +3002,24 @@ function parseUserAwards(
     is_object($parser) || $parser = new postParser();
 
     $alternativeBackground = alt_trow(true);
+
+    $threadIDs = array_filter(array_map('intval', array_column($grantCacheData, 'thread')));
+
+    if ($threadIDs) {
+        global $db;
+
+        $threadIDs = implode("','", $threadIDs);
+
+        $dbQuery = $db->simple_select(
+            'threads',
+            'tid, subject, prefix',
+            "visible>0  AND closed NOT LIKE 'moved|%' AND tid IN ('{$threadIDs}')"
+        );
+
+        while ($threadData = $db->fetch_array($dbQuery)) {
+            $threadsCache[(int)$threadData['tid']] = $threadData;
+        }
+    }
 
     foreach ($grantCacheData as $grantData) {
         $awardID = (int)$grantData['aid'];

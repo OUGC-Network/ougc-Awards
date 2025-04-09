@@ -72,6 +72,8 @@ $l = [
     'ougcAwardsControlPanelNewCategoryEnabledDescription' => 'Enable this category.',
     'ougcAwardsControlPanelNewCategoryDisplayOrder' => 'Display Order',
     'ougcAwardsControlPanelNewCategoryDisplayOrderDescription' => 'Select the display order for this category.',
+    'ougcAwardsControlPanelNewCategoryOutputInCustomSection' => 'Output in Custom Section',
+    'ougcAwardsControlPanelNewCategoryOutputInCustomSectionDescription' => 'Enable this to display awards from this category in its custom section.',
     'ougcAwardsControlPanelNewCategoryButton' => 'Create Category',
 
     'ougcAwardsControlPanelEditCategoryTitle' => 'Edit Category',
@@ -529,6 +531,7 @@ Greetings.',
 
     'ougcAwardsProfileViewAll' => 'View All',
     'ougcAwardsProfileTitle' => "{1}'s Awards",
+    'ougcAwardsProfileTitleSection' => "{1}'s Awards In {2}",
     'ougcAwardsProfileEmpty' => 'There are currently no awards to display.',
     'ougcAwardsViewUser' => 'View User Awards',
     'ougcAwardsViewUserTitle' => "{1}'s Awards",

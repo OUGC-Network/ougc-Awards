@@ -32,8 +32,8 @@ let ougcAwards = {
         MyBB.popupWindow('/awards.php?' + postData);
     },
 
-    ViewAwards: function (userID, currentPage) {
-        var postData = 'action=profile&view=awards&ajax=1&uid=' + parseInt(userID) + '&page=' + parseInt(currentPage);
+    ViewAwards: function (userID, currentPage, SectionID) {
+        var postData = 'action=profile&view=awards&ajax=1&uid=' + parseInt(userID) + '&sectionID=' + parseInt(SectionID) + '&page' + parseInt(SectionID) + '=' + parseInt(currentPage);
 
         $.ajax(
             {
@@ -42,10 +42,9 @@ let ougcAwards = {
                 url: 'member.php',
                 data: postData,
                 success: function (request) {
+                    console.log(request);
                     if (typeof request.content === 'string') {
-                        $('.ougcAwardsProfileTableBreak').replaceWith('');
-
-                        $('#ougcAwardsProfileTable' + parseInt(userID)).replaceWith(request.content);
+                        document.getElementById('ougcAwardsProfileTable' + parseInt(userID) + '_' + parseInt(SectionID)).innerHTML = request.content;
                     }
                 },
                 error: function (xhr) {
@@ -67,7 +66,6 @@ let ougcAwards = {
                     if (request.error) {
                         alert(request.error);
                     } else {
-                        $.modal.close();
                         $(request.modal).appendTo('body').modal({fadeDuration: 250}).fadeIn('slow');
                     }
                 },

@@ -78,6 +78,22 @@
                        maxlength="4" style="text-align: center;" min="0"/>
             </td>
         </tr>
+        <tr>
+            <td class="trow1" width="20%" style="vertical-align: top;">
+                <strong>{$lang->ougcAwardsControlPanelNewCategoryOutputInCustomSection}</strong>
+                <div class="smalltext">
+                    {$lang->ougcAwardsControlPanelNewCategoryOutputInCustomSectionDescription}
+                </div>
+            </td>
+            <td class="trow1" style="vertical-align: middle;">
+                <input type="radio" class="radio" name="outputInCustomSection" value="1" id="outputInCustomSectionYes"
+                       {$selectedElementOutputInCustomSectionYes}>
+                <label for="outputInCustomSectionYes">{$lang->yes}</label>
+                <input type="radio" class="radio" name="outputInCustomSection" value="0" id="outputInCustomSectionNo"
+                       {$selectedElementOutputInCustomSectionNo}>
+                <label for="outputInCustomSectionNo">{$lang->no}</label>
+            </td>
+        </tr>
         {$additionalRows}
     </table>
     <br/>

@@ -32,6 +32,8 @@
     - [Template Modifications](#template_modifications)
 - [Settings](#settings)
     - [File Level Settings](#file_level_settings)
+- [Usage](#usage)
+    - [Categories](#usage_categories)
 - [Templates](#templates)
 - [Built Using](#built_using)
 - [Authors](#authors)
@@ -279,6 +281,31 @@ define('ougc\Awards\Core\SETTINGS', [
     'myAlertsVersion' => '2.1.0'
 ]);
 ```
+
+[Go up to Table of Contents](#table_of_contents)
+
+## 📖 Usage <a name="usage"></a>
+
+This plugin has no additional configurations; after activating make sure to modify the global settings in order to get
+this plugin working.
+
+### 🛠 Categories <a name = "usage_categories"></a>
+
+- ** Output in Custom Section** `yesNo`
+    - _ Enable this to display awards from this category in its custom section._
+
+Setting this option to _Yes_ will display the awards from this category in a custom section inside the profiles. This is
+useful if you want to display different awards in different sections of the profile.
+
+By default categories will be concatenated to the main section.
+
+![imagen](https://github.com/user-attachments/assets/76580282-50c4-4e8d-b13e-09bb8c064517)
+
+To display each category section in a different area of the `member_profile` template. Simply add the
+`{$memprofile['ougcAwardsSectionX']}` variable to wherever you want the custom section to be displayed, where `X` is the
+category ID.
+
+![imagen](https://github.com/user-attachments/assets/a2f81ce2-0318-419a-9d11-6a26249eac61)
 
 [Go up to Table of Contents](#table_of_contents)
 

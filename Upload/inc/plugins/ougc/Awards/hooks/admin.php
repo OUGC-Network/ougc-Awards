@@ -185,6 +185,7 @@ function admin_config_plugins_begin()
         $mybb->settings['enablepms'] = false;
 
         $query = $db->simple_select($tables['users']);
+        
         while ($award = $db->fetch_array($query)) {
             $insert_award = [
                 'aid' => $cache_awards[$award[$keys['original_id_u']]]['aid'],
