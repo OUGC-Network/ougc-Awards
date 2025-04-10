@@ -223,7 +223,7 @@ To display Awards data it is required that you edit the following template for e
 9. Place `{$post['ougc_awards_view_all']}` in the `postbit` and `postbit_classic` template to display a link to view all
    awards in the user posts
 10. Place `{$ougcAwardsStatsLast}` in the `stats` template to display the last award grants in the stats page.
-11. Place `{$ougcAwardsViewAll}` in the `header` template to display a link to view all awards for the current user.
+11. Place `{$ougcAwardsViewAll}` in any template to display a link to view all awards for the current user.
 12. Place `{$ougcAwardsGlobalNotificationRequests}` in the `header` template to display the requests notification to
     moderator, category owners, and user owners.
 
@@ -305,7 +305,29 @@ To display each category section in a different area of the `member_profile` tem
 `{$memprofile['ougcAwardsSectionX']}` variable to wherever you want the custom section to be displayed, where `X` is the
 category ID.
 
+Place `{$memprofile['ougcAwardsViewAllSectionX']}` to display a link to the view all modal for the custom section.
+
 ![imagen](https://github.com/user-attachments/assets/a2f81ce2-0318-419a-9d11-6a26249eac61)
+
+To display each category section in a different area of the `postbit` or `postbit_classic` templates. Simply add the
+`{$post['ougcAwardsSectionX']}` variable to wherever you want the custom section to be displayed, where `X` is the
+category ID.
+
+Place `{$post['ougcAwardsViewAllSectionX']}` to display a link to the view all modal for the custom section.
+
+![imagen](https://github.com/user-attachments/assets/885cca0e-5ba7-427b-b8a1-14d9e589a36e)
+
+Place `{$ougcAwardsViewAllSections['sectionX']}` in any template to display a link to view all awards from that section
+for the current user.
+
+You can build your custom modal links in any template by using the following code:
+
+```HTML
+<a href="javascript:ougcAwards.ViewAll('{$userID}', 1, {$sectionID})">{$sectionTitle}</a>
+```
+
+Where `{$userID}` is the user identifier (`uid`) of the user you want to view the awards from and `{$sectionID}` is the
+section or category identifier (`categoryID` or `sectionID`).
 
 [Go up to Table of Contents](#table_of_contents)
 

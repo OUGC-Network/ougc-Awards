@@ -31,16 +31,16 @@ declare(strict_types=1);
 namespace ougc\Awards\Core;
 
 use MyBB;
+use pluginSystem;
+use postParser;
 use MybbStuff_MyAlerts_AlertManager;
 use MybbStuff_MyAlerts_AlertTypeManager;
 use MybbStuff_MyAlerts_Entity_Alert;
-use pluginSystem;
-use postParser;
 
 use function ougc\Awards\Hooks\Forum\myalerts_register_client_alert_formatters;
 
-use const ougc\Awards\ROOT;
 use const TIME_NOW;
+use const ougc\Awards\ROOT;
 
 const PLUGIN_VERSION = '1.8.35';
 
@@ -95,6 +95,8 @@ const FILE_UPLOAD_ERROR_INVALID_TYPE = 2;
 const FILE_UPLOAD_ERROR_UPLOAD_SIZE = 3;
 
 const FILE_UPLOAD_ERROR_RESIZE = 4;
+
+const AWARDS_SECTION_NONE = 0;
 
 const TABLES_DATA = [
     'ougc_awards_categories' => [
@@ -2965,15 +2967,7 @@ function parsePresets(string &$preset_options, array $presetsCache, int $selecte
 
 function parseMessage(string &$messageContent): string
 {
-    global $parser;
-
-    if (!($parser instanceof postParser)) {
-        require_once MYBB_ROOT . 'inc/class_parser.php';
-
-        $parser = new postParser();
-    }
-
-    return $parser->parse_message(
+    return parserObject()->parse_message(
         $messageContent,
         [
             'allow_html' => false,
@@ -2986,49 +2980,70 @@ function parseMessage(string &$messageContent): string
     );
 }
 
+function parserObject(): postParser
+{
+    global $parser;
+
+    if (!($parser instanceof postParser)) {
+        require_once MYBB_ROOT . 'inc/class_parser.php';
+
+        $parser = new postParser();
+    }
+
+    return $parser;
+}
+
 function parseUserAwards(
     string &$formattedContent,
     array $grantCacheData,
     string $templateName = 'profile_row'
 ): string {
-    $categoriesCache = categoryGetCache();
+    $awardsCategoriesCache = awardsCacheGet()['categories'];
 
-    global $mybb, $lang, $parser;
+    global $mybb, $lang;
 
     loadLanguage();
 
-    require_once MYBB_ROOT . 'inc/class_parser.php';
-
-    is_object($parser) || $parser = new postParser();
-
     $alternativeBackground = alt_trow(true);
 
-    $threadIDs = array_filter(array_map('intval', array_column($grantCacheData, 'thread')));
+    static $threadsCache = [];
 
-    if ($threadIDs) {
-        global $db;
+    foreach ($grantCacheData as $grantData) {
+        $grantThreadID = (int)$grantData['thread'];
 
-        $threadIDs = implode("','", $threadIDs);
+        if (!isset($threadsCache[$grantThreadID])) {
+            $threadIDs = array_filter(array_map('intval', array_column($grantCacheData, 'thread')));
 
-        $dbQuery = $db->simple_select(
-            'threads',
-            'tid, subject, prefix',
-            "visible>0  AND closed NOT LIKE 'moved|%' AND tid IN ('{$threadIDs}')"
-        );
+            if ($threadIDs) {
+                global $db;
 
-        while ($threadData = $db->fetch_array($dbQuery)) {
-            $threadsCache[(int)$threadData['tid']] = $threadData;
+                $threadIDs = implode("','", $threadIDs);
+
+                $dbQuery = $db->simple_select(
+                    'threads',
+                    'tid, subject, prefix',
+                    "visible>0  AND closed NOT LIKE 'moved|%' AND tid IN ('{$threadIDs}')"
+                );
+
+                while ($threadData = $db->fetch_array($dbQuery)) {
+                    $threadsCache[(int)$threadData['tid']] = $threadData;
+                }
+            }
+
+            break;
         }
     }
+
+    $awardsCache = awardsCacheGet()['awards'];
 
     foreach ($grantCacheData as $grantData) {
         $awardID = (int)$grantData['aid'];
 
-        $awardData = awardGet($awardID);
+        $awardData = $awardsCache[$awardID];
 
         $categoryID = (int)$awardData['cid'];
 
-        $categoryData = $categoriesCache[$categoryID];
+        $categoryData = $awardsCategoriesCache[$categoryID];
 
         $categoryName = htmlspecialchars_uni($categoryData['name']);
 
@@ -3050,8 +3065,10 @@ function parseUserAwards(
 
         $threadLink = '';
 
-        if (!empty($threadsCache[$grantData['thread']])) {
-            $threadData = $threadsCache[$grantData['thread']];
+        $grantThreadID = (int)$grantData['thread'];
+
+        if (isset($threadsCache[$grantThreadID])) {
+            $threadData = $threadsCache[$grantThreadID];
 
             $threadData['threadPrefix'] = $threadData['threadPrefixDisplay'] = '';
 
@@ -3066,7 +3083,7 @@ function parseUserAwards(
             }
 
             $threadSubject = htmlspecialchars_uni(
-                $parser->parse_badwords($threadData['subject'])
+                parserObject()->parse_badwords($threadData['subject'])
             );
 
             $threadLink = get_thread_link($threadData['tid']);

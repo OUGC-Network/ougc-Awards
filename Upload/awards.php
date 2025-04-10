@@ -33,6 +33,7 @@ use function ougc\Awards\Core\awardGet;
 use function ougc\Awards\Core\awardGetIcon;
 use function ougc\Awards\Core\awardGetUser;
 use function ougc\Awards\Core\awardInsert;
+use function ougc\Awards\Core\awardsCacheGet;
 use function ougc\Awards\Core\awardsGetCache;
 use function ougc\Awards\Core\awardUpdate;
 use function ougc\Awards\Core\cacheUpdate;
@@ -73,6 +74,7 @@ use function ougc\Awards\Core\ownerGetSingle;
 use function ougc\Awards\Core\ownerGetUser;
 use function ougc\Awards\Core\ownerInsert;
 use function ougc\Awards\Core\parseMessage;
+use function ougc\Awards\Core\parserObject;
 use function ougc\Awards\Core\parseUserAwards;
 use function ougc\Awards\Core\getUser;
 use function ougc\Awards\Core\logAction;
@@ -102,6 +104,7 @@ use const ougc\Awards\Core\AWARD_STATUS_DISABLED;
 use const ougc\Awards\Core\AWARD_STATUS_ENABLED;
 use const ougc\Awards\Core\AWARD_TEMPLATE_TYPE_CLASS;
 use const ougc\Awards\Core\AWARD_TEMPLATE_TYPE_CUSTOM;
+use const ougc\Awards\Core\AWARDS_SECTION_NONE;
 use const ougc\Awards\Core\FILE_UPLOAD_ERROR_FAILED;
 use const ougc\Awards\Core\FILE_UPLOAD_ERROR_INVALID_TYPE;
 use const ougc\Awards\Core\FILE_UPLOAD_ERROR_RESIZE;
@@ -113,7 +116,6 @@ use const ougc\Awards\Core\GRANT_STATUS_VISIBLE;
 use const ougc\Awards\Core\REQUEST_STATUS_ACCEPTED;
 use const ougc\Awards\Core\REQUEST_STATUS_PENDING;
 use const ougc\Awards\Core\REQUEST_STATUS_REJECTED;
-use const ougc\Awards\Core\TASK_ALLOW_MULTIPLE;
 use const ougc\Awards\Core\TASK_REQUIREMENT_TYPE_AWARDS_GRANTED;
 use const ougc\Awards\Core\TASK_REQUIREMENT_TYPE_FILLED_PROFILE_FIELDS;
 use const ougc\Awards\Core\TASK_REQUIREMENT_TYPE_GROUPS;
@@ -139,15 +141,11 @@ $templatelist = 'ougcawards_controlPanel, ougcawards_controlPanelButtons, ougcaw
 
 require_once './global.php';
 
-require_once MYBB_ROOT . 'inc/class_parser.php';
-
-global $parser, $lang, $mybb, $plugins, $db, $templates, $theme;
+global $lang, $mybb, $plugins, $db, $templates, $theme;
 
 if (!pluginIsInstalled() || !canViewMainPage()) {
     error_no_permission();
 }
-
-is_object($parser) || $parser = new postParser();
 
 loadLanguage();
 
@@ -1801,7 +1799,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             }
 
             $threadSubject = htmlspecialchars_uni(
-                $parser->parse_badwords($threadData['subject'])
+                parserObject()()->parse_badwords($threadData['subject'])
             );
 
             $threadLink = get_thread_link($threadData['tid']);
@@ -2078,7 +2076,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             }
 
             $threadSubject = htmlspecialchars_uni(
-                $parser->parse_badwords($threadData['subject'])
+                parserObject()->parse_badwords($threadData['subject'])
             );
 
             $threadLink = get_thread_link($threadData['tid']);
@@ -2978,6 +2976,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $userID = $mybb->get_input('userID', MyBB::INPUT_INT);
 
+    $sectionID = $mybb->get_input('sectionID', MyBB::INPUT_INT);
+
     if (!($userData = getUser($userID))) {
         $errorMessage = $lang->ougcAwardsErrorInvalidUser;
     }
@@ -2992,11 +2992,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             htmlspecialchars_uni($userData['username'])
         );
 
+        $awardsCategoriesCache = awardsCacheGet()['categories'];
+
         $categoryIDs = $awardIDs = [];
 
-        foreach (categoryGetCache() as $categoryData) {
-            $categoryID = (int)$categoryData['cid'];
-
+        foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
             if (isVisibleCategory($categoryID)) {
                 $categoryIDs[$categoryID] = $categoryID;
             }
@@ -3005,10 +3005,16 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $awardsCache = awardsGetCache();
 
         foreach ($awardsCache as $awardID => $awardData) {
-            if (isVisibleAward(
-                    $awardID
-                ) && !empty($categoryIDs[$awardData['cid']]) && (int)$awardData['type'] !== GRANT_STATUS_POSTS) {
-                $awardIDs[$awardID] = $awardID;
+            $categoryID = (int)$awardData['cid'];
+
+            if (isVisibleAward($awardID) &&
+                !empty($categoryIDs[$categoryID])/* &&
+                (int)$awardData['type'] !== GRANT_STATUS_POSTS*/) {
+                if ($sectionID === AWARDS_SECTION_NONE && empty($awardsCategoriesCache[$categoryID]['outputInCustomSection'])) {
+                    $awardIDs[$awardID] = $awardID;
+                } elseif ($sectionID === $categoryID && !empty($awardsCategoriesCache[$sectionID]['outputInCustomSection'])) {
+                    $awardIDs[$awardID] = $awardID;
+                }
             }
         }
 
@@ -3057,7 +3063,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 $totalGrantedCount,
                 $perPage,
                 $currentPage,
-                "javascript: ougcAwards.ViewAll('{$userID}', '{page}');"
+                "javascript: ougcAwards.ViewAll('{$userID}', '{page}', '{$sectionID}');"
             //urlHandlerBuild(['view' => 'awards'])
             );
 
@@ -3096,10 +3102,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             if ($perPage) {
                 $grantedList = eval(getTemplate('viewUserEmpty'));
             }
-        } else {
-            if ($perPage) {
-                parseUserAwards($grantedList, $grantCacheData, 'viewUserRow');
-            }
+        } elseif ($perPage) {
+            parseUserAwards($grantedList, $grantCacheData, 'viewUserRow');
         }
     }
 
