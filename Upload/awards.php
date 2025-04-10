@@ -1641,6 +1641,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         error_no_permission();
     }
 
+    $urlParams = ['action' => 'myAwards'];
+
     if ($mybb->request_method === 'post') {
         $displayOrders = $mybb->get_input('displayOrder', MyBB::INPUT_ARRAY);
 
@@ -1663,188 +1665,255 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
 
         redirect(
-            urlHandlerBuild(['action' => 'myAwards']),
+            urlHandlerBuild($urlParams),
             $lang->ougcAwardsRedirectMyAwardsUpdated
         );
     }
 
-    $totalGrantedCount = awardGetUser(
-        ["uid='{$currentUserID}'"],
-        'COUNT(gid) AS totalGranted',
-        ['limit' => 1]
-    );
+    $awardsCategoriesCache = awardsCacheGet()['categories'];
 
-    if (empty($totalGrantedCount['totalGranted'])) {
-        $totalGrantedCount = 0;
-    } else {
-        $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
+    foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
+        $userData["ougcAwardsSection{$categoryID}"] = $userData["ougcAwardsViewAllSection{$categoryID}"] = '';
     }
 
-    if ($mybb->get_input('page', MyBB::INPUT_INT) > 0) {
-        $startPage = ($mybb->get_input('page', MyBB::INPUT_INT) - 1) * $perPage;
+    $primarySectionAwardsIDs = $categorySectionsAwardsIDs = $userAllAwardsIDs = [];
 
-        $totalPages = ceil($totalGrantedCount / $perPage);
+    $categoriesIDs = implode("','", array_keys($awardsCategoriesCache));
 
-        if ($mybb->get_input('page', MyBB::INPUT_INT) > $totalPages) {
-            $startPage = 0;
+    $awardsCache = awardsCacheGet()['awards'];
 
-            $mybb->input['page'] = 1;
-        }
-    } else {
-        $startPage = 0;
-
-        $mybb->input['page'] = 1;
-    }
-
-    $userIDs = $threadsCache = [];
-
-    $grantCacheData = awardGetUser(
-        ["uid='{$currentUserID}'"],
-        '*',
-        [
-            'limit' => $perPage,
-            'limit_start' => $startPage,
-            'order_by' => 'disporder asc, date asc, gid',
-            'order_dir' => 'asc'
-        ]
-    );
-
-    foreach ($grantCacheData as $v) {
-        if (!is_array($v)) {
-            $grantCacheData = [$grantCacheData];
-
-            break;
-        }
-    }
-
-    foreach ($grantCacheData as $grantData) {
-        if (!empty($grantData['uid'])) {
-            $userIDs[] = (int)$grantData['uid'];
-        }
-    }
-
-    $paginationMenu = (string)multipage(
-        $totalGrantedCount,
-        $perPage,
-        $mybb->get_input('page', MyBB::INPUT_INT),
-        urlHandlerBuild(['action' => 'myAwards'])
-    );
-
-    $threadIDs = array_filter(array_map('intval', array_column($grantCacheData, 'thread')));
-
-    if ($threadIDs) {
-        $threadIDs = implode("','", $threadIDs);
-
-        $dbQuery = $db->simple_select(
-            'threads',
-            'tid, subject, prefix',
-            "visible>0  AND closed NOT LIKE 'moved|%' AND tid IN ('{$threadIDs}')"
-        );
-
-        while ($threadData = $db->fetch_array($dbQuery)) {
-            $threadsCache[(int)$threadData['tid']] = $threadData;
-        }
-    }
-
-    $grantedList = '';
-
-    $alternativeBackground = alt_trow(true);
-
-    $rowColumnSpan = 7;
-
-    foreach ($grantCacheData as $grantData) {
-        $grantID = (int)$grantData['gid'];
-
-        $awardID = (int)$grantData['aid'];
-
-        $awardData = awardGet($awardID);
-
+    foreach ($awardsCache as $awardID => $awardData) {
         $categoryID = (int)$awardData['cid'];
 
-        $categoryData = categoryGet($categoryID);
+        if (!empty($awardsCategoriesCache[$categoryID]) &&
+            (int)$awardData['type'] !== GRANT_STATUS_POSTS) {
+            if (empty($awardsCategoriesCache[$categoryID]['outputInCustomSection'])) {
+                $primarySectionAwardsIDs[$awardID] = $userAllAwardsIDs[] = $awardID;
+            } else {
+                $categorySectionsAwardsIDs[$categoryID][$awardID] = $userAllAwardsIDs[] = $awardID;
+            }
+        }
+    }
 
-        $awardName = htmlspecialchars_uni($awardData['name']);
+    $primarySectionAwardsIDs = implode("','", $primarySectionAwardsIDs);
 
-        $awardImage = $awardClass = awardGetIcon($awardID);
+    $whereClauses = [
+        "uid='{$currentUserID}'"
+    ];
 
-        $awardImage = eval(
-        getTemplate(
-            $awardData['template'] === AWARD_TEMPLATE_TYPE_CLASS ? 'awardImageClass' : 'awardImage'
-        )
+    $sectionObjects = [
+        0 => [
+            'whereClauses' => array_merge($whereClauses, ["aid IN ('{$primarySectionAwardsIDs}')"]),
+            'queryFields' => '*',
+            //'sectionVariable' => &$userData['ougc_awards']
+        ]
+    ];
+
+    foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
+        if (!empty($categoryData['outputInCustomSection']) && !empty($categorySectionsAwardsIDs[$categoryID])) {
+            $sectionAwardsIDs = implode("','", $categorySectionsAwardsIDs[$categoryID]);
+
+            $sectionObjects[$categoryID] = [
+                'whereClauses' => array_merge($whereClauses, ["aid IN ('{$sectionAwardsIDs}')"]),
+                'queryFields' => '*',
+                //'sectionVariable' => &$userData["ougcAwardsSection{$categoryID}"]
+            ];
+
+            $urlParams['page' . $categoryID] = $mybb->get_input('page' . $categoryID, MyBB::INPUT_INT);
+        }
+    }
+
+    $categoriesContents = '';
+
+    foreach ($sectionObjects as $sectionID => $sectionData) {
+        $totalGrantedCount = awardGetUser(
+            $sectionData['whereClauses'],
+            'COUNT(gid) AS totalGranted',
+            ['limit' => 1]
         );
 
-        $awardUrl = urlHandlerBuild(['action' => 'viewUsers', 'awardID' => $awardID]);
+        if (empty($totalGrantedCount['totalGranted'])) {
+            $totalGrantedCount = 0;
+        } else {
+            $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
+        }
 
-        $awardImage = eval(getTemplate('awardWrapper', false));
+        $currentPage = $mybb->get_input('page' . $sectionID, MyBB::INPUT_INT);
 
-        $grantReason = $grantData['reason'];
+        if ($currentPage > 0) {
+            $startPage = ($currentPage - 1) * $perPage;
 
-        parseMessage($grantReason);
+            $totalPages = ceil($totalGrantedCount / $perPage);
 
-        $threadLink = '';
+            if ($currentPage > $totalPages) {
+                $startPage = 0;
 
-        if (!empty($threadsCache[$grantData['thread']])) {
-            $threadData = $threadsCache[$grantData['thread']];
-
-            $threadData['threadPrefix'] = $threadData['threadPrefixDisplay'] = '';
-
-            if ($threadData['prefix']) {
-                $prefixData = build_prefixes($threadData['prefix']);
-
-                if (!empty($prefixData['prefix'])) {
-                    $threadData['threadPrefix'] = $prefixData['prefix'] . '&nbsp;';
-
-                    $threadData['threadPrefixDisplay'] = $prefixData['displaystyle'] . '&nbsp;';
-                }
+                $mybb->input['page' . $sectionID] = 1;
             }
+        } else {
+            $startPage = 0;
 
-            $threadSubject = htmlspecialchars_uni(
-                parserObject()()->parse_badwords($threadData['subject'])
+            $currentPage = 1;
+        }
+
+        $urlParams['page' . $sectionID] = $currentPage;
+
+        $userIDs = $threadsCache = [];
+
+        $grantCacheData = awardGetUser(
+            $sectionData['whereClauses'],
+            $sectionData['queryFields'],
+            [
+                'limit' => $perPage,
+                'limit_start' => $startPage,
+                'order_by' => 'disporder asc, date asc, gid',
+                'order_dir' => 'asc'
+            ]
+        );
+
+        foreach ($grantCacheData as $v) {
+            if (!is_array($v)) {
+                $grantCacheData = [$grantCacheData];
+
+                break;
+            }
+        }
+
+        foreach ($grantCacheData as $grantData) {
+            if (!empty($grantData['uid'])) {
+                $userIDs[] = (int)$grantData['uid'];
+            }
+        }
+
+        $paginationMenu = (string)multipage(
+            $totalGrantedCount,
+            $perPage,
+            $currentPage,
+            urlHandlerBuild(array_merge($urlParams, ['page' . $sectionID => '{page}']), false, false)
+        );
+
+        if ($paginationMenu) {
+            $paginationMenu = eval(getTemplate('controlPanelMyAwardsPagination'));
+        }
+
+        $threadIDs = array_filter(array_map('intval', array_column($grantCacheData, 'thread')));
+
+        if ($threadIDs) {
+            $threadIDs = implode("','", $threadIDs);
+
+            $dbQuery = $db->simple_select(
+                'threads',
+                'tid, subject, prefix',
+                "visible>0  AND closed NOT LIKE 'moved|%' AND tid IN ('{$threadIDs}')"
             );
 
-            $threadLink = get_thread_link($threadData['tid']);
-
-            $threadLink = eval(getTemplate('controlPanelMyAwardsRowLink'));
+            while ($threadData = $db->fetch_array($dbQuery)) {
+                $threadsCache[(int)$threadData['tid']] = $threadData;
+            }
         }
 
-        $grantDate = my_date('normal', $grantData['date']);
+        $grantedList = '';
 
-        $displayOrder = (int)$grantData['disporder'];
+        $alternativeBackground = alt_trow(true);
 
-        $checkedElement = '';
+        $rowColumnSpan = 7;
 
-        $visibleStatus = (int)$grantData['visible'];
+        foreach ($grantCacheData as $grantData) {
+            $grantID = (int)$grantData['gid'];
 
-        if ($visibleStatus) {
-            $checkedElement = 'checked="checked"';
+            $awardID = (int)$grantData['aid'];
+
+            $awardData = awardGet($awardID);
+
+            $categoryID = (int)$awardData['cid'];
+
+            $categoryData = categoryGet($categoryID);
+
+            $awardName = htmlspecialchars_uni($awardData['name']);
+
+            $awardImage = $awardClass = awardGetIcon($awardID);
+
+            $awardImage = eval(
+            getTemplate(
+                $awardData['template'] === AWARD_TEMPLATE_TYPE_CLASS ? 'awardImageClass' : 'awardImage'
+            )
+            );
+
+            $awardUrl = urlHandlerBuild(array_merge($urlParams, ['awardID' => $awardID]));
+
+            $awardImage = eval(getTemplate('awardWrapper', false));
+
+            $grantReason = $grantData['reason'];
+
+            parseMessage($grantReason);
+
+            $threadLink = '';
+
+            if (!empty($threadsCache[$grantData['thread']])) {
+                $threadData = $threadsCache[$grantData['thread']];
+
+                $threadData['threadPrefix'] = $threadData['threadPrefixDisplay'] = '';
+
+                if ($threadData['prefix']) {
+                    $prefixData = build_prefixes($threadData['prefix']);
+
+                    if (!empty($prefixData['prefix'])) {
+                        $threadData['threadPrefix'] = $prefixData['prefix'] . '&nbsp;';
+
+                        $threadData['threadPrefixDisplay'] = $prefixData['displaystyle'] . '&nbsp;';
+                    }
+                }
+
+                $threadSubject = htmlspecialchars_uni(
+                    parserObject()->parse_badwords($threadData['subject'])
+                );
+
+                $threadLink = get_thread_link($threadData['tid']);
+
+                $threadLink = eval(getTemplate('controlPanelMyAwardsRowLink'));
+            }
+
+            $grantDate = my_date('normal', $grantData['date']);
+
+            $displayOrder = (int)$grantData['disporder'];
+
+            $checkedElement = '';
+
+            $visibleStatus = (int)$grantData['visible'];
+
+            if ($visibleStatus) {
+                $checkedElement = 'checked="checked"';
+            }
+
+            $rowColumnsExtra = [];
+
+            runHooks('my_awards_row_end');
+
+            $rowColumnsExtra = implode(' ', $rowColumnsExtra);
+
+            $grantedList .= eval(getTemplate('controlPanelMyAwardsRow'));
+
+            $alternativeBackground = alt_trow();
         }
 
-        $rowColumnsExtra = [];
+        $rowHeadColumnsExtra = [];
 
-        runHooks('my_awards_row_end');
+        runHooks('my_awards_end');
 
-        $rowColumnsExtra = implode(' ', $rowColumnsExtra);
+        $rowHeadColumnsExtra = implode(' ', $rowHeadColumnsExtra);
 
-        $grantedList .= eval(getTemplate('controlPanelMyAwardsRow'));
+        if (!$grantedList) {
+            $grantedList = eval(getTemplate('controlPanelMyAwardsEmpty'));
+        }
 
-        $alternativeBackground = alt_trow();
+        $pageTitle = $lang->ougcAwardsControlPanelMyAwardsTitle;
+
+        $formUrl = urlHandlerBuild(array_merge($urlParams, ['awardID' => $awardID]));
+
+        $columnHeader = $grantForm = $revokeForm = '';
+
+        $categoriesContents .= eval(getTemplate('controlPanelMyAwards'));
     }
-
-    $rowHeadColumnsExtra = [];
-
-    runHooks('my_awards_end');
-
-    $rowHeadColumnsExtra = implode(' ', $rowHeadColumnsExtra);
-
-    if (!$grantedList) {
-        $grantedList = eval(getTemplate('controlPanelMyAwardsEmpty'));
-    }
-
-    $pageTitle = $lang->ougcAwardsControlPanelMyAwardsTitle;
-
-    $formUrl = urlHandlerBuild(['action' => 'myAwards', 'awardID' => $awardID]);
-
-    $columnHeader = $grantForm = $revokeForm = '';
 
     if ($currentUserID && is_member(getSetting('groupsPresets'))) {
         $actionButtons[] =
@@ -1857,7 +1926,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             })();
     }
 
-    $pageContents = eval(getTemplate('controlPanelMyAwards'));
+    $pageContents = $categoriesContents;
 } elseif ($mybb->get_input('action') === 'viewUsers') {
     if ($mybb->request_method === 'post') {
         $userNames = explode(',', $mybb->get_input('username'));

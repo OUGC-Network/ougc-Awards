@@ -28,13 +28,13 @@
 
 declare(strict_types=1);
 
-use function ougc\Awards\Admin\pluginUninstall;
 use function ougc\Awards\Core\addHooks;
 use function ougc\Awards\Core\cacheUpdate;
 use function ougc\Awards\Admin\pluginInfo;
 use function ougc\Awards\Admin\pluginActivate;
 use function ougc\Awards\Admin\pluginDeactivate;
 use function ougc\Awards\Admin\pluginIsInstalled;
+use function ougc\Awards\Admin\pluginUninstall;
 
 use const ougc\Awards\ROOT;
 

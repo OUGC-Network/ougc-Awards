@@ -33,6 +33,7 @@ $l = [
     'ougcAwardsNoReason' => 'No se especificó ninguna razón.',
     'ougcAwardsGlobalMenu' => 'Premios',
     'ougcAwardsWelcomeLinkText' => 'Ver Mis Premios',
+    'ougcAwardsWelcomeLinkTextSection' => 'Ver Mis Premios en {1}',
 
     'ougcAwardsButtonRequest' => 'Solicitar',
 
@@ -514,6 +515,8 @@ Saludos.',
 
     'ougcAwardsTaskRan' => 'La tarea de premios se ejecutó con éxito.',
 
+    'ougcAwardsPostTitle' => "Premios de {1}",
+    'ougcAwardsPostTitleSection' => "Premios de {1} en {2}",
     'ougcAwardsPostViewAll' => 'Ver Todo',
     'ougcAwardsPostPresetsTitle' => 'Premios',
     'ougcAwardsProfilePresetsTitle' => 'Premios',
