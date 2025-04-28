@@ -3184,7 +3184,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     exit;
 } elseif ($mybb->get_input('action') === 'requestAward') {
-    if (!canRequestAwards($awardID, $categoryID)) {
+    if (empty($awardData) || !canRequestAwards($awardID, $categoryID)) {
         $errorMessages[] = $lang->ougcAwardsRequestErrorNoPermission;
     }
 
