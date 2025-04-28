@@ -1292,9 +1292,25 @@ function executeTask(array $awardTaskData = []): bool
             }
         }
 
+        $exemptUsersIDs = [];
+
+        $hookArguments['exemptUsersIDs'] = &$exemptUsersIDs;
+
+        $queryLogs = $db->simple_select('ougc_awards_tasks_logs', 'uid', "tid='{$taskID}'");
+
+        while ($logData = $db->fetch_array($queryLogs)) {
+            $exemptUsersIDs[] = (int)$logData['uid'];
+        }
+
         $taskLogObjects = [];
 
         $hookArguments = runHooks('task_intermediate', $hookArguments);
+
+        if ($exemptUsersIDs) {
+            $exemptUsersIDs = implode("','", $exemptUsersIDs);
+
+            $whereClauses[] = "u.uid NOT IN ('{$exemptUsersIDs}')";
+        }
 
         $queryUsers = $db->simple_select(
             implode(' LEFT JOIN ', $tableLeftJoins),
