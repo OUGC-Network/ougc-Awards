@@ -499,6 +499,9 @@ function member_profile_end(&$userData = []): array
 
     $currentSectionID = $mybb->get_input('sectionID', MyBB::INPUT_INT);
 
+    // uses the post id in posts, nothing on profiles as it doesn't matter
+    $postID = (int)($userData['pid'] ?? 0);
+
     foreach ($sectionObjects as $sectionID => $sectionData) {
         if ($isAjaxCall && $currentSectionID !== $sectionID) {
             continue;
@@ -550,9 +553,6 @@ function member_profile_end(&$userData = []): array
                     $currentPage = 1;
                 }
             }
-
-            // uses the post id in posts, nothing on profiles as it doesn't matter
-            $postID = (int)($userData['pid'] ?? 0);
 
             $paginationMenu = (string)multipage(
                 $totalGrantedCount,
