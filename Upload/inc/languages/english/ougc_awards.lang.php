@@ -441,7 +441,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelYears' => 'Years',
 
     'ougcAwardsControlPanelNewTaskGrant' => 'Grant Award',
-    'ougcAwardsControlPanelNewTaskGrantDescription' => 'Select the award(s) to grant to users.',
+    'ougcAwardsControlPanelNewTaskGrantDescription' => 'Select the award to grant to users.',
     'ougcAwardsControlPanelNewTaskReason' => 'Grant Reason',
     'ougcAwardsControlPanelNewTaskReasonDescription' => 'Select a reason for granting this award.',
     'ougcAwardsControlPanelNewTaskThread' => 'Grant Thread',
@@ -449,7 +449,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelNewTaskMultiple' => 'Allow Multiple Awards',
     'ougcAwardsControlPanelNewTaskMultipleDescription' => 'Select whether this task should grant awards to users that already have it.',
     'ougcAwardsControlPanelNewTaskRevoke' => 'Revoke Award',
-    'ougcAwardsControlPanelNewTaskRevokeDescription' => 'Select the award(s) to revoke from users.',
+    'ougcAwardsControlPanelNewTaskRevokeDescription' => 'Select the award to revoke from users.',
     'ougcAwardsControlPanelNewTaskDisplayOrder' => 'Display Order',
     'ougcAwardsControlPanelNewTaskDisplayOrderDescription' => 'Select the display order for this task.',
     'ougcAwardsControlPanelNewTaskButton' => 'Create Task',

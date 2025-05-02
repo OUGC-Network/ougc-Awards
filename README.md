@@ -76,6 +76,7 @@ A setup that meets the following requirements is necessary to use this plugin.
    │ │ │ │ │ ├── awardImage.html
    │ │ │ │ │ ├── awardImageClass.html
    │ │ │ │ │ ├── awardWrapper.html
+   │ │ │ │ │ ├── checkBoxField.html
    │ │ │ │ │ ├── controlPanel.html
    │ │ │ │ │ ├── controlPanelButtons.html
    │ │ │ │ │ ├── controlPanelCategoryOwners.html
@@ -340,6 +341,8 @@ The following is a list of templates available for this plugin.
 - `ougcawards_awardImageClass`
     - _front end_;
 - `ougcawards_awardWrapper`
+    - _front end_;
+- `ougcawards_checkBoxField`
     - _front end_;
 - `ougcawards_controlPanel`
     - _front end_;

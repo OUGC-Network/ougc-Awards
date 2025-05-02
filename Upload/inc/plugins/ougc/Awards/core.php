@@ -30,6 +30,7 @@ declare(strict_types=1);
 
 namespace ougc\Awards\Core;
 
+use JetBrains\PhpStorm\Deprecated;
 use MyBB;
 use pluginSystem;
 use postParser;
@@ -372,7 +373,7 @@ const TABLES_DATA = [
         ],
         'requirements' => [
             'type' => 'VARCHAR',
-            'size' => 200,
+            'size' => 400,
             'default' => ''
         ],
         'give' => [
@@ -393,7 +394,7 @@ const TABLES_DATA = [
             'unsigned' => true,
             'default' => 0
         ],*/
-        'revoke' => [
+        'revokeAwardID' => [
             'type' => 'TEXT',
             'null' => true,
         ],
@@ -863,8 +864,10 @@ function getSetting(string $settingKey = '')
     );
 }
 
-function executeTask(array $awardTaskData = []): bool
-{
+function executeTask(
+    #[Deprecated]
+    array $awardTaskData = []
+): bool {
     global $db;
 
     loadLanguage(true);
@@ -1200,11 +1203,14 @@ function executeTask(array $awardTaskData = []): bool
         */
     ];
 
+    $queryFields = array_keys(TABLES_DATA['ougc_awards_tasks']);
+
     $hookArguments = [
-        'taskData' => &$awardTaskData,
+        //'taskData' => &$awardTaskData,
         'tableQueryOptions' => &$tableQueryOptions,
         'tableQueryFields' => &$tableQueryFields,
-        'requirementTypes' => &$requirementCriteria
+        'requirementTypes' => &$requirementCriteria,
+        'queryFields' => &$queryFields
     ];
 
     // TODO mydownloads
@@ -1213,16 +1219,9 @@ function executeTask(array $awardTaskData = []): bool
     // TODO ougc_customrep_r
     // TODO ougc_customrep_g
 
-    $queryTasks = $db->simple_select(
-        'ougc_awards_tasks',
-        '*',
-        "active='1'",
-        ['order_by' => 'disporder']
-    );
+    $hookArguments = runHooks('task_initiate', $hookArguments);
 
-    while ($awardTaskData = $db->fetch_array($queryTasks)) {
-        $taskID = (int)$awardTaskData['tid'];
-
+    foreach (taskGet(["active='1'"], $queryFields, ['order_by' => 'disporder']) as $taskID => $awardTaskData) {
         $taskType = (int)$awardTaskData['taskType'];
 
         $hookArguments['awardTaskData'] = &$awardTaskData;
@@ -1235,33 +1234,34 @@ function executeTask(array $awardTaskData = []): bool
 
         $taskGrantAwardID = (int)$awardTaskData['give'];
 
-        $taskRevokeAwardID = (int)$awardTaskData['revoke'];
+        $taskRevokeAwardID = (int)$awardTaskData['revokeAwardID'];
 
         if ($taskType === TASK_TYPE_GRANT && $taskGrantAwardID) {
-            if (empty($awardTaskData['allowmultiple'])) {
+            // this is giving issues and admins can no longer edit this setting, so lest drop the logic for good
+            /*if (empty($awardTaskData['allowmultiple'])) {
                 $tableQueryFields[] = 'a.totalUserGrants';
 
                 $tableLeftJoins[] = "(
-					SELECT uid, COUNT(aid) AS totalUserGrants
-					FROM {$db->table_prefix}ougc_awards_users
-					WHERE aid IN ('{$taskGrantAwardID}')
-					GROUP BY uid
-				) a ON (u.uid=a.uid)";
+                    SELECT uid, COUNT(aid) AS totalUserGrants
+                    FROM {$db->table_prefix}ougc_awards_users
+                    WHERE aid IN ('{$taskGrantAwardID}')
+                    GROUP BY uid
+                ) a ON (u.uid=a.uid)";
 
                 $whereClauses[] = "(a.totalUserGrants<'1' || a.totalUserGrants IS NULL)";
-            }
+            }*/
 
             $taskRevokeAwardID = 0;
         } elseif ($taskType === TASK_TYPE_REVOKE && $taskRevokeAwardID) {
-            $tableQueryFields[] = 'a.totalUserGrants';
+            /*$tableQueryFields[] = 'a.totalUserGrants';
 
             // if user has no awards from this task, skip
             $tableLeftJoins[] = "(
-					SELECT uid, COUNT(aid) AS totalUserGrants
-					FROM {$db->table_prefix}ougc_awards_users
-					WHERE aid='{$taskRevokeAwardID}'
-					GROUP BY uid
-				) a ON (u.uid=a.uid)";
+                    SELECT uid, COUNT(aid) AS totalUserGrants
+                    FROM {$db->table_prefix}ougc_awards_users
+                    WHERE aid='{$taskRevokeAwardID}'
+                    GROUP BY uid
+                ) a ON (u.uid=a.uid)";*/
 
             $taskGrantAwardID = 0;
         } else {
@@ -1269,6 +1269,7 @@ function executeTask(array $awardTaskData = []): bool
         }
 
         // if log exists for user, skip
+        /*
         $tableQueryFields[] = 'l.totalUserLogs';
 
         $tableLeftJoins[] = "(
@@ -1279,6 +1280,7 @@ function executeTask(array $awardTaskData = []): bool
 				) l ON (u.uid=l.uid)";
 
         $whereClauses[] = "l.totalUserLogs<'1' OR l.totalUserLogs IS NULL";
+        */
 
         $hookArguments['tableLeftJoins'] = &$tableLeftJoins;
 
@@ -1326,6 +1328,14 @@ function executeTask(array $awardTaskData = []): bool
             $userGrantedAwardIDs = $userRevokeAwardIDs = $grandIDs = $revokeAwardIDs = [];
 
             if ($taskType === TASK_TYPE_GRANT) {
+                global $awardsCustomThreadPerUserObjects;
+
+                isset($awardsCustomThreadPerUserObjects) || $awardsCustomThreadPerUserObjects = [];
+
+                if (!empty($awardsCustomThreadPerUserObjects[$taskID][$userID])) {
+                    $taskThreadID = (int)$awardsCustomThreadPerUserObjects[$taskID][$userID];
+                }
+
                 if (grantInsert(
                     $taskGrantAwardID,
                     $userID,
@@ -2280,14 +2290,18 @@ function requestApprove(int $requestID): bool
     return true;
 }
 
-function taskInsert(array $taskData, int $taskID = 0, bool $updateTask = false): int
+function taskInsert(array $taskData, int $taskID = 0, bool $isUpdate = false): int
 {
     global $db;
 
-    $insertData = [];
+    $hookArguments = [
+        'taskData' => &$taskData,
+        'taskID' => &$taskID,
+        'isUpdate' => &$isUpdate,
+    ];
 
-    foreach (
-        [
+    $inputDataFields = [
+        'stringFields' => [
             'name',
             'description',
             'reason',
@@ -2309,31 +2323,17 @@ function taskInsert(array $taskData, int $taskID = 0, bool $updateTask = false):
             //'ougc_customreptype_g',
             //'ougc_customrepids_g',
             'ruleScripts',
-        ] as $k
-    ) {
-        if (isset($taskData[$k])) {
-            $insertData[$k] = $db->escape_string($taskData[$k]);
-        }
-    }
-
-    foreach (
-        [
+        ],
+        'floatFields' => [
             //'newpoints',
-        ] as $k
-    ) {
-        if (isset($taskData[$k])) {
-            $insertData[$k] = (float)$taskData[$k];
-        }
-    }
-
-    foreach (
-        [
+        ],
+        'integerFields' => [
             'tid',
             'active',
             'taskType',
             'logging',
             'give',
-            'revoke',
+            'revokeAwardID',
             'thread',
             //'allowmultiple',
             'disporder',
@@ -2352,15 +2352,15 @@ function taskInsert(array $taskData, int $taskID = 0, bool $updateTask = false):
             //'myarcadescores',
             //'ougc_customrep_r',
             //'ougc_customrep_g',
-        ] as $k
-    ) {
-        if (isset($taskData[$k])) {
-            $insertData[$k] = (int)$taskData[$k];
-        }
-    }
-
-    foreach (
-        [
+        ],
+        'arrayFields' => [
+            'usergroups',
+            'fthreadsforums',
+            'fpostsforums',
+            TASK_REQUIREMENT_TYPE_AWARDS_GRANTED,
+            'profilefields'
+        ],
+        'comparisonFields' => [
             'poststype',
             'threadstype',
             'fpoststype',
@@ -2374,28 +2374,40 @@ function taskInsert(array $taskData, int $taskID = 0, bool $updateTask = false):
             //'myarcadescorestype',
             //'ougc_customreptype_r',
             //'ougc_customreptype_g'
-        ] as $k
-    ) {
-        if (isset($taskData[$k]) && in_array($taskData[$k], ['>', '>=', '=', '<=', '<'])) {
+        ],
+        'timeFields' => [
+            'registeredtype',
+            'onlinetype',
+        ]
+    ];
+
+    $hookArguments['inputDataFields'] = &$inputDataFields;
+
+    $insertData = [];
+
+    $hookArguments['insertData'] = &$insertData;
+
+    $hookArguments = runHooks('task_insert_start', $hookArguments);
+
+    foreach ($inputDataFields['stringFields'] as $k) {
+        if (isset($taskData[$k])) {
             $insertData[$k] = $db->escape_string($taskData[$k]);
         }
     }
 
-    foreach (['registeredtype', 'onlinetype'] as $k) {
-        if (isset($taskData[$k]) && in_array($taskData[$k], ['hours', 'days', 'weeks', 'months', 'years'])) {
-            $insertData[$k] = $db->escape_string($taskData[$k]);
+    foreach ($inputDataFields['floatFields'] as $k) {
+        if (isset($taskData[$k])) {
+            $insertData[$k] = (float)$taskData[$k];
         }
     }
 
-    foreach (
-        [
-            'usergroups',
-            'fthreadsforums',
-            'fpostsforums',
-            TASK_REQUIREMENT_TYPE_AWARDS_GRANTED,
-            'profilefields'
-        ] as $k
-    ) {
+    foreach ($inputDataFields['integerFields'] as $k) {
+        if (isset($taskData[$k])) {
+            $insertData[$k] = (int)$taskData[$k];
+        }
+    }
+
+    foreach ($inputDataFields['arrayFields'] as $k) {
         if (isset($taskData[$k]) && is_array($taskData[$k])) {
             $insertData[$k] = $db->escape_string(
                 implode(',', array_filter(array_unique(array_map('intval', $taskData[$k]))))
@@ -2403,17 +2415,32 @@ function taskInsert(array $taskData, int $taskID = 0, bool $updateTask = false):
         }
     }
 
+    foreach ($inputDataFields['comparisonFields'] as $k) {
+        if (isset($taskData[$k]) && in_array($taskData[$k], ['>', '>=', '=', '<=', '<'])) {
+            $insertData[$k] = $db->escape_string($taskData[$k]);
+        }
+    }
+
+    foreach ($inputDataFields['timeFields'] as $k) {
+        if (isset($taskData[$k]) && in_array($taskData[$k], ['hours', 'days', 'weeks', 'months', 'years'])) {
+            $insertData[$k] = $db->escape_string($taskData[$k]);
+        }
+    }
+
     !isset($taskData['requirements']) || $insertData['requirements'] = $db->escape_string(
         implode(',', array_filter(array_unique((array)$taskData['requirements'])))
     );
 
+    /*
     if ($db->table_exists('ougc_awards_tasks')) {
         if ($db->field_exists('ougc_customrepids_g', 'ougc_awards_tasks')) {
             $db->drop_column('ougc_awards_tasks', 'ougc_customrepids_g');
         }
-    }
+    }*/
 
-    if ($updateTask) {
+    $hookArguments = runHooks('task_insert_end', $hookArguments);
+
+    if ($isUpdate) {
         return (int)$db->update_query('ougc_awards_tasks', $insertData, "tid='{$taskID}'");
     } else {
         return (int)$db->insert_query('ougc_awards_tasks', $insertData);
@@ -2436,20 +2463,27 @@ function taskDelete(int $taskID): bool
     return true;
 }
 
-function taskGet(array $whereClauses = [], string $queryFields = '*', array $queryOptions = []): array
+function taskGet(array $whereClauses = [], array $queryFields = [], array $queryOptions = []): array
 {
     global $db;
 
     $cacheObjects = [];
 
-    $dbQuery = $db->simple_select('ougc_awards_tasks', $queryFields, implode(' AND ', $whereClauses), $queryOptions);
+    $queryFields[] = 'tid';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_tasks',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
             $cacheObjects = $db->fetch_array($dbQuery);
         } else {
             while ($userData = $db->fetch_array($dbQuery)) {
-                $cacheObjects[] = $userData;
+                $cacheObjects[(int)$userData['tid']] = $userData;
             }
         }
     }
@@ -2457,15 +2491,17 @@ function taskGet(array $whereClauses = [], string $queryFields = '*', array $que
     return $cacheObjects;
 }
 
-function logGet(array $whereClauses = [], string $queryFields = '*', array $queryOptions = []): array
+function logGet(array $whereClauses = [], array $queryFields = [], array $queryOptions = []): array
 {
     global $db;
 
     $cacheObjects = [];
 
+    $queryFields[] = 'lid';
+
     $dbQuery = $db->simple_select(
         'ougc_awards_tasks_logs',
-        $queryFields,
+        implode(',', $queryFields),
         implode(' AND ', $whereClauses),
         $queryOptions
     );

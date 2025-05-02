@@ -116,6 +116,7 @@ use const ougc\Awards\Core\GRANT_STATUS_VISIBLE;
 use const ougc\Awards\Core\REQUEST_STATUS_ACCEPTED;
 use const ougc\Awards\Core\REQUEST_STATUS_PENDING;
 use const ougc\Awards\Core\REQUEST_STATUS_REJECTED;
+use const ougc\Awards\Core\TABLES_DATA;
 use const ougc\Awards\Core\TASK_REQUIREMENT_TYPE_AWARDS_GRANTED;
 use const ougc\Awards\Core\TASK_REQUIREMENT_TYPE_FILLED_PROFILE_FIELDS;
 use const ougc\Awards\Core\TASK_REQUIREMENT_TYPE_GROUPS;
@@ -137,7 +138,7 @@ const IN_MYBB = true;
 
 define('THIS_SCRIPT', substr($_SERVER['SCRIPT_NAME'], -strpos(strrev($_SERVER['SCRIPT_NAME']), '/')));
 
-$templatelist = 'ougcawards_controlPanel, ougcawards_controlPanelButtons, ougcawards_controlPanelCategoryOwners, ougcawards_controlPanelConfirmation, ougcawards_controlPanelConfirmationDeleteAward, ougcawards_controlPanelConfirmationDeleteCategory, ougcawards_controlPanelConfirmationDeleteOwner, ougcawards_controlPanelContents, ougcawards_controlPanelEmpty, ougcawards_controlPanelGrantEdit, ougcawards_controlPanelList, ougcawards_controlPanelListButtonUpdateCategory, ougcawards_controlPanelListCategoryLinks, ougcawards_controlPanelListCategoryLinksModerator, ougcawards_controlPanelListColumnDisplayOrder, ougcawards_controlPanelListColumnEnabled, ougcawards_controlPanelListColumnOptions, ougcawards_controlPanelListColumnRequest, ougcawards_controlPanelListRow, ougcawards_controlPanelListRowDisplayOrder, ougcawards_controlPanelListRowEmpty, ougcawards_controlPanelListRowEnabled, ougcawards_controlPanelListRowOptions, ougcawards_controlPanelListRowRequest, ougcawards_controlPanelListRowRequestButton, ougcawards_controlPanelLogs, ougcawards_controlPanelLogsRow, ougcawards_controlPanelMyAwards, ougcawards_controlPanelMyAwardsEmpty, ougcawards_controlPanelMyAwardsRow, ougcawards_controlPanelMyAwardsRowLink, ougcawards_controlPanelNewEditAwardForm, ougcawards_controlPanelNewEditAwardFormUpload, ougcawards_controlPanelNewEditCategoryForm, ougcawards_controlPanelNewEditTaskForm, ougcawards_controlPanelNewEditTaskFormRequirementRow, ougcawards_controlPanelOwners, ougcawards_controlPanelOwnersEmpty, ougcawards_controlPanelOwnersRow, ougcawards_controlPanelPresets, ougcawards_controlPanelPresetsAward, ougcawards_controlPanelPresetsDefault, ougcawards_controlPanelPresetsForm, ougcawards_controlPanelPresetsRow, ougcawards_controlPanelPresetsSelect, ougcawards_controlPanelRequests, ougcawards_controlPanelRequestsEmpty, ougcawards_controlPanelRequestsRow, ougcawards_controlPanelTasks, ougcawards_controlPanelTasksEmpty, ougcawards_controlPanelTasksRow, ougcawards_controlPanelTasksRowOptions, ougcawards_controlPanelTasksRowRequirement, ougcawards_controlPanelTasksThead, ougcawards_controlPanelUsers, ougcawards_controlPanelUsersColumnOptions, ougcawards_controlPanelUsersEmpty, ougcawards_controlPanelUsersFormGrant, ougcawards_controlPanelUsersFormRevoke, ougcawards_controlPanelUsersRow, ougcawards_controlPanelUsersRowLink, ougcawards_controlPanelUsersRowOptions, ougcawards_inputField, ougcawards_modcp_requests_buttons, ougcawards_page, ougcawards_pageRequest, ougcawards_pageRequestButton, ougcawards_pageRequestError, ougcawards_pageRequestForm, ougcawards_pageRequestSuccess, ougcawards_radioField, ougcawards_selectField, ougcawards_selectFieldOption, ougcawards_textAreaField, ougcawards_viewUser, ougcawards_viewUserEmpty, ougcawards_viewUserError, ougcawards_viewUserRow';
+$templatelist = 'ougcawards_controlPanel, ougcawards_controlPanelButtons, ougcawards_controlPanelCategoryOwners, ougcawards_controlPanelConfirmation, ougcawards_controlPanelConfirmationDeleteAward, ougcawards_controlPanelConfirmationDeleteCategory, ougcawards_controlPanelConfirmationDeleteOwner, ougcawards_controlPanelContents, ougcawards_controlPanelEmpty, ougcawards_controlPanelGrantEdit, ougcawards_controlPanelList, ougcawards_controlPanelListButtonUpdateCategory, ougcawards_controlPanelListCategoryLinks, ougcawards_controlPanelListCategoryLinksModerator, ougcawards_controlPanelListColumnDisplayOrder, ougcawards_controlPanelListColumnEnabled, ougcawards_controlPanelListColumnOptions, ougcawards_controlPanelListColumnRequest, ougcawards_controlPanelListRow, ougcawards_controlPanelListRowDisplayOrder, ougcawards_controlPanelListRowEmpty, ougcawards_controlPanelListRowEnabled, ougcawards_controlPanelListRowOptions, ougcawards_controlPanelListRowRequest, ougcawards_controlPanelListRowRequestButton, ougcawards_controlPanelLogs, ougcawards_controlPanelLogsRow, ougcawards_controlPanelMyAwards, ougcawards_controlPanelMyAwardsEmpty, ougcawards_controlPanelMyAwardsRow, ougcawards_controlPanelMyAwardsRowLink, ougcawards_controlPanelNewEditAwardForm, ougcawards_controlPanelNewEditAwardFormUpload, ougcawards_controlPanelNewEditCategoryForm, ougcawards_controlPanelNewEditTaskForm, ougcawards_controlPanelNewEditTaskFormRequirementRow, ougcawards_controlPanelOwners, ougcawards_controlPanelOwnersEmpty, ougcawards_controlPanelOwnersRow, ougcawards_controlPanelPresets, ougcawards_controlPanelPresetsAward, ougcawards_controlPanelPresetsDefault, ougcawards_controlPanelPresetsForm, ougcawards_controlPanelPresetsRow, ougcawards_controlPanelPresetsSelect, ougcawards_controlPanelRequests, ougcawards_controlPanelRequestsEmpty, ougcawards_controlPanelRequestsRow, ougcawards_controlPanelTasks, ougcawards_controlPanelTasksEmpty, ougcawards_controlPanelTasksRow, ougcawards_controlPanelTasksRowOptions, ougcawards_controlPanelTasksRowRequirement, ougcawards_controlPanelTasksThead, ougcawards_controlPanelUsers, ougcawards_controlPanelUsersColumnOptions, ougcawards_controlPanelUsersEmpty, ougcawards_controlPanelUsersFormGrant, ougcawards_controlPanelUsersFormRevoke, ougcawards_controlPanelUsersRow, ougcawards_controlPanelUsersRowLink, ougcawards_controlPanelUsersRowOptions, ougcawards_inputField, ougcawards_modcp_requests_buttons, ougcawards_page, ougcawards_pageRequest, ougcawards_pageRequestButton, ougcawards_pageRequestError, ougcawards_pageRequestForm, ougcawards_pageRequestSuccess, ougcawards_radioField, ougcawards_selectField, ougcawards_selectFieldOption, ougcawards_textAreaField, ougcawards_viewUser, ougcawards_viewUserEmpty, ougcawards_viewUserError, ougcawards_viewUserRow, ougcawards_checkBoxField';
 
 require_once './global.php';
 
@@ -390,7 +391,7 @@ $requirementCriteria = [
                 $checked = ' checked="checked"';
             }
 
-            $typeSelect = eval(getTemplate('radioField'));
+            $typeSelect = eval(getTemplate('checkBoxField'));
 
             return $inputField . $typeSelect;
         },
@@ -418,6 +419,8 @@ $requirementCriteria = [
             array $inputValue
         ): string {
             $inputType = 'number';
+
+            $inputStep = 1;
 
             $minimumOption = "min='0'";
 
@@ -474,6 +477,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$selectedIDs[0];
@@ -528,6 +533,8 @@ $requirementCriteria = [
             array $inputValue
         ): string {
             $inputType = 'number';
+
+            $inputStep = 1;
 
             $minimumOption = "min='0'";
 
@@ -619,6 +626,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$inputValue[0];
@@ -709,6 +718,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$inputValue[0];
@@ -763,6 +774,8 @@ $requirementCriteria = [
             array $inputValue
         ): string {
             $inputType = 'number';
+
+            $inputStep = 1;
 
             $minimumOption = "min='0'";
 
@@ -819,6 +832,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$inputValue[0];
@@ -874,6 +889,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$inputValue[0];
@@ -928,6 +945,8 @@ $requirementCriteria = [
             array $inputValue
         ): string {
             $inputType = 'number';
+
+            $inputStep = 1;
 
             $minimumOption = "min='0'";
 
@@ -1070,6 +1089,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$inputValue[0];
@@ -1084,6 +1105,8 @@ $requirementCriteria = [
             array $inputValue
         ): string {
             $inputType = 'number';
+
+            $inputStep = 1;
 
             $minimumOption = "min='0'";
 
@@ -1100,6 +1123,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$inputValue[0];
@@ -1115,6 +1140,8 @@ $requirementCriteria = [
         ): string {
             $inputType = 'number';
 
+            $inputStep = 1;
+
             $minimumOption = "min='0'";
 
             $inputValue = (int)$inputValue[0];
@@ -1129,6 +1156,8 @@ $requirementCriteria = [
             array $inputValue
         ): string {
             $inputType = 'number';
+
+            $inputStep = 1;
 
             $minimumOption = "min='0'";
 
@@ -1957,7 +1986,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             }
         }
 
-        if (isset($mybb->input['revoke'])) {
+        if (isset($mybb->input['revokeAwardID'])) {
             foreach ($usersCache as $userData) {
                 if (!canManageUsers((int)$userData['uid'])) {
                     $errorMessages[] = $lang->ougcAwardsErrorNoUsersPermission;
@@ -3280,16 +3309,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $newTaskPage = $mybb->get_input('action') === 'newTask';
 
-    $taskData = taskGet(["tid='{$taskID}'"], '*', ['limit' => 1]);
+    $queryFields = array_keys(TABLES_DATA['ougc_awards_tasks']);
 
-    if (!$newTaskPage && empty($taskData['tid'])) {
-        error($lang->ougcAwardsErrorInvalidTask);
-    }
-
-    $inputData = [];
-
-    foreach (
-        [
+    $inputDataFields = [
+        'stringFields' => [
             'name',
             'description',
             'reason',
@@ -3311,39 +3334,17 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             //'ougc_customreptype_g',
             //'ougc_customrepids_g',
             'ruleScripts',
-        ] as $inputKey
-    ) {
-        if ($mybb->request_method === 'post') {
-            $inputData[$inputKey] = $mybb->get_input($inputKey);
-        } elseif (isset($taskData[$inputKey])) {
-            $inputData[$inputKey] = $taskData[$inputKey];
-        } else {
-            $inputData[$inputKey] = '';
-        }
-    }
-
-    foreach (
-        [
+        ],
+        'floatFields' => [
             //'newpoints',
-        ] as $inputKey
-    ) {
-        if ($mybb->request_method === 'post') {
-            $inputData[$inputKey] = $mybb->get_input($inputKey, MyBB::INPUT_FLOAT);
-        } elseif (isset($taskData[$inputKey])) {
-            $inputData[$inputKey] = (float)$taskData[$inputKey];
-        } else {
-            $inputData[$inputKey] = 0;
-        }
-    }
-
-    foreach (
-        [
+        ],
+        'integerFields' => [
             'tid',
             'active',
             'taskType',
             'logging',
             'give',
-            'revoke',
+            'revokeAwardID',
             'thread',
             //'allowmultiple',
             'disporder',
@@ -3362,8 +3363,48 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             //'myarcadescores',
             //'ougc_customrep_r',
             //'ougc_customrep_g',
-        ] as $inputKey
-    ) {
+        ],
+        'arrayFields' => [
+            'requirements',
+            'usergroups',
+            'fthreadsforums',
+            'fpostsforums',
+            TASK_REQUIREMENT_TYPE_AWARDS_GRANTED,
+            'profilefields',
+        ]
+    ];
+
+    runHooks('tasks_start');
+
+    $taskData = taskGet(["tid='{$taskID}'"], $queryFields, ['limit' => 1]);
+
+    if (!$newTaskPage && empty($taskData['tid'])) {
+        error($lang->ougcAwardsErrorInvalidTask);
+    }
+
+    $inputData = [];
+
+    foreach ($inputDataFields['stringFields'] as $inputKey) {
+        if ($mybb->request_method === 'post') {
+            $inputData[$inputKey] = $mybb->get_input($inputKey);
+        } elseif (isset($taskData[$inputKey])) {
+            $inputData[$inputKey] = $taskData[$inputKey];
+        } else {
+            $inputData[$inputKey] = '';
+        }
+    }
+
+    foreach ($inputDataFields['floatFields'] as $inputKey) {
+        if ($mybb->request_method === 'post') {
+            $inputData[$inputKey] = $mybb->get_input($inputKey, MyBB::INPUT_FLOAT);
+        } elseif (isset($taskData[$inputKey])) {
+            $inputData[$inputKey] = (float)$taskData[$inputKey];
+        } else {
+            $inputData[$inputKey] = 0;
+        }
+    }
+
+    foreach ($inputDataFields['integerFields'] as $inputKey) {
         if ($mybb->request_method === 'post') {
             $inputData[$inputKey] = $mybb->get_input($inputKey, MyBB::INPUT_INT);
         } elseif (isset($taskData[$inputKey])) {
@@ -3373,16 +3414,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    foreach (
-        [
-            'requirements',
-            'usergroups',
-            'fthreadsforums',
-            'fpostsforums',
-            TASK_REQUIREMENT_TYPE_AWARDS_GRANTED,
-            'profilefields',
-        ] as $inputKey
-    ) {
+    foreach ($inputDataFields['arrayFields'] as $inputKey) {
         if ($mybb->request_method === 'post') {
             $inputData[$inputKey] = $mybb->get_input($inputKey, MyBB::INPUT_ARRAY);
         } elseif (isset($taskData[$inputKey])) {
@@ -3418,7 +3450,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 'reason' => $inputData['reason'],
                 'thread' => $inputData['thread'],
                 //'allowmultiple' => $inputData['allowmultiple'],
-                'revoke' => $inputData['revoke'],
+                'revokeAwardID' => $inputData['revokeAwardID'],
                 'disporder' => $inputData['disporder'],
                 'usergroups' => $inputData['usergroups'],
                 'additionalgroups' => $inputData['additionalgroups'],
@@ -3460,6 +3492,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 //'ougc_customrepids_g' => $inputData['ougc_customrepids_g'],
                 'ruleScripts' => $inputData['ruleScripts'],
             ];
+
+            runHooks('tasks_post_start');
 
             if ($newTaskPage) {
                 taskInsert($insertData);
@@ -3583,7 +3617,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             break;
     }*/
 
-    $awardsRevokeSelect = generateSelectAwards('revoke', (array)$inputData['revoke']);
+    $awardsRevokeSelect = generateSelectAwards('revokeAwardID', (array)$inputData['revokeAwardID']);
 
     $pageTitle = $lang->ougcAwardsControlPanelEditTaskTitle;
 
@@ -3621,7 +3655,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $inputRow = '';
 
         if (isset($requirementOption['rowFunction'])) {
-            $inputRow = $requirementOption['rowFunction']($requirementKey, (array)$inputData[$requirementKey]);
+            $inputRow = $requirementOption['rowFunction'](
+                $requirementKey,
+                isset($inputData[$requirementKey]) ? (array)$inputData[$requirementKey] : []
+            );
         }
 
         $requirementRows .= eval(getTemplate('controlPanelNewEditTaskFormRequirementRow'));
@@ -3633,7 +3670,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         error_no_permission();
     }
 
-    $taskData = taskGet(["tid='{$taskID}'"], '*', ['limit' => 1]);
+    $taskData = taskGet(["tid='{$taskID}'"], ['tid'], ['limit' => 1]);
 
     if (empty($taskData['tid'])) {
         error($lang->ougcAwardsErrorInvalidTask);
@@ -3679,9 +3716,20 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $optionsThead = eval(getTemplate('controlPanelTasksThead'));
     }
 
-    foreach (taskGet() as $taskData) {
-        $taskID = (int)$taskData['tid'];
+    $queryFields = [
+        'tid',
+        'taskType',
+        'name',
+        'description',
+        'requirements',
+        'give',
+        'revokeAwardID',
+        'active'
+    ];
 
+    runHooks('tasks_view_start');
+
+    foreach (taskGet([], $queryFields) as $taskID => $taskData) {
         $taskType = (int)$taskData['taskType'];
 
         $taskName = htmlspecialchars_uni($taskData['name']);
@@ -3731,7 +3779,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 $taskGrantAwards .= $awardImage;
             }
         } else {
-            $taskRevokeAwardIDs = (int)$taskData['revoke'];
+            $taskRevokeAwardIDs = (int)$taskData['revokeAwardID'];
 
             foreach (awardsGetCache(["aid IN ('{$taskRevokeAwardIDs}')"]) as $awardID => $awardData) {
                 $awardName = htmlspecialchars_uni($awardData['name']);
@@ -3806,7 +3854,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         error_no_permission();
     }
 
-    $taskData = taskGet(["tid='{$taskID}'"], '*', ['limit' => 1]);
+    $taskData = taskGet(["tid='{$taskID}'"], ['tid', 'name'], ['limit' => 1]);
 
     if (empty($taskData['tid'])) {
         error($lang->ougcAwardsErrorInvalidTask);
@@ -3837,7 +3885,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $logsRows = '';
 
-    foreach (logGet(["tid='{$taskID}'"]) as $logData) {
+    foreach (logGet(["tid='{$taskID}'"], ['tid', 'uid', 'gave', 'revoked', 'date']) as $logData) {
         $logID = (int)$logData['lid'];
 
         $userID = (int)$logData['uid'];

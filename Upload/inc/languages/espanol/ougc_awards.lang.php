@@ -515,8 +515,8 @@ Saludos.',
 
     'ougcAwardsTaskRan' => 'La tarea de premios se ejecutó con éxito.',
 
-    'ougcAwardsPostTitle' => "Premios de {1}",
-    'ougcAwardsPostTitleSection' => "Premios de {1} en {2}",
+    'ougcAwardsPostTitle' => 'Premios de {1}',
+    'ougcAwardsPostTitleSection' => 'Premios de {1} en {2}',
     'ougcAwardsPostViewAll' => 'Ver Todo',
     'ougcAwardsPostPresetsTitle' => 'Premios',
     'ougcAwardsProfilePresetsTitle' => 'Premios',

@@ -184,10 +184,6 @@ function pluginActivate(): bool
         $plugins['awards'] = $pluginInfo['versioncode'];
     }
 
-    dbVerifyTables();
-
-    dbVerifyColumns();
-
     /*~*~* RUN UPDATES START *~*~*/
 
     if ($db->table_exists('ougc_awards_tasks')) {
@@ -199,6 +195,15 @@ function pluginActivate(): bool
     if ($db->table_exists('ougc_awards_tasks')) {
         if ($db->field_exists('ougc_customrepids_g', 'ougc_awards_tasks')) {
             $db->drop_column('ougc_awards_tasks', 'ougc_customrepids_g');
+        }
+
+        if ($db->field_exists('revoke', 'ougc_awards_tasks')) {
+            $db->rename_column(
+                'ougc_awards_tasks',
+                'revoke',
+                'revokeAwardID',
+                dbBuildFieldDefinition(TABLES_DATA['ougc_awards_tasks']['revokeAwardID'])
+            );
         }
     }
 
@@ -215,10 +220,9 @@ function pluginActivate(): bool
     if ($plugins['awards'] <= 1834) {
         $db->update_query('ougc_awards_tasks', ['active' => TASK_STATUS_DISABLED], "give LIKE '%,%'");
 
-        // todo: rename column `revoke` to `awardRemoveIDs`
-        $db->update_query('ougc_awards_tasks', ['active' => TASK_STATUS_DISABLED], "`revoke` LIKE '%,%'");
+        $db->update_query('ougc_awards_tasks', ['active' => TASK_STATUS_DISABLED], "`revokeAwardID` LIKE '%,%'");
 
-        $db->update_query('ougc_awards_tasks', ['taskType' => TASK_TYPE_REVOKE], "give='' AND `revoke`!=''");
+        $db->update_query('ougc_awards_tasks', ['taskType' => TASK_TYPE_REVOKE], "give='' AND `revokeAwardID`!=''");
 
         $db->update_query('ougc_awards_requests ', ['status' => REQUEST_STATUS_REJECTED], 'status="-1"');
     }
@@ -301,6 +305,10 @@ function pluginActivate(): bool
     }
 
     /*~*~* RUN UPDATES END *~*~*/
+
+    dbVerifyTables();
+
+    dbVerifyColumns();
 
     enableTask();
 
@@ -582,11 +590,11 @@ function dbVerifyIndexes(): bool
     return true;
 }
 
-function dbVerifyColumns(array $fieldsData = FIELDS_DATA): bool
+function dbVerifyColumns(): bool
 {
     global $db;
 
-    foreach ($fieldsData as $tableName => $tableColumns) {
+    foreach (FIELDS_DATA as $tableName => $tableColumns) {
         if (!$db->table_exists($tableName)) {
             continue;
         }
