@@ -34,6 +34,7 @@
     - [File Level Settings](#file_level_settings)
 - [Usage](#usage)
     - [Categories](#usage_categories)
+        - [MyShowcase](#usage_categories_myshowcase)
 - [Templates](#templates)
 - [Built Using](#built_using)
 - [Authors](#authors)
@@ -55,6 +56,7 @@ The following information will assist you into getting a copy of this plugin up 
 A setup that meets the following requirements is necessary to use this plugin.
 
 - [MyBB](https://mybb.com/) >= 1.8
+- [MyShowcase](https://github.com/Sama34/MyShowcase-System) >= 3.0
 - PHP >= 7
 - [MyBB-PluginLibrary](https://github.com/frostschutz/MyBB-PluginLibrary) >= 13
 
@@ -223,9 +225,16 @@ To display Awards data it is required that you edit the following template for e
    user preset in the user posts.
 9. Place `{$post['ougc_awards_view_all']}` in the `postbit` and `postbit_classic` template to display a link to view all
    awards in the user posts
-10. Place `{$ougcAwardsStatsLast}` in the `stats` template to display the last award grants in the stats page.
-11. Place `{$ougcAwardsViewAll}` in any template to display a link to view all awards for the current user.
-12. Place `{$ougcAwardsGlobalNotificationRequests}` in the `header` template to display the requests notification to
+10. Place `{$userData['ougc_awards']}` after `{$userData['user_details']}` in the `myShowcase_pageViewCommentsComment`
+    and `myShowcase_pageViewEntry` template to display the awards in the user posts.
+11. Place `{$userData['ougc_awards_preset']}` after `{$userData['user_details']}` in the
+    `myShowcase_pageViewCommentsComment` and `myShowcase_pageViewEntry` template to display the user preset in the user
+    posts.
+12. Place `{$userData['ougc_awards_view_all']}` in the `myShowcase_pageViewCommentsComment` and
+    `myShowcase_pageViewEntry` template to display a link to view all awards in the user posts
+13. Place `{$ougcAwardsStatsLast}` in the `stats` template to display the last award grants in the stats page.
+14. Place `{$ougcAwardsViewAll}` in any template to display a link to view all awards for the current user.
+15. Place `{$ougcAwardsGlobalNotificationRequests}` in the `header` template to display the requests notification to
     moderator, category owners, and user owners.
 
 [Go up to Table of Contents](#table_of_contents)
@@ -315,6 +324,14 @@ To display each category section in a different area of the `postbit` or `postbi
 category ID.
 
 Place `{$post['ougcAwardsViewAllSectionX']}` to display a link to the view all modal for the custom section.
+
+#### MyShowcase <a name = "usage_categories_myshowcase"></a>
+
+To display each category section in a different area of the `myShowcase_pageViewCommentsComment` or
+`myShowcase_pageViewEntry` templates. Simply add the `{$userData['ougcAwardsSectionX']}` variable to wherever you want
+the custom section to be displayed, where `X` is the category ID.
+
+Place `{$userData['ougcAwardsViewAllSectionX']}` to display a link to the view all modal for the custom section.
 
 ![imagen](https://github.com/user-attachments/assets/885cca0e-5ba7-427b-b8a1-14d9e589a36e)
 
