@@ -49,9 +49,11 @@ use function ougc\Awards\Core\generateSelectAwards;
 use function ougc\Awards\Core\generateSelectCategory;
 use function ougc\Awards\Core\generateSelectProfileFields;
 use function ougc\Awards\Core\getComparisonLanguageVariable;
+use function ougc\Awards\Core\getComparisonTypes;
 use function ougc\Awards\Core\getProfileFieldsCache;
 use function ougc\Awards\Core\getThreadByUrl;
 use function ougc\Awards\Core\getTimeLanguageVariable;
+use function ougc\Awards\Core\getTimeTypes;
 use function ougc\Awards\Core\getUserByUserName;
 use function ougc\Awards\Core\grantDelete;
 use function ougc\Awards\Core\grantFind;
@@ -402,7 +404,7 @@ $requirementCriteria = [
 
             $groupList = [];
 
-            foreach (explode(',', $taskData['usergroups']) as $groupID) {
+            foreach (array_filter(array_map('intval', explode(',', $taskData['usergroups']))) as $groupID) {
                 $groupList[] = format_name($groupsCache[$groupID]['title'], $groupID, $groupID);
             }
 
@@ -435,15 +437,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    '>' => $lang->ougcAwardsControlPanelGreaterThan,
-                    '>=' => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
-                    '=' => $lang->ougcAwardsControlPanelEqualTo,
-                    '<=' => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
-                    '<' => $lang->ougcAwardsControlPanelLessThan,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getComparisonTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -492,15 +486,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    '>' => $lang->ougcAwardsControlPanelGreaterThan,
-                    '>=' => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
-                    '=' => $lang->ougcAwardsControlPanelEqualTo,
-                    '<=' => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
-                    '<' => $lang->ougcAwardsControlPanelLessThan,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getComparisonTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -549,15 +535,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    '>' => $lang->ougcAwardsControlPanelGreaterThan,
-                    '>=' => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
-                    '=' => $lang->ougcAwardsControlPanelEqualTo,
-                    '<=' => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
-                    '<' => $lang->ougcAwardsControlPanelLessThan,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getComparisonTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -641,15 +619,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    '>' => $lang->ougcAwardsControlPanelGreaterThan,
-                    '>=' => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
-                    '=' => $lang->ougcAwardsControlPanelEqualTo,
-                    '<=' => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
-                    '<' => $lang->ougcAwardsControlPanelLessThan,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getComparisonTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -733,15 +703,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    'hours' => $lang->ougcAwardsControlPanelHours,
-                    'days' => $lang->ougcAwardsControlPanelDays,
-                    'weeks' => $lang->ougcAwardsControlPanelWeeks,
-                    'months' => $lang->ougcAwardsControlPanelMonths,
-                    'years' => $lang->ougcAwardsControlPanelYears,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getTimeTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -790,15 +752,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    'hours' => $lang->ougcAwardsControlPanelHours,
-                    'days' => $lang->ougcAwardsControlPanelDays,
-                    'weeks' => $lang->ougcAwardsControlPanelWeeks,
-                    'months' => $lang->ougcAwardsControlPanelMonths,
-                    'years' => $lang->ougcAwardsControlPanelYears,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getTimeTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -847,15 +801,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    '>' => $lang->ougcAwardsControlPanelGreaterThan,
-                    '>=' => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
-                    '=' => $lang->ougcAwardsControlPanelEqualTo,
-                    '<=' => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
-                    '<' => $lang->ougcAwardsControlPanelLessThan,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getComparisonTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -904,15 +850,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    '>' => $lang->ougcAwardsControlPanelGreaterThan,
-                    '>=' => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
-                    '=' => $lang->ougcAwardsControlPanelEqualTo,
-                    '<=' => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
-                    '<' => $lang->ougcAwardsControlPanelLessThan,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getComparisonTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -961,15 +899,7 @@ $requirementCriteria = [
 
             $selectOptions = '';
 
-            foreach (
-                [
-                    '>' => $lang->ougcAwardsControlPanelGreaterThan,
-                    '>=' => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
-                    '=' => $lang->ougcAwardsControlPanelEqualTo,
-                    '<=' => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
-                    '<' => $lang->ougcAwardsControlPanelLessThan,
-                ] as $optionValue => $optionName
-            ) {
+            foreach (getComparisonTypes() as $optionValue => $optionName) {
                 $selectedElement = '';
 
                 if ($optionValue === $inputData[$selectName]) {
@@ -3716,16 +3646,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $optionsThead = eval(getTemplate('controlPanelTasksThead'));
     }
 
-    $queryFields = [
-        'tid',
-        'taskType',
-        'name',
-        'description',
-        'requirements',
-        'give',
-        'revokeAwardID',
-        'active'
-    ];
+    $queryFields = array_keys(TABLES_DATA['ougc_awards_tasks']);
 
     runHooks('tasks_view_start');
 

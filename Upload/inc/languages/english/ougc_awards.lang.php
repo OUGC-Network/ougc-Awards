@@ -326,8 +326,9 @@ Custom Icon (Advanced): A custom template for this award.
 
     'ougcAwardsControlPanelViewTasksTypeGreaterThan' => 'more than ',
     'ougcAwardsControlPanelViewTasksTypeGreaterThanOrEqualTo' => 'at least ',
-    'ougcAwardsControlPanelViewTasksTypeEqualTo' => '',
-    'ougcAwardsControlPanelViewTasksTypeLessThanOrEqualTo' => 'no more than ',
+    'ougcAwardsControlPanelViewTasksTypeEqualTo' => 'exactly ',
+    'ougcAwardsControlPanelViewTasksTypeNotEqualTo' => 'not ',
+    'ougcAwardsControlPanelViewTasksTypeLessThanOrEqualTo' => 'at most',
     'ougcAwardsControlPanelViewTasksTypeLessThan' => 'less than ',
 
     'ougcAwardsControlPanelViewTasksTimeTypeHours' => 'hour',
@@ -431,6 +432,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelGreaterThan' => 'Greater than',
     'ougcAwardsControlPanelGreaterThanOrEqualTo' => 'Greater than or equal to',
     'ougcAwardsControlPanelEqualTo' => 'Equal to',
+    'ougcAwardsControlPanelNotEqualTo' => 'Not equal to',
     'ougcAwardsControlPanelLessThanOrEqualTo' => 'Less than or equal to',
     'ougcAwardsControlPanelLessThan' => 'Less than',
 

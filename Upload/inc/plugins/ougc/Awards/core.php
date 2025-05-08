@@ -880,13 +880,15 @@ function executeTask(
         TASK_REQUIREMENT_TYPE_GROUPS => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             global $db;
 
             $groupIDs = array_map('intval', explode(',', $taskData[$requirementType]));
 
-            $whereClause = ["usergroup IN ('" . implode("','", $groupIDs) . "')"];
+            $whereClause = ["u.usergroup IN ('" . implode("','", $groupIDs) . "')"];
 
             if (!empty($taskData['additionalgroups'])) {
                 foreach ($groupIDs as $groupID) {
@@ -902,14 +904,16 @@ function executeTask(
                 }
             }
 
-            $whereClauses[] = '(' . implode(' OR ', $whereClause) . ')';
+            $userWhereClauses[] = '(' . implode(' OR ', $whereClause) . ')';
 
             return false;
         },
         TASK_REQUIREMENT_TYPE_THREADS => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (in_array($taskData[$requirementType . 'type'], [
                 COMPARISON_TYPE_GREATER_THAN,
@@ -921,7 +925,7 @@ function executeTask(
             ])) {
                 $userThreads = (int)$taskData[$requirementType];
 
-                $whereClauses[] = "u.threadnum{$taskData[$requirementType.'type']}'{$userThreads}'";
+                $userWhereClauses[] = "u.threadnum{$taskData[$requirementType.'type']}'{$userThreads}'";
             }
 
             return true;
@@ -929,7 +933,9 @@ function executeTask(
         TASK_REQUIREMENT_TYPE_POSTS => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (in_array($taskData[$requirementType . 'type'], [
                 COMPARISON_TYPE_GREATER_THAN,
@@ -941,7 +947,7 @@ function executeTask(
             ])) {
                 $userThreads = (int)$taskData[$requirementType];
 
-                $whereClauses[] = "u.postnum{$taskData[$requirementType.'type']}'{$userThreads}'";
+                $userWhereClauses[] = "u.postnum{$taskData[$requirementType.'type']}'{$userThreads}'";
             }
 
             return true;
@@ -950,7 +956,8 @@ function executeTask(
             array $taskData,
             string $requirementType,
             array &$whereClauses,
-            array &$tableLeftJoins
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (in_array($taskData[$requirementType . 'type'], [
                 COMPARISON_TYPE_GREATER_THAN,
@@ -976,7 +983,7 @@ function executeTask(
 				GROUP BY uid
 			) t ON (t.uid=u.uid)";
 
-                $whereClauses[] = "u.threadnum{$taskData[$requirementType.'type']}'{$forumThreads}'";
+                $whereClauses[] = "t.{$requirementType}{$taskData[$requirementType.'type']}'{$forumThreads}'";
             }
 
             return true;
@@ -985,7 +992,8 @@ function executeTask(
             array $taskData,
             string $requirementType,
             array &$whereClauses,
-            array &$tableLeftJoins
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (in_array($taskData[$requirementType . 'type'], [
                 COMPARISON_TYPE_GREATER_THAN,
@@ -1020,7 +1028,9 @@ function executeTask(
         TASK_REQUIREMENT_TYPE_REGISTRATION => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             $registeredSeconds = (int)$taskData[$requirementType];
 
@@ -1045,7 +1055,7 @@ function executeTask(
             $registeredSeconds = TIME_NOW - $registeredSeconds;
 
             if ($registeredSeconds > 0) {
-                $whereClauses[] = "u.regdate<='{$registeredSeconds}'";
+                $userWhereClauses[] = "u.regdate<='{$registeredSeconds}'";
             }
 
             return true;
@@ -1053,7 +1063,9 @@ function executeTask(
         TASK_REQUIREMENT_TYPE_ONLINE => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             $onlineSeconds = (int)$taskData[$requirementType];
 
@@ -1076,7 +1088,7 @@ function executeTask(
             }
 
             if ($onlineSeconds > 0) {
-                $whereClauses[] = "u.timeonline>='{$onlineSeconds}'";
+                $userWhereClauses[] = "u.timeonline>='{$onlineSeconds}'";
             }
 
             return true;
@@ -1084,7 +1096,9 @@ function executeTask(
         TASK_REQUIREMENT_TYPE_REPUTATION => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (in_array($taskData[$requirementType . 'type'], [
                 COMPARISON_TYPE_GREATER_THAN,
@@ -1096,7 +1110,7 @@ function executeTask(
             ])) {
                 $userReputation = (int)$taskData[$requirementType];
 
-                $whereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userReputation}'";
+                $userWhereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userReputation}'";
 
                 return true;
             }
@@ -1106,7 +1120,9 @@ function executeTask(
         TASK_REQUIREMENT_TYPE_REFERRALS => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (in_array($taskData[$requirementType . 'type'], [
                 COMPARISON_TYPE_GREATER_THAN,
@@ -1118,7 +1134,7 @@ function executeTask(
             ])) {
                 $userReferrals = (int)$taskData[$requirementType];
 
-                $whereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userReferrals}'";
+                $userWhereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userReferrals}'";
             }
 
             return true;
@@ -1126,7 +1142,9 @@ function executeTask(
         TASK_REQUIREMENT_TYPE_WARNINGS => function (
             array $taskData,
             string $requirementType,
-            array &$whereClauses
+            array &$whereClauses,
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (in_array($taskData[$requirementType . 'type'], [
                 COMPARISON_TYPE_GREATER_THAN,
@@ -1138,7 +1156,7 @@ function executeTask(
             ])) {
                 $userWarningPoints = (int)$taskData[$requirementType];
 
-                $whereClauses[] = "u.warningpoints{$taskData[$requirementType.'type']}'{$userWarningPoints}'";
+                $userWhereClauses[] = "u.warningpoints{$taskData[$requirementType.'type']}'{$userWarningPoints}'";
             }
 
             return true;
@@ -1147,7 +1165,8 @@ function executeTask(
             array $taskData,
             string $requirementType,
             array &$whereClauses,
-            array &$tableLeftJoins
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (!empty($taskData[$requirementType])) {
                 global $db;
@@ -1172,7 +1191,8 @@ function executeTask(
             array $taskData,
             string $requirementType,
             array &$whereClauses,
-            array &$tableLeftJoins
+            array &$tableLeftJoins,
+            array &$userWhereClauses
         ): bool {
             if (!empty($taskData[$requirementType])) {
                 global $db;
@@ -1194,7 +1214,7 @@ function executeTask(
             $userPoints = (float)$taskData[$requirementType];
 
             if ($userPoints >= 0 && !empty($taskData[$requirementType . 'type'])) {
-                $whereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userPoints}'";
+                $userWhereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userPoints}'";
             }
 
 
@@ -1288,11 +1308,15 @@ function executeTask(
 
         $taskThreadID = (int)$awardTaskData['thread'];
 
+        $userWhereClauses = [];
+
         foreach ($requirementCriteria as $requirementType => $callback) {
             if (in_array($requirementType, explode(',', $awardTaskData['requirements']))) {
-                $callback($awardTaskData, $requirementType, $whereClauses, $tableLeftJoins);
+                $callback($awardTaskData, $requirementType, $whereClauses, $tableLeftJoins, $userWhereClauses);
             }
         }
+
+        $whereClauses = array_merge($whereClauses, $userWhereClauses);
 
         $exemptUsersIDs = [];
 
@@ -2416,13 +2440,13 @@ function taskInsert(array $taskData, int $taskID = 0, bool $isUpdate = false): i
     }
 
     foreach ($inputDataFields['comparisonFields'] as $k) {
-        if (isset($taskData[$k]) && in_array($taskData[$k], ['>', '>=', '=', '<=', '<'])) {
+        if (isset($taskData[$k]) && in_array($taskData[$k], array_keys(getComparisonTypes()))) {
             $insertData[$k] = $db->escape_string($taskData[$k]);
         }
     }
 
     foreach ($inputDataFields['timeFields'] as $k) {
-        if (isset($taskData[$k]) && in_array($taskData[$k], ['hours', 'days', 'weeks', 'months', 'years'])) {
+        if (isset($taskData[$k]) && in_array($taskData[$k], array_keys(getTimeTypes()))) {
             $insertData[$k] = $db->escape_string($taskData[$k]);
         }
     }
@@ -3406,9 +3430,42 @@ function awardsCacheGet(): array
     return (array)$mybb->cache->read('ougc_awards');
 }
 
+function getTimeTypes(): array
+{
+    global $lang;
+
+    loadLanguage();
+
+    return [
+        TASK_REQUIREMENT_TIME_TYPE_HOURS => $lang->ougcAwardsControlPanelHours,
+        TASK_REQUIREMENT_TIME_TYPE_DAYS => $lang->ougcAwardsControlPanelDays,
+        TASK_REQUIREMENT_TIME_TYPE_WEEKS => $lang->ougcAwardsControlPanelWeeks,
+        TASK_REQUIREMENT_TIME_TYPE_MONTHS => $lang->ougcAwardsControlPanelMonths,
+        TASK_REQUIREMENT_TIME_TYPE_YEARS => $lang->ougcAwardsControlPanelYears,
+    ];
+}
+
+function getComparisonTypes(): array
+{
+    global $lang;
+
+    loadLanguage();
+
+    return [
+        COMPARISON_TYPE_GREATER_THAN => $lang->ougcAwardsControlPanelGreaterThan,
+        COMPARISON_TYPE_GREATER_THAN_OR_EQUAL => $lang->ougcAwardsControlPanelGreaterThanOrEqualTo,
+        COMPARISON_TYPE_EQUAL => $lang->ougcAwardsControlPanelEqualTo,
+        COMPARISON_TYPE_NOT_EQUAL => $lang->ougcAwardsControlPanelNotEqualTo,
+        COMPARISON_TYPE_LESS_THAN_OR_EQUAL => $lang->ougcAwardsControlPanelLessThanOrEqualTo,
+        COMPARISON_TYPE_LESS_THAN => $lang->ougcAwardsControlPanelLessThan,
+    ];
+}
+
 function getComparisonLanguageVariable(string $comparisonOperator): string
 {
     global $lang;
+
+    loadLanguage();
 
     switch ($comparisonOperator) {
         case COMPARISON_TYPE_GREATER_THAN:
@@ -3421,9 +3478,39 @@ function getComparisonLanguageVariable(string $comparisonOperator): string
             return $lang->ougcAwardsControlPanelViewTasksTypeNotEqualTo;
         case COMPARISON_TYPE_LESS_THAN_OR_EQUAL:
             return $lang->ougcAwardsControlPanelViewTasksTypeLessThanOrEqualTo;
+        case COMPARISON_TYPE_LESS_THAN:
+            return $lang->ougcAwardsControlPanelViewTasksTypeLessThan;
     }
 
     return '';
+}
+
+function getComparisonResult(string $comparisonType, int $userValue, int $settingValue): bool
+{
+    $comparisonResult = false;
+
+    switch ($comparisonType) {
+        case COMPARISON_TYPE_GREATER_THAN;
+            $comparisonResult = $userValue > $settingValue;
+            break;
+        case COMPARISON_TYPE_GREATER_THAN_OR_EQUAL;
+            $comparisonResult = $userValue >= $settingValue;
+            break;
+        case COMPARISON_TYPE_EQUAL;
+            $comparisonResult = $userValue == $settingValue;
+            break;
+        case COMPARISON_TYPE_NOT_EQUAL;
+            $comparisonResult = $userValue != $settingValue;
+            break;
+        case COMPARISON_TYPE_LESS_THAN_OR_EQUAL;
+            $comparisonResult = $userValue <= $settingValue;
+            break;
+        case COMPARISON_TYPE_LESS_THAN;
+            $comparisonResult = $userValue < $settingValue;
+            break;
+    }
+
+    return $comparisonResult;
 }
 
 function getTimeLanguageVariable(string $timeType, bool $isPlural): string

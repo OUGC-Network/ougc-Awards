@@ -72,7 +72,46 @@ function global_start05(): bool
         $templatelist = '';
     }
 
-    $templatelist .= 'ougcawards_awardImage, ougcawards_awardImageClass, ougcawards_awardWrapper, ougcawards_css, ougcawards_global_menu, ougcawards_globalNotification, ougcawards_globalPagination, ougcawards_js, ougcawards_postBit, ougcawards_postBitContent, ougcawards_postBitPagination, ougcawards_postBitPreset, ougcawards_postBitPresets, ougcawards_postBitPresetsRow, ougcawards_postBitPresetsRowLink, ougcawards_postBitRow, ougcawards_postBitRowLink, ougcawards_postBitViewAll, ougcawards_postBitViewAllSection, ougcawards_profile, ougcawards_profile_row, ougcawards_profile_rowLink, ougcawards_profileContent, ougcawards_profileEmpty, ougcawards_profilePagination, ougcawards_profilePresets, ougcawards_profilePresetsRow, ougcawards_profilePresetsRowLink, ougcawards_profileRow, ougcawards_profileRowLink, ougcawards_profileViewAll, ougcawards_profileViewAllSection, ougcawards_stats, ougcawards_stats_empty, ougcawards_statsUserRow, ougcawards_streamItem, ougcawards_viewAll, ougcawards_viewAllSection';
+    $templatelist .= 'ougcawards_' . implode(',ougcawards_', [
+            'awardImage',
+            'awardImageClass',
+            'awardWrapper',
+            'css',
+            'global_menu',
+            'globalNotification',
+            'globalPagination',
+            'js',
+            'postBit',
+            'postBitContent',
+            'postBitPagination',
+            'postBitPreset',
+            'postBitPresets',
+            'postBitPresetsRow',
+            'postBitPresetsRowLink',
+            'postBitRow',
+            'postBitRowLink',
+            'postBitViewAll',
+            'postBitViewAllSection',
+            'profile',
+            'profile_row',
+            'profile_rowLink',
+            'profileContent',
+            'profileEmpty',
+            'profilePagination',
+            'profilePresets',
+            'profilePresetsRow',
+            'profilePresetsRowLink',
+            'profileRow',
+            'profileRowLink',
+            'profileViewAll',
+            'profileViewAllSection',
+            'stats',
+            'stats_empty',
+            'statsUserRow',
+            'streamItem',
+            'viewAll',
+            'viewAllSection'
+        ]);
 
     return true;
 }

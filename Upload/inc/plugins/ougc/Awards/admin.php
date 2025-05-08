@@ -43,6 +43,7 @@ use function ougc\Awards\Core\getSetting;
 use function ougc\Awards\Core\loadLanguage;
 
 use const MYBB_ROOT;
+use const ougc\Awards\ROOT;
 use const ougc\Awards\Core\ADMIN_PERMISSION_DELETE;
 use const ougc\Awards\Core\PLUGIN_VERSION;
 use const ougc\Awards\Core\PLUGIN_VERSION_CODE;
@@ -51,7 +52,6 @@ use const ougc\Awards\Core\TABLES_DATA;
 use const ougc\Awards\Core\FIELDS_DATA;
 use const ougc\Awards\Core\TASK_TYPE_REVOKE;
 use const ougc\Awards\Core\TASK_STATUS_DISABLED;
-use const ougc\Awards\ROOT;
 
 const TASK_ENABLE = 1;
 
