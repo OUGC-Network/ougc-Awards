@@ -226,12 +226,13 @@ To display Awards data it is required that you edit the following template for e
 9. Place `{$post['ougc_awards_view_all']}` in the `postbit` and `postbit_classic` template to display a link to view all
    awards in the user posts
 10. Place `{$userData['ougc_awards']}` after `{$userData['user_details']}` in the `myShowcase_pageViewCommentsComment`
-    and `myShowcase_pageViewEntry` template to display the awards in the user posts.
+    and `myShowcase_pageViewEntry` templates to display the awards in the user entries and comments in showcases.
 11. Place `{$userData['ougc_awards_preset']}` after `{$userData['user_details']}` in the
-    `myShowcase_pageViewCommentsComment` and `myShowcase_pageViewEntry` template to display the user preset in the user
-    posts.
+    `myShowcase_pageViewCommentsComment` and `myShowcase_pageViewEntry` templates to display the user entries and
+    comments in showcases.
 12. Place `{$userData['ougc_awards_view_all']}` in the `myShowcase_pageViewCommentsComment` and
-    `myShowcase_pageViewEntry` template to display a link to view all awards in the user posts
+    `myShowcase_pageViewEntry` template to display a link to view all awards in the user entries and comments in
+    showcases.
 13. Place `{$ougcAwardsStatsLast}` in the `stats` template to display the last award grants in the stats page.
 14. Place `{$ougcAwardsViewAll}` in any template to display a link to view all awards for the current user.
 15. Place `{$ougcAwardsGlobalNotificationRequests}` in the `header` template to display the requests notification to
