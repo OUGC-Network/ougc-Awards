@@ -1413,11 +1413,13 @@ function allowImports(): bool
     return getSetting('allowImports') && pluginIsInstalled();
 }
 
-function getUser(int $userID): array
+function getUser(int $userID, array $queryFields = []): array
 {
     global $db;
 
-    $dbQuery = $db->simple_select('users', '*', "uid='{$userID}'");
+    $queryFields[] = 'uid';
+
+    $dbQuery = $db->simple_select('users', implode(',', $queryFields), "uid='{$userID}'");
 
     if ($db->num_rows($dbQuery)) {
         return (array)$db->fetch_array($dbQuery);
@@ -1460,13 +1462,23 @@ function presetUpdate(array $updateData, int $presetID): int
     return presetInsert($updateData, $presetID, true);
 }
 
-function presetGet(array $whereClauses = [], string $queryFields = '*', array $queryOptions = []): array
-{
+function presetGet(
+    array $whereClauses = [],
+    array $queryFields = ['uid', 'name', 'hidden', 'visible'],
+    array $queryOptions = []
+): array {
+    $queryFields[] = 'pid';
+
     global $db;
 
     $cacheObjects = [];
 
-    $dbQuery = $db->simple_select('ougc_awards_presets', $queryFields, implode(' AND ', $whereClauses), $queryOptions);
+    $dbQuery = $db->simple_select(
+        'ougc_awards_presets',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
@@ -1552,11 +1564,13 @@ function rebuildOwners(): bool
     return true;
 }
 
-function ownerGetSingle(array $whereClauses = [], string $queryFields = '*'): array
+function ownerGetSingle(array $whereClauses = [], array $queryFields = ['uid', 'aid', 'date']): array
 {
     global $db;
 
-    $dbQuery = $db->simple_select('ougc_awards_owners', $queryFields, implode(' AND ', $whereClauses));
+    $queryFields[] = 'oid';
+
+    $dbQuery = $db->simple_select('ougc_awards_owners', implode(',', $queryFields), implode(' AND ', $whereClauses));
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -1567,10 +1581,12 @@ function ownerGetSingle(array $whereClauses = [], string $queryFields = '*'): ar
 
 function ownerGetUser(
     array $whereClauses = [],
-    string $queryFields = '*',
+    array $queryFields = ['uid', 'aid', 'date'],
     array $queryOptions = []
 ): array {
     global $db;
+
+    $queryFields[] = 'oid';
 
     $usersData = [];
 
@@ -1578,7 +1594,12 @@ function ownerGetUser(
         $queryOptions['limit'] = (int)$queryOptions['limit'];
     }
 
-    $dbQuery = $db->simple_select('ougc_awards_owners', $queryFields, implode(' AND ', $whereClauses), $queryOptions);
+    $dbQuery = $db->simple_select(
+        'ougc_awards_owners',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
@@ -1593,11 +1614,17 @@ function ownerGetUser(
     return $usersData;
 }
 
-function ownerFind(int $awardID, int $userID): array
+function ownerFind(int $awardID, int $userID, array $queryFields = ['uid', 'aid', 'date']): array
 {
     global $db;
 
-    $query = $db->simple_select('ougc_awards_owners', '*', "aid='{$awardID}' AND uid='{$userID}'");
+    $queryFields[] = 'oid';
+
+    $query = $db->simple_select(
+        'ougc_awards_owners',
+        implode(',', $queryFields),
+        "aid='{$awardID}' AND uid='{$userID}'"
+    );
 
     if ($db->num_rows($query)) {
         return $db->fetch_array($query);
@@ -1668,11 +1695,19 @@ function rebuildOwnersCategories(): bool
     return true;
 }
 
-function ownerCategoryGetSingle(array $whereClauses = [], string $queryFields = '*'): array
-{
+function ownerCategoryGetSingle(
+    array $whereClauses = [],
+    array $queryFields = ['userID', 'categoryID', 'ownerDate']
+): array {
     global $db;
 
-    $dbQuery = $db->simple_select('ougc_awards_category_owners', $queryFields, implode(' AND ', $whereClauses));
+    $queryFields[] = 'ownerID';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_category_owners',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses)
+    );
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -1683,10 +1718,12 @@ function ownerCategoryGetSingle(array $whereClauses = [], string $queryFields = 
 
 function ownerCategoryGetUser(
     array $whereClauses = [],
-    string $queryFields = '*',
+    array $queryFields = ['userID', 'categoryID', 'ownerDate'],
     array $queryOptions = []
 ): array {
     global $db;
+
+    $queryFields[] = 'ownerID';
 
     $usersData = [];
 
@@ -1696,7 +1733,7 @@ function ownerCategoryGetUser(
 
     $dbQuery = $db->simple_select(
         'ougc_awards_category_owners',
-        $queryFields,
+        implode(',', $queryFields),
         implode(' AND ', $whereClauses),
         $queryOptions
     );
@@ -1714,13 +1751,18 @@ function ownerCategoryGetUser(
     return $usersData;
 }
 
-function ownerCategoryFind(int $categoryID, int $userID): array
-{
+function ownerCategoryFind(
+    int $categoryID,
+    int $userID,
+    array $queryFields = ['userID', 'categoryID', 'ownerDate']
+): array {
     global $db;
+
+    $queryFields[] = 'ownerID';
 
     $query = $db->simple_select(
         'ougc_awards_category_owners',
-        '*',
+        implode(',', $queryFields),
         "categoryID='{$categoryID}' AND userID='{$userID}'"
     );
 
@@ -1799,16 +1841,20 @@ function categoryDelete(int $categoryID): bool
     return true;
 }
 
-function categoryGet(int $categoryID): array
-{
+function categoryGet(
+    int $categoryID,
+    array $queryFields = ['name', 'description', 'disporder', 'allowrequests', 'visible', 'outputInCustomSection']
+): array {
     static $categoryCache = [];
+
+    $queryFields[] = 'cid';
 
     if (!isset($categoryCache[$categoryID])) {
         global $db;
 
         $categoryCache[$categoryID] = [];
 
-        $dbQuery = $db->simple_select('ougc_awards_categories', '*', "cid='{$categoryID}'");
+        $dbQuery = $db->simple_select('ougc_awards_categories', implode(',', $queryFields), "cid='{$categoryID}'");
 
         if ($db->num_rows($dbQuery)) {
             $categoryCache[$categoryID] = $db->fetch_array($dbQuery);
@@ -1818,9 +1864,14 @@ function categoryGet(int $categoryID): array
     return $categoryCache[$categoryID];
 }
 
-function categoryGetCache(array $whereClauses = [], string $queryFields = '*', array $queryOptions = []): array
-{
+function categoryGetCache(
+    array $whereClauses = [],
+    array $queryFields = ['name', 'description', 'disporder', 'allowrequests', 'visible', 'outputInCustomSection'],
+    array $queryOptions = []
+): array {
     global $db;
+
+    $queryFields[] = 'cid';
 
     $cacheObjects = [];
 
@@ -1830,7 +1881,7 @@ function categoryGetCache(array $whereClauses = [], string $queryFields = '*', a
 
     $dbQuery = $db->simple_select(
         'ougc_awards_categories',
-        $queryFields,
+        implode(',', $queryFields),
         implode(' AND ', $whereClauses),
         $queryOptions
     );
@@ -1962,13 +2013,29 @@ function awardDelete(int $awardID): bool
     return true;
 }
 
-function awardGet(int $awardID): array
-{
+function awardGet(
+    int $awardID,
+    array $queryFields = [
+        'cid',
+        'name',
+        'description',
+        'award_file',
+        'image',
+        'template',
+        'disporder',
+        'allowrequests',
+        'visible',
+        'pm',
+        'type'
+    ]
+): array {
     global $db;
+
+    $queryFields[] = 'aid';
 
     $awardData = [];
 
-    $dbQuery = $db->simple_select('ougc_awards', '*', "aid='{$awardID}'");
+    $dbQuery = $db->simple_select('ougc_awards', implode(',', $queryFields), "aid='{$awardID}'");
 
     if ($db->num_rows($dbQuery)) {
         $awardData = $db->fetch_array($dbQuery);
@@ -2002,14 +2069,21 @@ function awardGetIcon(int $awardID): string
 
 function awardGetUser(
     array $whereClauses = [],
-    string $queryFields = '*',
+    array $queryFields = ['uid', 'oid', 'aid', 'rid', 'tid', 'thread', 'reason', 'pm', 'date', 'disporder', 'visible'],
     array $queryOptions = []
 ): array {
     global $db;
 
     $usersData = [];
 
-    $dbQuery = $db->simple_select('ougc_awards_users', $queryFields, implode(' AND ', $whereClauses), $queryOptions);
+    $queryFields[] = 'gid';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_users',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
@@ -2024,13 +2098,35 @@ function awardGetUser(
     return $usersData;
 }
 
-function awardsGetCache(array $whereClauses = [], string $queryFields = '*', array $queryOptions = []): array
-{
+function awardsGetCache(
+    array $whereClauses = [],
+    array $queryFields = [
+        'cid',
+        'name',
+        'description',
+        'award_file',
+        'image',
+        'template',
+        'disporder',
+        'allowrequests',
+        'visible',
+        'pm',
+        'type'
+    ],
+    array $queryOptions = []
+): array {
     global $db;
+
+    $queryFields[] = 'aid';
 
     $cacheObjects = [];
 
-    $dbQuery = $db->simple_select('ougc_awards', $queryFields, implode(' AND ', $whereClauses), $queryOptions);
+    $dbQuery = $db->simple_select(
+        'ougc_awards',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         while ($rowData = $db->fetch_array($dbQuery)) {
@@ -2053,7 +2149,7 @@ function grantInsert(
 
     $awardData = awardGet($awardID);
 
-    $userData = getUser($userID);
+    $userData = getUser($userID, ['username']);
 
     $hookArguments = [
         'awardData' => &$awardData,
@@ -2159,11 +2255,15 @@ function grantDelete(int $grantID): bool
     return true;
 }
 
-function grantGetSingle(array $whereClauses = [], string $queryFields = '*'): array
-{
+function grantGetSingle(
+    array $whereClauses = [],
+    array $queryFields = ['uid', 'oid', 'aid', 'rid', 'tid', 'thread', 'reason', 'pm', 'date', 'disporder', 'visible']
+): array {
     global $db;
 
-    $dbQuery = $db->simple_select('ougc_awards_users', $queryFields, implode(' AND ', $whereClauses));
+    $queryFields[] = 'gid';
+
+    $dbQuery = $db->simple_select('ougc_awards_users', implode(',', $queryFields), implode(' AND ', $whereClauses));
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -2172,11 +2272,20 @@ function grantGetSingle(array $whereClauses = [], string $queryFields = '*'): ar
     return [];
 }
 
-function grantFind(int $awardID, int $userID): array
-{
+function grantFind(
+    int $awardID,
+    int $userID,
+    array $queryFields = ['uid', 'oid', 'aid', 'rid', 'tid', 'thread', 'reason', 'pm', 'date', 'disporder', 'visible']
+): array {
     global $db;
 
-    $dbQuery = $db->simple_select('ougc_awards_users', '*', "aid='{$awardID}' AND uid='{$userID}'");
+    $queryFields[] = 'gid';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_users',
+        implode(',', $queryFields),
+        "aid='{$awardID}' AND uid='{$userID}'"
+    );
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -2201,13 +2310,15 @@ function requestUpdate(array $updateData, int $requestID): int
     return requestInsert($updateData, $requestID, true);
 }
 
-function requestGet(array $whereClauses = []): array
+function requestGet(array $whereClauses = [], array $queryFields = ['aid', 'uid', 'muid', 'message', 'status']): array
 {
     global $db;
 
+    $queryFields[] = 'rid';
+
     $requestData = [];
 
-    $dbQuery = $db->simple_select('ougc_awards_requests', '*', implode(' AND ', $whereClauses));
+    $dbQuery = $db->simple_select('ougc_awards_requests', implode(',', $queryFields), implode(' AND ', $whereClauses));
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -2216,9 +2327,14 @@ function requestGet(array $whereClauses = []): array
     return $requestData;
 }
 
-function requestGetPending(array $whereClauses = [], string $queryFields = '*', array $queryOptions = []): array
-{
+function requestGetPending(
+    array $whereClauses = [],
+    array $queryFields = ['aid', 'uid', 'muid', 'message', 'status'],
+    array $queryOptions = []
+): array {
     global $db;
+
+    $queryFields[] = 'rid';
 
     $requestData = [];
 
@@ -2226,7 +2342,12 @@ function requestGetPending(array $whereClauses = [], string $queryFields = '*', 
         $queryOptions['limit'] = (int)$queryOptions['limit'];
     }
 
-    $dbQuery = $db->simple_select('ougc_awards_requests', $queryFields, implode(' AND ', $whereClauses), $queryOptions);
+    $dbQuery = $db->simple_select(
+        'ougc_awards_requests',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
@@ -2245,7 +2366,7 @@ function requestGetPendingTotal(array $whereClauses = []): int
 {
     $pendingRequestTotal = requestGetPending(
         $whereClauses,
-        'COUNT(rid) as pendingRequestTotal'
+        ['COUNT(rid) as pendingRequestTotal']
     );
 
     if (!empty($pendingRequestTotal['pendingRequestTotal'])) {
@@ -2269,7 +2390,7 @@ function requestReject(int $requestID): bool
 
     $awardData = awardGet($awardID);
 
-    $userData = getUser($userID);
+    $userData = getUser($userID, ['username']);
 
     sendPrivateMessage([
         'subject' => $lang->sprintf(
@@ -2722,7 +2843,7 @@ function cacheUpdate(): bool
 
         $totalRequestsCount = requestGetPending(
             $whereClauses,
-            'COUNT(rid) AS totalRequests',
+            ['COUNT(rid) AS totalRequests'],
             ['limit' => 1]
         );
 
@@ -2851,7 +2972,11 @@ function generateSelectGrant(int $awardID, int $userID, int $selectedID): string
 
     $selectCode = "<select name=\"gid\">\n";
 
-    $dbQuery = $db->simple_select('ougc_awards_users', '*', "aid='{$awardID}' AND uid='{$userID}'");
+    $dbQuery = $db->simple_select(
+        'ougc_awards_users',
+        'gid, rid, tid, date, reason',
+        "aid='{$awardID}' AND uid='{$userID}'"
+    );
 
     while ($grantData = $db->fetch_array($dbQuery)) {
         $grantID = (int)$grantData['gid'];
@@ -2888,7 +3013,7 @@ function generateSelectCategory(int $selectedID): string
 
     $selectName = 'categoryID';
 
-    $dbQuery = $db->simple_select('ougc_awards_categories', '*', '', ['order_by' => 'disporder']);
+    $dbQuery = $db->simple_select('ougc_awards_categories', 'cid, name', '', ['order_by' => 'disporder']);
 
     $selectOptions = $multipleOption = '';
 
@@ -2925,7 +3050,7 @@ function generateSelectCustomReputation(string $inputName, int $selectedID = 0):
 
     $selectCode .= '>';
 
-    $dbQuery = $db->simple_select('ougc_customrep', '*', '', ['order_by' => 'disporder']);
+    $dbQuery = $db->simple_select('ougc_customrep', 'rid, name', '', ['order_by' => 'disporder']);
 
     while ($reputationData = $db->fetch_array($dbQuery)) {
         $selectedElement = '';

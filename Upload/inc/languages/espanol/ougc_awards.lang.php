@@ -304,6 +304,7 @@ Icono Personalizado (Avanzado): Una plantilla personalizada para este premio.
     'ougcAwardsControlPanelLogsTableDate' => 'Fecha',
     'ougcAwardsControlPanelLogsTableOptions' => 'Opciones',
     'ougcAwardsControlPanelLogsTableOptionsDeleteLog' => 'Eliminar Registro',
+    'ougcAwardsControlPanelLogsTableEmpty' => 'Actualmente no hay registros para mostrar.',
 
     'ougcAwardsControlPanelButtonManageTasks' => 'Ver Tareas',
     'ougcAwardsControlPanelButtonNewTask' => 'Nueva Tarea',

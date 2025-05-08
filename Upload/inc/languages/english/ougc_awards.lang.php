@@ -304,6 +304,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelLogsTableDate' => 'Date',
     'ougcAwardsControlPanelLogsTableOptions' => 'Options',
     'ougcAwardsControlPanelLogsTableOptionsDeleteLog' => 'Delete Log',
+    'ougcAwardsControlPanelLogsTableEmpty' => 'There are currently no logs for this task.',
 
     'ougcAwardsControlPanelButtonManageTasks' => 'View Tasks',
     'ougcAwardsControlPanelButtonNewTask' => 'New Task',

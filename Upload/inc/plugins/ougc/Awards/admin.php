@@ -269,9 +269,9 @@ function pluginActivate(): bool
         $templateNames = implode("','", $tmpls);
 
         // Try to update old templates
-        $query = $db->simple_select('templates', '*', "title IN ('{$templateNames}')");
+        $query = $db->simple_select('templates', 'template, title, template', "title IN ('{$templateNames}')");
         while ($tmpl = $db->fetch_array($query)) {
-            check_template($tmpl['template']) or $tmplcache[$tmpl['title']] = $tmpl;
+            check_template($tmpl['template']) || $tmplcache[$tmpl['title']] = $tmpl;
         }
 
         foreach ($tmpls as $oldtitle => $newtitle) {

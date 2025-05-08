@@ -83,6 +83,7 @@ function global_start05(): bool
             'js',
             'postBit',
             'postBitContent',
+            'postBitEmpty',
             'postBitPagination',
             'postBitPreset',
             'postBitPresets',
@@ -291,10 +292,13 @@ function xmlhttp(): bool
 
         $currentUserID = (int)$mybb->user['uid'];
 
-        if ($presetID && !($currentPresetData = presetGet([
-                "pid='{$presetID}'",
-                "uid='{$currentUserID}'"
-            ], '*', ['limit' => 1]
+        if ($presetID && !($currentPresetData = presetGet(
+                [
+                    "pid='{$presetID}'",
+                    "uid='{$currentUserID}'"
+                ],
+                ['pid'],
+                ['limit' => 1]
             ))) {
             error_no_permission();
         }
@@ -358,11 +362,21 @@ function postbit(array &$postData): array
     return member_profile_end($postData);
 }
 
+function myshowcase_system_render_build_entry_comment_end(array &$hookArguments): array
+{
+    $hookArguments['userData'] = member_profile_end($hookArguments['userData']);
+
+    return $hookArguments;
+}
+
+
 function member_profile_end(&$userData = []): array
 {
     global $mybb, $plugins, $lang, $theme;
 
     $isProfilePage = $plugins->current_hook === 'member_profile_end';
+
+    $isShowcasePage = $plugins->current_hook === 'myshowcase_system_render_build_entry_comment_end';
 
     if ($isProfilePage) {
         global $memprofile;
@@ -377,13 +391,7 @@ function member_profile_end(&$userData = []): array
     static $usersAwardsCache = [];
 
     if (isset($usersAwardsCache[$userID])) {
-        $userData['ougc_awards'] = $usersAwardsCache[$userID]['ougc_awards'];
-
-        $userData['ougc_awards_preset'] = $usersAwardsCache[$userID]['ougc_awards_preset'];
-
-        $userData['ougc_awards_view_all'] = $usersAwardsCache[$userID]['ougc_awards_view_all'];
-
-        return $userData;
+        return array_merge($usersAwardsCache[$userID], $userData);
     } else {
         $usersAwardsCache[$userID]['ougc_awards'] = &$userData['ougc_awards'];
 
@@ -428,7 +436,11 @@ function member_profile_end(&$userData = []): array
     if ($maximumPresetAwardsToDisplay) {
         $presetID = (int)(get_user($userID)['ougc_awards_preset'] ?? 0);
 
-        $presetData = presetGet(["pid='{$presetID}'", "uid='{$userID}'"], '*', ['limit' => 1]);
+        $presetData = presetGet(
+            ["pid='{$presetID}'", "uid='{$userID}'"],
+            ['uid', 'name', 'hidden', 'visible'],
+            ['limit' => 1]
+        );
 
         if (empty($presetData['visible'])) {
             $maximumPresetAwardsToDisplay = 0;
@@ -440,7 +452,7 @@ function member_profile_end(&$userData = []): array
     $awardsCategoriesCache = awardsCacheGet()['categories'];
 
     foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
-        $userData["ougcAwardsSection{$categoryID}"] = $userData["ougcAwardsViewAllSection{$categoryID}"] = '';
+        $userData["ougcAwardsSection{$categoryID}"] = $userData["ougcAwardsViewAllSection{$categoryID}"] = $usersAwardsCache[$userID]["ougcAwardsSection{$categoryID}"] = $usersAwardsCache[$userID]["ougcAwardsViewAllSection{$categoryID}"] = '';
     }
 
     if (!$maximumAwardsToDisplay && !$maximumPresetAwardsToDisplay) {
@@ -490,7 +502,7 @@ function member_profile_end(&$userData = []): array
 
         $grantPresetsCacheData = awardGetUser(
             array_merge($whereClauses, ["gid IN ('{$presetAwards}')", "aid IN ('{$userAllAwardsIDs}')"]),
-            '*',
+            ['uid', 'oid', 'aid', 'rid', 'tid', 'thread', 'reason', 'pm', 'date', 'disporder', 'visible'],
             [
                 'order_by' => 'disporder, date',
                 'order_dir' => 'desc',
@@ -517,7 +529,19 @@ function member_profile_end(&$userData = []): array
     $sectionObjects = [
         0 => [
             'whereClauses' => array_merge($whereClauses, ["aid IN ('{$primarySectionAwardsIDs}')"]),
-            'queryFields' => '*',
+            'queryFields' => [
+                'uid',
+                'oid',
+                'aid',
+                'rid',
+                'tid',
+                'thread',
+                'reason',
+                'pm',
+                'date',
+                'disporder',
+                'visible'
+            ],
             'sectionVariable' => &$userData['ougc_awards']
         ]
     ];
@@ -528,8 +552,21 @@ function member_profile_end(&$userData = []): array
 
             $sectionObjects[$categoryID] = [
                 'whereClauses' => array_merge($whereClauses, ["aid IN ('{$sectionAwardsIDs}')"]),
-                'queryFields' => '*',
-                'sectionVariable' => &$userData["ougcAwardsSection{$categoryID}"]
+                'queryFields' => [
+                    'uid',
+                    'oid',
+                    'aid',
+                    'rid',
+                    'tid',
+                    'thread',
+                    'reason',
+                    'pm',
+                    'date',
+                    'disporder',
+                    'visible'
+                ],
+                'sectionVariable' => &$userData["ougcAwardsSection{$categoryID}"],
+                'sectionVariableCache' => &$usersAwardsCache[$userID]["ougcAwardsSection{$categoryID}"]
             ];
         }
     }
@@ -556,12 +593,16 @@ function member_profile_end(&$userData = []): array
                 $sectionName
             );
 
-            $userData["ougcAwardsViewAllSection{$sectionID}"] = eval(getTemplate($templatePrefix . 'ViewAllSection'));
+            $userData["ougcAwardsViewAllSection{$sectionID}"] = $usersAwardsCache[$userID]["ougcAwardsViewAllSection{$sectionID}"] = eval(
+            getTemplate(
+                $templatePrefix . 'ViewAllSection'
+            )
+            );
         }
 
         $grantedList = '';
 
-        $totalGrantedCount = awardGetUser($sectionData['whereClauses'], 'COUNT(gid) AS totalGranted', ['limit' => 1]);
+        $totalGrantedCount = awardGetUser($sectionData['whereClauses'], ['COUNT(gid) AS totalGranted'], ['limit' => 1]);
 
         if ($totalGrantedCount > $maximumAwardsToDisplay && empty($userData['ougc_awards_view_all'])) {
             $userData['ougc_awards_view_all'] = eval(getTemplate($templatePrefix . 'ViewAll'));
@@ -652,6 +693,10 @@ function member_profile_end(&$userData = []): array
 
             $sectionData['sectionVariable'] = eval(getTemplate($templatePrefix));
 
+            if (isset($sectionData['sectionVariableCache'])) {
+                $sectionData['sectionVariableCache'] = $sectionData['sectionVariable'];
+            }
+
             if ($isAjaxCall && $currentSectionID === $sectionID) {
                 break;
             }
@@ -668,7 +713,8 @@ function member_profile_end(&$userData = []): array
                 ) === false) {
                 $userData['ougc_awards'] .= $userData["ougcAwardsSection{$categoryID}"];
             }
-        } elseif (my_strpos(
+        } elseif (isset($templates->cache[$mybb->settings['postlayout']]) &&
+            my_strpos(
                 $templates->cache[$mybb->settings['postlayout'] === 'classic' ? 'postbit_classic' : 'postbit'],
                 '{$post[\'ougcAwardsSection' . $categoryID . '\']}'
             ) === false) {
