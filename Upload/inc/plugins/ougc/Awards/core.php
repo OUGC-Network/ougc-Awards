@@ -622,7 +622,8 @@ const TABLES_DATA = [
             'type' => 'INT',
             'unsigned' => true,
             'default' => 0
-        ]
+        ],
+        'unique_key' => ['task_user_id' => 'tid,uid']
     ],
     'ougc_awards_presets' => [
         'pid' => [
@@ -915,14 +916,7 @@ function executeTask(
             array &$tableLeftJoins,
             array &$userWhereClauses
         ): bool {
-            if (in_array($taskData[$requirementType . 'type'], [
-                COMPARISON_TYPE_GREATER_THAN,
-                COMPARISON_TYPE_GREATER_THAN_OR_EQUAL,
-                COMPARISON_TYPE_EQUAL,
-                COMPARISON_TYPE_NOT_EQUAL,
-                COMPARISON_TYPE_LESS_THAN_OR_EQUAL,
-                COMPARISON_TYPE_LESS_THAN,
-            ])) {
+            if (in_array($taskData[$requirementType . 'type'], array_keys(getComparisonTypes()))) {
                 $userThreads = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.threadnum{$taskData[$requirementType.'type']}'{$userThreads}'";
@@ -937,14 +931,7 @@ function executeTask(
             array &$tableLeftJoins,
             array &$userWhereClauses
         ): bool {
-            if (in_array($taskData[$requirementType . 'type'], [
-                COMPARISON_TYPE_GREATER_THAN,
-                COMPARISON_TYPE_GREATER_THAN_OR_EQUAL,
-                COMPARISON_TYPE_EQUAL,
-                COMPARISON_TYPE_NOT_EQUAL,
-                COMPARISON_TYPE_LESS_THAN_OR_EQUAL,
-                COMPARISON_TYPE_LESS_THAN,
-            ])) {
+            if (in_array($taskData[$requirementType . 'type'], array_keys(getComparisonTypes()))) {
                 $userThreads = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.postnum{$taskData[$requirementType.'type']}'{$userThreads}'";
@@ -959,14 +946,7 @@ function executeTask(
             array &$tableLeftJoins,
             array &$userWhereClauses
         ): bool {
-            if (in_array($taskData[$requirementType . 'type'], [
-                COMPARISON_TYPE_GREATER_THAN,
-                COMPARISON_TYPE_GREATER_THAN_OR_EQUAL,
-                COMPARISON_TYPE_EQUAL,
-                COMPARISON_TYPE_NOT_EQUAL,
-                COMPARISON_TYPE_LESS_THAN_OR_EQUAL,
-                COMPARISON_TYPE_LESS_THAN,
-            ])) {
+            if (in_array($taskData[$requirementType . 'type'], array_keys(getComparisonTypes()))) {
                 $forumThreads = (int)$taskData[$requirementType];
 
                 $forumIDs = implode(
@@ -995,14 +975,7 @@ function executeTask(
             array &$tableLeftJoins,
             array &$userWhereClauses
         ): bool {
-            if (in_array($taskData[$requirementType . 'type'], [
-                COMPARISON_TYPE_GREATER_THAN,
-                COMPARISON_TYPE_GREATER_THAN_OR_EQUAL,
-                COMPARISON_TYPE_EQUAL,
-                COMPARISON_TYPE_NOT_EQUAL,
-                COMPARISON_TYPE_LESS_THAN_OR_EQUAL,
-                COMPARISON_TYPE_LESS_THAN,
-            ])) {
+            if (in_array($taskData[$requirementType . 'type'], array_keys(getComparisonTypes()))) {
                 $forumPosts = (int)$taskData[$requirementType];
 
                 $forumIDs = implode(
@@ -1100,14 +1073,7 @@ function executeTask(
             array &$tableLeftJoins,
             array &$userWhereClauses
         ): bool {
-            if (in_array($taskData[$requirementType . 'type'], [
-                COMPARISON_TYPE_GREATER_THAN,
-                COMPARISON_TYPE_GREATER_THAN_OR_EQUAL,
-                COMPARISON_TYPE_EQUAL,
-                COMPARISON_TYPE_NOT_EQUAL,
-                COMPARISON_TYPE_LESS_THAN_OR_EQUAL,
-                COMPARISON_TYPE_LESS_THAN,
-            ])) {
+            if (in_array($taskData[$requirementType . 'type'], array_keys(getComparisonTypes()))) {
                 $userReputation = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userReputation}'";
@@ -1124,14 +1090,7 @@ function executeTask(
             array &$tableLeftJoins,
             array &$userWhereClauses
         ): bool {
-            if (in_array($taskData[$requirementType . 'type'], [
-                COMPARISON_TYPE_GREATER_THAN,
-                COMPARISON_TYPE_GREATER_THAN_OR_EQUAL,
-                COMPARISON_TYPE_EQUAL,
-                COMPARISON_TYPE_NOT_EQUAL,
-                COMPARISON_TYPE_LESS_THAN_OR_EQUAL,
-                COMPARISON_TYPE_LESS_THAN,
-            ])) {
+            if (in_array($taskData[$requirementType . 'type'], array_keys(getComparisonTypes()))) {
                 $userReferrals = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userReferrals}'";
@@ -1146,14 +1105,7 @@ function executeTask(
             array &$tableLeftJoins,
             array &$userWhereClauses
         ): bool {
-            if (in_array($taskData[$requirementType . 'type'], [
-                COMPARISON_TYPE_GREATER_THAN,
-                COMPARISON_TYPE_GREATER_THAN_OR_EQUAL,
-                COMPARISON_TYPE_EQUAL,
-                COMPARISON_TYPE_NOT_EQUAL,
-                COMPARISON_TYPE_LESS_THAN_OR_EQUAL,
-                COMPARISON_TYPE_LESS_THAN,
-            ])) {
+            if (in_array($taskData[$requirementType . 'type'], array_keys(getComparisonTypes()))) {
                 $userWarningPoints = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.warningpoints{$taskData[$requirementType.'type']}'{$userWarningPoints}'";
