@@ -1247,7 +1247,17 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     runHooks('edit_category_start');
 
-    foreach (['name', 'description', 'allowrequests', 'visible', 'disporder', 'outputInCustomSection'] as $inputKey) {
+    foreach (
+        [
+            'name',
+            'description',
+            'allowrequests',
+            'visible',
+            'disporder',
+            'outputInCustomSection',
+            'hideInMainPage'
+        ] as $inputKey
+    ) {
         if ($mybb->request_method === 'post') {
             $inputData[$inputKey] = $mybb->get_input($inputKey);
         } elseif (isset($categoryData[$inputKey])) {
@@ -1276,6 +1286,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 'allowrequests' => (int)$inputData['allowrequests'],
                 'visible' => (int)$inputData['visible'],
                 'outputInCustomSection' => (int)$inputData['outputInCustomSection'],
+                'hideInMainPage' => (int)$inputData['hideInMainPage'],
             ];
 
             runHooks('edit_category_commit_start');
@@ -1298,7 +1309,17 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    foreach (['name', 'description', 'allowrequests', 'visible', 'disporder', 'outputInCustomSection'] as $inputKey) {
+    foreach (
+        [
+            'name',
+            'description',
+            'allowrequests',
+            'visible',
+            'disporder',
+            'outputInCustomSection',
+            'hideInMainPage'
+        ] as $inputKey
+    ) {
         if ($mybb->request_method === 'post') {
             $inputData[$inputKey] = htmlspecialchars_uni($mybb->get_input($inputKey));
         } elseif (isset($categoryData[$inputKey])) {
@@ -1338,6 +1359,17 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             break;
         default:
             $selectedElementOutputInCustomSectionNo = 'checked="checked"';
+            break;
+    }
+
+    $selectedElementHideInMainPageYes = $selectedElementHideInMainPageNo = '';
+
+    switch ($inputData['hideInMainPage']) {
+        case AWARD_STATUS_ENABLED:
+            $selectedElementHideInMainPageYes = 'checked="checked"';
+            break;
+        default:
+            $selectedElementHideInMainPageNo = 'checked="checked"';
             break;
     }
 
@@ -1727,15 +1759,15 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $awardsCache = awardsCacheGet()['awards'];
 
-    foreach ($awardsCache as $awardID => $awardData) {
+    foreach ($awardsCache as $awardData) {
         $categoryID = (int)$awardData['cid'];
 
         if (!empty($awardsCategoriesCache[$categoryID]) &&
             (int)$awardData['type'] !== GRANT_STATUS_POSTS) {
             if (empty($awardsCategoriesCache[$categoryID]['outputInCustomSection'])) {
-                $primarySectionAwardsIDs[$awardID] = $userAllAwardsIDs[] = $awardID;
+                $primarySectionAwardsIDs[(int)$awardData['aid']] = $userAllAwardsIDs[] = (int)$awardData['aid'];
             } else {
-                $categorySectionsAwardsIDs[$categoryID][$awardID] = $userAllAwardsIDs[] = $awardID;
+                $categorySectionsAwardsIDs[$categoryID][(int)$awardData['aid']] = $userAllAwardsIDs[] = (int)$awardData['aid'];
             }
         }
     }
@@ -1887,7 +1919,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $rowColumnSpan = 7;
 
-        foreach ($grantCacheData as $grantData) {
+        $functionMyAwardsRenderGrant = static function (array $grantData) use ($mybb, $lang, $urlParams): string {
+            global $alternativeBackground;
+
             $grantID = (int)$grantData['gid'];
 
             $awardID = (int)$grantData['aid'];
@@ -1960,7 +1994,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
             $rowColumnsExtra = implode(' ', $rowColumnsExtra);
 
-            $grantedList .= eval(getTemplate('controlPanelMyAwardsRow'));
+            return eval(getTemplate('controlPanelMyAwardsRow'));
+        };
+
+        foreach ($grantCacheData as $grantData) {
+            $grantedList .= $functionMyAwardsRenderGrant($grantData);
 
             $alternativeBackground = alt_trow();
         }
@@ -2647,11 +2685,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     if (!$isModerator) {
         $ownerAwardIDs = ownerGetUserAwards();
 
-        if ($awardID && !in_array($awardID, $ownerAwardIDs)) {
+        if ($awardID && !in_array($awardID, array_keys($ownerAwardIDs))) {
             error_no_permission();
         }
 
-        $ownerAwardIDs = implode("','", $ownerAwardIDs);
+        $ownerAwardIDs = implode("','", array_keys($ownerAwardIDs));
 
         $whereClauses[] = "aid IN ('{$ownerAwardIDs}')";
     }
@@ -4074,14 +4112,18 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = '';
 
-    $ownerObjects = ownerGetUser(["uid='{$currentUserID}'"]);
+    $ownerAwardIDs = ownerGetUserAwards();
 
-    $ownerAwardIDs = array_map('intval', array_column($ownerObjects, 'aid'));
+    $whereClauses = [];
+
+    if (!$isModerator) {
+        $whereClauses[] = "cid IN ('" . implode("','", $ownerAwardIDs) . "')";
+    }
 
     foreach (
         categoryGetCache(
-            [],
-            ['cid', 'name', 'description'],
+            $whereClauses,
+            ['cid', 'name', 'description', 'hideInMainPage'],
             ['order_by' => 'disporder']
         ) as $categoryData
     ) {
@@ -4117,7 +4159,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             ['order_by' => 'disporder']
         );
 
-        $isAwardOwner = array_intersect(array_column($categoryAwardsObjects, 'aid'), $ownerAwardIDs);
+        $isAwardOwner = array_intersect(array_column($categoryAwardsObjects, 'aid'), array_keys($ownerAwardIDs));
 
         if (($isModerator || $isCategoryOwner) || $isAwardOwner) {
             ++$theadColumSpan;
@@ -4134,7 +4176,15 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $alternativeBackground = alt_trow(true);
 
         foreach ($categoryAwardsObjects as $awardID => $awardData) {
-            if (!($isModerator || $isCategoryOwner) && !in_array($awardID, $ownerAwardIDs) &&
+            if (!empty($categoryData['hideInMainPage'])) {
+                $alternativeBackground .= ' categoryHiddenInMainPage';
+
+                if (!in_array($awardID, array_keys($ownerAwardIDs))) {
+                    continue;
+                }
+            }
+
+            if (!($isModerator || $isCategoryOwner) && !in_array($awardID, array_keys($ownerAwardIDs)) &&
                 !isVisibleAward($awardID)) {
                 continue;
             }
@@ -4189,7 +4239,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 $rowColumnDisplayOrder = eval(getTemplate('controlPanelListRowDisplayOrder'));
 
                 $rowColumnOptions = eval(getTemplate('controlPanelListRowOptions'));
-            } elseif (in_array($awardID, $ownerAwardIDs)) {
+            } elseif (in_array($awardID, array_keys($ownerAwardIDs))) {
                 $rowColumnOptions = eval(getTemplate('controlPanelListRowOptions'));
             }
 

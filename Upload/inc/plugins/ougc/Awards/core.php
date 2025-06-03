@@ -137,6 +137,11 @@ const TABLES_DATA = [
             'unsigned' => true,
             'default' => 0
         ],
+        'hideInMainPage' => [
+            'type' => 'TINYINT',
+            'unsigned' => true,
+            'default' => 0
+        ],
     ],
     'ougc_awards' => [
         'aid' => [
@@ -1752,7 +1757,7 @@ function ownerGetUserAwards(?int $userID = null): array
         ) {
             foreach ($awardsCache as $awardID => $awardData) {
                 if ((int)$awardData['cid'] === (int)$ownerData['categoryID']) {
-                    $awardIDs[] = $awardID;
+                    $awardIDs[$awardID] = (int)$awardData['cid'];
                 }
             }
         }
@@ -1765,7 +1770,7 @@ function ownerGetUserAwards(?int $userID = null): array
         ) {
             foreach ($awardsCache as $awardID => $awardData) {
                 if ((int)$awardData['aid'] === (int)$ownerData['aid']) {
-                    $awardIDs[] = $awardID;
+                    $awardIDs[$awardID] = (int)$awardData['cid'];
                 }
             }
         }
@@ -1811,6 +1816,10 @@ function categoryInsert(array $categoryData, int $categoryID = 0, bool $isUpdate
         $insertData['outputInCustomSection'] = (int)$categoryData['outputInCustomSection'];
     }
 
+    if (isset($categoryData['hideInMainPage'])) {
+        $insertData['hideInMainPage'] = (int)$categoryData['hideInMainPage'];
+    }
+
     $hookArguments = runHooks('insert_update_category_end', $hookArguments);
 
     if ($isUpdate) {
@@ -1844,7 +1853,15 @@ function categoryDelete(int $categoryID): bool
 
 function categoryGet(
     int $categoryID,
-    array $queryFields = ['name', 'description', 'disporder', 'allowrequests', 'visible', 'outputInCustomSection']
+    array $queryFields = [
+        'name',
+        'description',
+        'disporder',
+        'allowrequests',
+        'visible',
+        'outputInCustomSection',
+        'hideInMainPage'
+    ]
 ): array {
     static $categoryCache = [];
 
@@ -1867,7 +1884,15 @@ function categoryGet(
 
 function categoryGetCache(
     array $whereClauses = [],
-    array $queryFields = ['name', 'description', 'disporder', 'allowrequests', 'visible', 'outputInCustomSection'],
+    array $queryFields = [
+        'name',
+        'description',
+        'disporder',
+        'allowrequests',
+        'visible',
+        'outputInCustomSection',
+        'hideInMainPage'
+    ],
     array $queryOptions = []
 ): array {
     global $db;
@@ -2781,7 +2806,7 @@ function cacheUpdate(): bool
         'last' => [],
     ];
 
-    $queryFieldsCategories = ['cid', 'name', 'description', 'allowrequests', 'outputInCustomSection'];
+    $queryFieldsCategories = ['cid', 'name', 'description', 'allowrequests', 'outputInCustomSection', 'hideInMainPage'];
 
     $queryFieldsAwards = [
         'aid',

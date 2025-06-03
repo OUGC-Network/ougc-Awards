@@ -195,7 +195,7 @@ function global_intermediate(): bool
     $pendingRequestCount = empty($awardRequestsCache['pending']) ? 0 : (int)$awardRequestsCache['pending'];
 
     if (!isModerator() && $pendingRequestCount && $ownerAwardIDs = ownerGetUserAwards()) {
-        $ownerAwardIDs = implode("','", $ownerAwardIDs);
+        $ownerAwardIDs = implode("','", array_keys($ownerAwardIDs));
 
         $statusPending = REQUEST_STATUS_PENDING;
 

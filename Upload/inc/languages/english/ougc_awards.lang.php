@@ -75,6 +75,8 @@ $l = [
     'ougcAwardsControlPanelNewCategoryDisplayOrderDescription' => 'Select the display order for this category.',
     'ougcAwardsControlPanelNewCategoryOutputInCustomSection' => 'Output in Custom Section',
     'ougcAwardsControlPanelNewCategoryOutputInCustomSectionDescription' => 'Enable this to display awards from this category in its custom section.',
+    'ougcAwardsControlPanelNewCategoryHideInMainPage' => 'Hide in Main Page',
+    'ougcAwardsControlPanelNewCategoryHideInMainPageDescription' => 'Enable this to hide in Main Page if the user is not a moderator nor a category owner.',
     'ougcAwardsControlPanelNewCategoryButton' => 'Create Category',
 
     'ougcAwardsControlPanelEditCategoryTitle' => 'Edit Category',
