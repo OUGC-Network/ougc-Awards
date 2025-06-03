@@ -40,12 +40,14 @@ use function ougc\Awards\Core\cacheUpdate;
 use function ougc\Awards\Core\executeTask;
 use function ougc\Awards\Core\isModerator;
 use function ougc\Awards\Core\myAlertsInitiate;
+use function ougc\Awards\Core\ownerGetUserAwards;
 use function ougc\Awards\Core\parseUserAwards;
 use function ougc\Awards\Core\presetGet;
 use function ougc\Awards\Core\presetUpdate;
 use function ougc\Awards\Core\loadLanguage;
 use function ougc\Awards\Core\getTemplate;
-use function ougc\Awards\Core\urlHandlerGet;
+use function ougc\Awards\Core\requestGet;
+use function ougc\Awards\Core\urlHandlerBuild;
 use function ougc\Awards\Core\getSetting;
 
 use const TIME_NOW;
@@ -176,9 +178,11 @@ function global_intermediate(): bool
         return false;
     }
 
-    $isOwner = !empty($mybb->user['ougc_awards_owner']);
+    $ownsCategories = !empty($mybb->user['ougc_awards_category_owner']);
 
-    if (!isModerator() && !$isOwner) {
+    $ownsAwards = $ownsCategories || !empty($mybb->user['ougc_awards_owner']);
+
+    if (!isModerator() && !$ownsAwards) {
         return false;
     }
 
@@ -190,32 +194,15 @@ function global_intermediate(): bool
 
     $pendingRequestCount = empty($awardRequestsCache['pending']) ? 0 : (int)$awardRequestsCache['pending'];
 
-    if (!isModerator() && $pendingRequestCount) {
-        if ($awardIDs = array_keys($awardsCache)) {
-            $query = $db->simple_select(
-                'ougc_awards_owners',
-                'aid',
-                "uid='{$currentUserID}' AND aid IN ('" . implode("','", $awardIDs) . "')"
-            );
+    if (!isModerator() && $pendingRequestCount && $ownerAwardIDs = ownerGetUserAwards()) {
+        $ownerAwardIDs = implode("','", $ownerAwardIDs);
 
-            $awardIDs = [];
+        $statusPending = REQUEST_STATUS_PENDING;
 
-            while ($awardID = $db->fetch_field($query, 'aid')) {
-                $awardIDs[] = (int)$awardID;
-            }
-
-            if ($awardIDs) {
-                $statusPending = REQUEST_STATUS_PENDING;
-
-                $query = $db->simple_select(
-                    'ougc_awards_requests',
-                    'COUNT(rid) AS pending',
-                    "status='{$statusPending}' AND aid IN ('" . implode("','", $awardIDs) . "')"
-                );
-
-                $pendingRequestCount = (int)$db->fetch_field($query, 'pending');
-            }
-        }
+        $pendingRequestCount = (int)(requestGet(
+            ["status='{$statusPending}'", "aid IN ('{$ownerAwardIDs}')"],
+            ['COUNT(rid) AS total_pending_requests']
+        )['total_pending_requests'] ?? 0);
     }
 
     if ($pendingRequestCount < 1) {
@@ -225,7 +212,7 @@ function global_intermediate(): bool
     $messageContent = $lang->sprintf(
         $pendingRequestCount > 1 ? $lang->ougcAwardsGlobalNotificationRequestsPlural : $lang->ougcAwardsGlobalNotificationRequests,
         $mybb->settings['bburl'],
-        urlHandlerGet(),
+        urlHandlerBuild(['action' => 'viewRequests']),
         my_number_format($pendingRequestCount)
     );
 
@@ -364,7 +351,10 @@ function postbit(array &$postData): array
 
 function myshowcase_system_render_build_entry_comment_end(array &$hookArguments): array
 {
-    $hookArguments['userData'] = member_profile_end($hookArguments['userData']);
+    if ($hookArguments['postType'] === $hookArguments['renderObject']::POST_TYPE_ENTRY && $hookArguments['renderObject']->showcaseObject->config['display_user_details_entries'] ||
+        $hookArguments['postType'] === $hookArguments['renderObject']::POST_TYPE_COMMENT && $hookArguments['renderObject']->showcaseObject->config['display_user_details_comments']) {
+        $hookArguments['userData'] = member_profile_end($hookArguments['userData']);
+    }
 
     return $hookArguments;
 }

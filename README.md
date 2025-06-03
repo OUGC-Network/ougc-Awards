@@ -235,8 +235,8 @@ To display Awards data it is required that you edit the following template for e
     showcases.
 13. Place `{$ougcAwardsStatsLast}` in the `stats` template to display the last award grants in the stats page.
 14. Place `{$ougcAwardsViewAll}` in any template to display a link to view all awards for the current user.
-15. Place `{$ougcAwardsGlobalNotificationRequests}` in the `header` template to display the requests notification to
-    moderator, category owners, and user owners.
+15. Place `{$ougcAwardsGlobalNotificationRequests}` after `{$awaitingusers}` in the `header` template to display the
+    requests notification to moderator, category owners, and user owners.
 
 [Go up to Table of Contents](#table_of_contents)
 

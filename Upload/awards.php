@@ -74,6 +74,7 @@ use function ougc\Awards\Core\ownerDelete;
 use function ougc\Awards\Core\ownerFind;
 use function ougc\Awards\Core\ownerGetSingle;
 use function ougc\Awards\Core\ownerGetUser;
+use function ougc\Awards\Core\ownerGetUserAwards;
 use function ougc\Awards\Core\ownerInsert;
 use function ougc\Awards\Core\parseMessage;
 use function ougc\Awards\Core\parserObject;
@@ -249,7 +250,9 @@ $taskID = $mybb->get_input('taskID', MyBB::INPUT_INT);
 
 $currentUserID = (int)$mybb->user['uid'];
 
-$isOwner = !empty($mybb->user['ougc_awards_owner']);
+$isCategoryOwner = !empty($mybb->user['ougc_awards_category_owner']);
+
+$isOwner = $isCategoryOwner || !empty($mybb->user['ougc_awards_owner']);
 
 add_breadcrumb($lang->ougcAwardsPageNavigation, urlHandlerBuild());
 
@@ -282,8 +285,6 @@ $isCustomPage = false;
 
 runHooks('start');
 
-$isCategoryOwner = false;
-
 $isModerator = isModerator();
 
 if (in_array($mybb->get_input('action'), $validActions)) {
@@ -303,14 +304,16 @@ if (in_array($mybb->get_input('action'), $validActions)) {
         $mybb->get_input('action'),
         ['newCategory', 'editCategory', 'newAward', 'viewCategoryOwners', 'deleteCategoryOwner']
     )) {
-        if (!($awardData = awardGet($awardID)) || !isVisibleAward($awardID)) {
-            error($lang->ougcAwardsErrorInvalidAward);
-        }
+        if ($mybb->get_input('action') !== 'viewRequests' || $awardID) {
+            if (!($awardData = awardGet($awardID)) || !isVisibleAward($awardID)) {
+                error($lang->ougcAwardsErrorInvalidAward);
+            }
 
-        $categoryID = (int)$awardData['cid'];
+            $categoryID = (int)$awardData['cid'];
+        }
     }
 
-    if (ownerCategoryFind($categoryID, $currentUserID)) {
+    if ($categoryID && ownerCategoryFind($categoryID, $currentUserID)) {
         $isCategoryOwner = true;
     }
 
@@ -331,8 +334,10 @@ if (in_array($mybb->get_input('action'), $validActions)) {
     }
 
     if (!in_array($mybb->get_input('action'), ['newCategory', 'newAward'])) {
-        if (!($categoryData = categoryGet($categoryID)) || !isVisibleCategory($categoryID)) {
-            error($lang->ougcAwardsErrorInvalidCategory);
+        if ($mybb->get_input('action') !== 'viewRequests' || $categoryID) {
+            if (!($categoryData = categoryGet($categoryID)) || !isVisibleCategory($categoryID)) {
+                error($lang->ougcAwardsErrorInvalidCategory);
+            }
         }
     }
 
@@ -2629,16 +2634,31 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = eval(getTemplate('controlPanelConfirmation'));
 } elseif ($mybb->get_input('action') == 'viewRequests') {
-    if (!($isModerator || $isCategoryOwner) && !$isOwner) {
+    if (!$isModerator && !$isOwner) {
         error_no_permission();
     }
 
     $statusPending = REQUEST_STATUS_PENDING;
 
     $whereClauses = [
-        "aid='{$awardID}'",
         'status' => "status='{$statusPending}'"
     ];
+
+    if (!$isModerator) {
+        $ownerAwardIDs = ownerGetUserAwards();
+
+        if ($awardID && !in_array($awardID, $ownerAwardIDs)) {
+            error_no_permission();
+        }
+
+        $ownerAwardIDs = implode("','", $ownerAwardIDs);
+
+        $whereClauses[] = "aid IN ('{$ownerAwardIDs}')";
+    }
+
+    if ($awardID) {
+        $whereClauses[] = "aid='{$awardID}'";
+    }
 
     if (!($isModerator || $isCategoryOwner) && $isOwner) {
         $whereClauses['uid'] = "uid='{$currentUserID}'";
@@ -2660,13 +2680,17 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 $statusAccepted = REQUEST_STATUS_ACCEPTED;
 
                 $filterOptionsSelected['statusAccepted'] = ' selected="selected"';
+
                 $whereClauses['status'] = "status='{$statusAccepted}'";
+
                 break;
             case REQUEST_STATUS_REJECTED:
                 $statusRejected = REQUEST_STATUS_REJECTED;
 
                 $filterOptionsSelected['statusRejected'] = ' selected="selected"';
+
                 $whereClauses['status'] = "status='{$statusRejected}'";
+
                 break;
         }
     }
@@ -2727,14 +2751,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $totalRequestsCount = requestGetPending(
         $whereClauses,
-        ['COUNT(rid) AS totalRequests'],
+        ['COUNT(rid) AS total_pending_requests'],
         ['limit' => 1]
     );
 
-    if (empty($totalRequestsCount['totalRequests'])) {
+    if (empty($totalRequestsCount['total_pending_requests'])) {
         $totalRequestsCount = 0;
     } else {
-        $totalRequestsCount = (int)$totalRequestsCount['totalRequests'];
+        $totalRequestsCount = (int)$totalRequestsCount['total_pending_requests'];
     }
 
     $requestsList = $buttons = '';
@@ -2781,6 +2805,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             }
         }
 
+        $usersCache = [];
+
         if ($userIDs) {
             $userIDs = implode("','", $userIDs);
 
@@ -2797,7 +2823,13 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $alternativeBackground = alt_trow(true);
 
-        foreach ($pendingRequestsCache as $requestData) {
+        $functionRenderRequestRow = static function (array $requestData) use (
+            $mybb,
+            $lang,
+            $usersCache,
+        ): string {
+            global $alternativeBackground;
+
             $userID = (int)$requestData['uid'];
 
             $awardID = (int)$requestData['aid'];
@@ -2852,7 +2884,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                 $checkedElement = 'checked="checked"';
             }
 
-            $requestsList .= eval(getTemplate('controlPanelRequestsRow'));
+            return eval(getTemplate('controlPanelRequestsRow'));
+        };
+
+        foreach ($pendingRequestsCache as $requestData) {
+            $requestsList .= $functionRenderRequestRow($requestData);
 
             $alternativeBackground = alt_trow();
         }

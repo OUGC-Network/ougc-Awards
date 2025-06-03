@@ -1630,15 +1630,13 @@ function rebuildOwnersCategories(): bool
 {
     global $db;
 
-    $userIDs = [];
+    $userIDs = [0];
 
-    $dbQuery = $db->simple_select('ougc_awards_category_owners', 'uid');
-
-    while ($userID = $db->fetch_field($dbQuery, 'uid')) {
-        $userIDs[] = (int)$userID;
+    foreach (ownerCategoryGetUser([], ['userID']) as $ownerID => $ownerData) {
+        $userIDs[] = (int)$ownerData['userID'];
     }
 
-    $userIDs = implode("','", array_filter($userIDs));
+    $userIDs = implode("','", $userIDs);
 
     $db->update_query('users', ['ougc_awards_category_owner' => 0], "uid NOT IN ('{$userIDs}')");
 
@@ -1695,7 +1693,7 @@ function ownerCategoryGetUser(
             return $db->fetch_array($dbQuery);
         } else {
             while ($userData = $db->fetch_array($dbQuery)) {
-                $usersData[] = $userData;
+                $usersData[(int)$userData['ownerID']] = $userData;
             }
         }
     }
@@ -1723,6 +1721,57 @@ function ownerCategoryFind(
     }
 
     return [];
+}
+
+function ownerGetUserAwards(?int $userID = null): array
+{
+    if ($userID === null) {
+        global $mybb;
+
+        $userID = (int)$mybb->user['uid'];
+
+        $userData = $mybb->user;
+    } else {
+        $userData = get_user($userID);
+    }
+
+    $awardsCache = awardsCacheGet()['awards'];
+
+    $ownsCategories = !empty($userData['ougc_awards_category_owner']);
+
+    $ownsAwards = $ownsCategories || !empty($userData['ougc_awards_owner']);
+
+    $awardIDs = [];
+
+    if ($ownsCategories) {
+        foreach (
+            ownerCategoryGetUser(
+                ["userID='{$userID}'"],
+                ['categoryID']
+            ) as $ownerID => $ownerData
+        ) {
+            foreach ($awardsCache as $awardID => $awardData) {
+                if ((int)$awardData['cid'] === (int)$ownerData['categoryID']) {
+                    $awardIDs[] = $awardID;
+                }
+            }
+        }
+    } elseif ($ownsAwards) {
+        foreach (
+            ownerGetUser(
+                ["uid='{$userID}'"],
+                ['aid']
+            ) as $ownerID => $ownerData
+        ) {
+            foreach ($awardsCache as $awardID => $awardData) {
+                if ((int)$awardData['aid'] === (int)$ownerData['aid']) {
+                    $awardIDs[] = $awardID;
+                }
+            }
+        }
+    }
+
+    return $awardIDs;
 }
 
 function categoryInsert(array $categoryData, int $categoryID = 0, bool $isUpdate = false): int
