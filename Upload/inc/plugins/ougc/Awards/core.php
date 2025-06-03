@@ -784,7 +784,7 @@ function loadLanguage(bool $isDataHandler = false): bool
     global $lang;
 
     if (!isset($lang->ougcAwards)) {
-        if (defined('IN_ADMINCP')) {
+        if (!$isDataHandler && defined('IN_ADMINCP')) {
             $lang->load('user_ougc_awards', $isDataHandler);
         } else {
             $lang->load('ougc_awards', $isDataHandler);

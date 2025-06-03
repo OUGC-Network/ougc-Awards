@@ -169,9 +169,11 @@ $templatelist = 'ougcawards_' . implode(',ougcawards_', [
         'controlPanelListRowRequestButton',
         'controlPanelLogs',
         'controlPanelLogsEmpty',
+        'controlPanelLogsPagination',
         'controlPanelLogsRow',
         'controlPanelMyAwards',
         'controlPanelMyAwardsEmpty',
+        'controlPanelMyAwardsPagination',
         'controlPanelMyAwardsRow',
         'controlPanelMyAwardsRowLink',
         'controlPanelNewEditAwardForm',
@@ -3244,17 +3246,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             "visible='{$grantStatusVisible}'",
         ];
 
-        $totalGrantedCount = awardGetUser(
+        $totalGrantedCount = (int)(awardGetUser(
             $whereClauses,
             ['COUNT(gid) AS totalGranted'],
             ['limit' => 1]
-        );
-
-        if (empty($totalGrantedCount['totalGranted'])) {
-            $totalGrantedCount = 0;
-        } else {
-            $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
-        }
+        )['totalGranted'] ?? 0);
 
         $startPage = 0;
 
@@ -3996,13 +3992,65 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         redirect(urlHandlerBuild($urlParams), $lang->ougcAwardsRedirectLogDeleted);
     }
 
+    $paginationMenu = '';
+
+    $whereClauses = ["tid='{$taskID}'"];
+
+    $totalLogsCount = (int)(logGet(
+        $whereClauses,
+        ['COUNT(lid) AS total_logs'],
+        ['limit' => 1]
+    )['total_logs'] ?? 0);
+
+    $startPage = 0;
+
+    $currentPage = 1;
+
+    if ($perPage && $totalLogsCount) {
+        $currentPage = $mybb->get_input('page', MyBB::INPUT_INT);
+
+        if ($currentPage > 0) {
+            $startPage = ($currentPage - 1) * $perPage;
+
+            if ($currentPage > ceil($totalLogsCount / $perPage)) {
+                $startPage = 0;
+
+                $currentPage = 1;
+            }
+        }
+
+        $paginationMenu = (string)multipage(
+            $totalLogsCount,
+            $perPage,
+            $currentPage,
+            urlHandlerBuild($urlParams)
+        );
+
+        if ($paginationMenu) {
+            $paginationMenu = eval(getTemplate('globalPagination'));
+        }
+    }
+
+    if ($paginationMenu) {
+        $paginationMenu = eval(getTemplate('controlPanelLogsPagination'));
+    }
+
     add_breadcrumb(htmlspecialchars_uni($taskData['name']), urlHandlerBuild(['action' => 'viewTasks']));
 
     $alternativeBackground = alt_trow(true);
 
     $logsRows = '';
 
-    foreach (logGet(["tid='{$taskID}'"], ['tid', 'uid', 'gave', 'revoked', 'date']) as $logData) {
+    foreach (
+        logGet(
+            $whereClauses,
+            ['tid', 'uid', 'gave', 'revoked', 'date'],
+            [
+                'limit' => $perPage,
+                'limit_start' => $startPage,
+            ]
+        ) as $logData
+    ) {
         $logID = (int)$logData['lid'];
 
         $userID = (int)$logData['uid'];
