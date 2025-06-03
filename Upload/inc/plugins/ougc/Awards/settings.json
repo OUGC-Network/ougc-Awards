@@ -49,7 +49,7 @@
   },
   "notificationPrivateMessage": {
     "optionscode": "yesno",
-    "value": 1
+    "value": 0
   },
   "grantDefaultVisibleStatus": {
     "optionscode": "yesno",
