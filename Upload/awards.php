@@ -4117,7 +4117,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $whereClauses = [];
 
     if (!$isModerator) {
-        $whereClauses[] = "cid IN ('" . implode("','", $ownerAwardIDs) . "')";
+        $whereClauses[] = "cid IN ('" . implode("','", array_values($ownerAwardIDs)) . "')";
     }
 
     foreach (
@@ -4179,7 +4179,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             if (!empty($categoryData['hideInMainPage'])) {
                 $alternativeBackground .= ' categoryHiddenInMainPage';
 
-                if (!in_array($awardID, array_keys($ownerAwardIDs))) {
+                if (!$isModerator && !in_array($awardID, array_keys($ownerAwardIDs))) {
                     continue;
                 }
             }
