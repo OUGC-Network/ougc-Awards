@@ -2826,7 +2826,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $functionRenderRequestRow = static function (array $requestData) use (
             $mybb,
             $lang,
-            $usersCache,
+            $usersCache
         ): string {
             global $alternativeBackground;
 
@@ -3796,9 +3796,19 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $queryFields = array_keys(TABLES_DATA['ougc_awards_tasks']);
 
+    $currentUserTaskLogsCache = [];
+
+    foreach (logGet(["uid='{$currentUserID}'"], ['tid']) as $logID => $logData) {
+        $currentUserTaskLogsCache[(int)$logData['tid']] = 1;
+    }
+
     runHooks('tasks_view_start');
 
     foreach (taskGet([], $queryFields) as $taskID => $taskData) {
+        if (isset($currentUserTaskLogsCache[$taskID])) {
+            $alternativeBackground .= ' userTaskLogExist';
+        }
+
         $taskType = (int)$taskData['taskType'];
 
         $taskName = htmlspecialchars_uni($taskData['name']);
