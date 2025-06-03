@@ -2181,7 +2181,7 @@ function grantInsert(
     sendPrivateMessage([
         'subject' => $lang->sprintf(
             $lang->ougcAwardsPrivateMessageTitle,
-            strip_tags($awardData['name'])
+            $awardData['name']
         ),
         'message' => $lang->sprintf(
             $awardData['pm'],
@@ -2396,12 +2396,12 @@ function requestReject(int $requestID): bool
     sendPrivateMessage([
         'subject' => $lang->sprintf(
             $lang->ougcAwardsPrivateMessageRequestRejectedTitle,
-            strip_tags($awardData['name'])
+            $awardData['name']
         ),
         'message' => $lang->sprintf(
             $lang->ougcAwardsPrivateMessageRequestRejectedBody,
             $userData['username'],
-            strip_tags($awardData['name'])
+            $awardData['name']
         ),
         'touid' => $userData['uid']
     ], (int)getSetting('privateMessageSenderUserID'), true);
@@ -3027,7 +3027,7 @@ function generateSelectCategory(int $selectedID): string
 
         $optionValue = (int)$categoryData['cid'];
 
-        $optionName = $categoryData['name'];
+        $optionName = htmlspecialchars_uni($categoryData['name']);
 
         $onChange = '';
 
@@ -3060,7 +3060,9 @@ function generateSelectCustomReputation(string $inputName, int $selectedID = 0):
             $selectedElement = 'selected="selected"';
         }
 
-        $selectCode .= "<option value=\"{$reputationData['rid']}\"{$selectedElement}>{$reputationData['name']}</option>";
+        $reputationName = htmlspecialchars_uni($reputationData['name']);
+
+        $selectCode .= "<option value=\"{$reputationData['rid']}\"{$selectedElement}>{$reputationName}</option>";
     }
 
     $selectCode .= '</select>';

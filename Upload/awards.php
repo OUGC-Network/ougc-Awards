@@ -351,7 +351,7 @@ if (in_array($mybb->get_input('action'), $validActions)) {
 
     if (!empty($categoryData['name'])) {
         add_breadcrumb(
-            $categoryData['name'],
+            htmlspecialchars_uni($categoryData['name']),
             urlHandlerBuild(['action' => 'viewCategory', 'categoryID' => $categoryID])
         );
     }
@@ -730,7 +730,7 @@ $requirementCriteria = [
             ) {
                 $optionValue = (int)$forumData['fid'];
 
-                $optionName = htmlspecialchars_uni($forumData['name']);
+                $optionName = strip_tags($forumData['name']);
 
                 $selectedElement = '';
 
@@ -4127,9 +4127,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $awardsList = '';
 
-        $categoryName = $categoryData['name'];
+        $categoryName = htmlspecialchars_uni($categoryData['name']);
 
-        $categoryDescription = $categoryData['description'];
+        $categoryDescription = htmlspecialchars_uni($categoryData['description']);
 
         $alternativeBackground = alt_trow(true);
 
