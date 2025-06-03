@@ -542,7 +542,7 @@ Greetings.',
     'ougcAwardsViewUser' => 'View User Awards',
     'ougcAwardsViewUserTitle' => "{1}'s Awards",
     'ougcAwardsViewUserEmpty' => 'There are currently no awards to display.',
-    'ougcAwardsMyAlerts' => '{1}, you were granted the {3} award by {2}.',
+    'ougcAwardsMyAlerts' => '{2} has granted you the {3} award.',
 
     // {4} outputs the award formatted image
     'myalerts_setting_ougc_awards' => 'Receive alert when an award is granted or an award request is rejected?',

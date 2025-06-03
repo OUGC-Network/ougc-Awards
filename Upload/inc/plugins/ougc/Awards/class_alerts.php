@@ -69,7 +69,7 @@ class MyAlertsFormatter extends MybbStuff_MyAlerts_Formatter_AbstractFormatter
 
         return $this->lang->sprintf(
             $this->lang->ougcAwardsMyAlerts,
-            $outputAlert['username'],
+            $this->mybb->user['username'],
             $outputAlert['from_user'],
             $awardData['name'],
             $awardImage
