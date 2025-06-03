@@ -349,7 +349,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelNewTaskName' => 'Name',
     'ougcAwardsControlPanelNewTaskNameDescription' => 'Select a short name for this task',
     'ougcAwardsControlPanelNewTaskDescription' => 'Description',
-    'ougcAwardsControlPanelNewTaskDescriptionDescription' => 'Select a short description for this task.',
+    'ougcAwardsControlPanelNewTaskDescriptionDescription' => 'Select a short description for this task. You may use MyCode in the description.',
     'ougcAwardsControlPanelNewTaskEnabled' => 'Enabled',
     'ougcAwardsControlPanelNewTaskEnabledDescription' => 'Enable this task.',
     'ougcAwardsControlPanelNewTaskType' => 'Type',
