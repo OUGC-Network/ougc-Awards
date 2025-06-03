@@ -3,6 +3,10 @@
     "optionscode": "numeric",
     "value": 4
   },
+  "groupAwardGrantsInPosts": {
+    "optionscode": "yesno",
+    "value": 0
+  },
   "showInPostsPresets": {
     "optionscode": "numeric",
     "value": 10
@@ -10,6 +14,10 @@
   "showInProfile": {
     "optionscode": "numeric",
     "value": 4
+  },
+  "groupAwardGrantsInProfiles": {
+    "optionscode": "yesno",
+    "value": 0
   },
   "showInProfilePresets": {
     "optionscode": "numeric",

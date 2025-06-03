@@ -3280,6 +3280,18 @@ function parseUserAwards(
 
         $awardName = htmlspecialchars_uni($awardData['name']);
 
+        $totalAwardGrants = (int)($grantData['total_award_grants'] ?? 0);
+
+        if ($totalAwardGrants > 1) {
+            $totalAwardGrants = my_number_format($totalAwardGrants);
+
+            $totalAwardGrants = eval(getTemplate($templateName . 'TotalCount', false));
+
+            $awardName .= $totalAwardGrants;
+        } else {
+            $totalAwardGrants = '';
+        }
+
         $awardDescription = htmlspecialchars_uni($awardData['description']);
 
         $grantID = (int)$grantData['gid'];

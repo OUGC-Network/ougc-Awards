@@ -237,6 +237,10 @@ To display Awards data it is required that you edit the following template for e
 14. Place `{$ougcAwardsViewAll}` in any template to display a link to view all awards for the current user.
 15. Place `{$ougcAwardsGlobalNotificationRequests}` after `{$awaitingusers}` in the `header` template to display the
     requests notification to moderator, category owners, and user owners.
+16. You can place `{$totalAwardGrants}` in the `postBitRow` or `profileRow` template if you want to display the amount
+    of award grants in posts or profiles for each award.
+17. You can place `{$paginationMenu}` in the `postBitContent` template if you want to display the pagination for the
+    current user post.
 
 [Go up to Table of Contents](#table_of_contents)
 

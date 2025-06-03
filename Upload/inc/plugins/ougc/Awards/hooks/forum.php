@@ -93,6 +93,7 @@ function global_start05(): bool
             'postBitPresetsRowLink',
             'postBitRow',
             'postBitRowLink',
+            'postBitRowTotalCount',
             'postBitViewAll',
             'postBitViewAllSection',
             'profile',
@@ -106,6 +107,7 @@ function global_start05(): bool
             'profilePresetsRowLink',
             'profileRow',
             'profileRowLink',
+            'profileRowTotalCount',
             'profileViewAll',
             'profileViewAllSection',
             'stats',
@@ -397,13 +399,23 @@ function member_profile_end(&$userData = []): array
     if ($isProfilePage) {
         $maximumAwardsToDisplay = (int)getSetting('showInProfile');
 
+        $groupAwardGrants = getSetting('groupAwardGrantsInProfiles');
+
         $templatePrefix = 'profile';
+    } elseif ($isShowcasePage) {
+        // todo, implement custom settings per showcase
+        $maximumAwardsToDisplay = (int)getSetting('showInPosts');
+
+        $groupAwardGrants = getSetting('groupAwardGrantsInPosts');
+
+        $templatePrefix = 'postBit';
     } else {
         $maximumAwardsToDisplay = (int)getSetting('showInPosts');
 
+        $groupAwardGrants = getSetting('groupAwardGrantsInPosts');
+
         $templatePrefix = 'postBit';
     }
-
 
     if ($maximumAwardsToDisplay < 1) {
         $maximumAwardsToDisplay = 0;
@@ -516,22 +528,32 @@ function member_profile_end(&$userData = []): array
         'order_dir' => 'desc'
     ];
 
+    if ($groupAwardGrants) {
+        $queryOptions['group_by'] = 'aid';
+    }
+
+    $queryFields = [
+        'uid',
+        'oid',
+        'aid',
+        'rid',
+        'tid',
+        'thread',
+        'reason',
+        'pm',
+        'date',
+        'disporder',
+        'visible'
+    ];
+
+    if ($groupAwardGrants) {
+        $queryFields[] = 'COUNT(aid) AS total_award_grants';
+    }
+
     $sectionObjects = [
         0 => [
             'whereClauses' => array_merge($whereClauses, ["aid IN ('{$primarySectionAwardsIDs}')"]),
-            'queryFields' => [
-                'uid',
-                'oid',
-                'aid',
-                'rid',
-                'tid',
-                'thread',
-                'reason',
-                'pm',
-                'date',
-                'disporder',
-                'visible'
-            ],
+            'queryFields' => $queryFields,
             'sectionVariable' => &$userData['ougc_awards']
         ]
     ];
@@ -542,19 +564,7 @@ function member_profile_end(&$userData = []): array
 
             $sectionObjects[$categoryID] = [
                 'whereClauses' => array_merge($whereClauses, ["aid IN ('{$sectionAwardsIDs}')"]),
-                'queryFields' => [
-                    'uid',
-                    'oid',
-                    'aid',
-                    'rid',
-                    'tid',
-                    'thread',
-                    'reason',
-                    'pm',
-                    'date',
-                    'disporder',
-                    'visible'
-                ],
+                'queryFields' => $queryFields,
                 'sectionVariable' => &$userData["ougcAwardsSection{$categoryID}"],
                 'sectionVariableCache' => &$usersAwardsCache[$userID]["ougcAwardsSection{$categoryID}"]
             ];
@@ -590,9 +600,19 @@ function member_profile_end(&$userData = []): array
             );
         }
 
+        $countField = 'gid';
+
+        if ($groupAwardGrants) {
+            $countField = 'DISTINCT aid';
+        }
+
         $grantedList = '';
 
-        $totalGrantedCount = awardGetUser($sectionData['whereClauses'], ['COUNT(gid) AS totalGranted'], ['limit' => 1]);
+        $totalGrantedCount = awardGetUser(
+            $sectionData['whereClauses'],
+            ["COUNT({$countField}) AS totalGranted"],
+            ['limit' => 1]
+        );
 
         if ($totalGrantedCount > $maximumAwardsToDisplay && empty($userData['ougc_awards_view_all'])) {
             $userData['ougc_awards_view_all'] = eval(getTemplate($templatePrefix . 'ViewAll'));
