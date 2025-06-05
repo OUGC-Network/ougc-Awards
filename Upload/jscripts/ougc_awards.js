@@ -33,7 +33,7 @@ let ougcAwards = {
     },
 
     ViewAwards: function (userID, currentPage, SectionID, postID = 0) {
-        var postData = 'view=awards&ajax=1&uid=' + parseInt(userID) + '&sectionID=' + parseInt(SectionID) + '&page' + parseInt(SectionID) + '=' + parseInt(currentPage) + '&pid=' + parseInt(postID);
+        var postData = 'viewAwards=1&uid=' + parseInt(userID) + '&sectionID=' + parseInt(SectionID) + '&page' + parseInt(SectionID) + '=' + parseInt(currentPage) + '&pid=' + parseInt(postID);
 
         if(parseInt(postID) === 0) {
             postData = postData + '&action=profile';
@@ -47,7 +47,10 @@ let ougcAwards = {
                 data: postData,
                 success: function (request) {
                     if (typeof request.content === 'string') {
-                        document.getElementById('ougcAwardsProfileTable' + parseInt(userID) + '_' + parseInt(SectionID) + '_' + parseInt(postID)).innerHTML = request.content;
+
+                        document.getElementById(
+                            'ougcAwardsProfileTable' + parseInt(userID) + '_' + parseInt(SectionID) + '_' + parseInt(postID)
+                        ).innerHTML = request.content;
                     }
                 },
                 error: function (xhr) {

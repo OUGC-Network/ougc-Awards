@@ -361,6 +361,34 @@ function myshowcase_system_render_build_entry_comment_end(array &$hookArguments)
     return $hookArguments;
 }
 
+function showthread_start(): void
+{
+    global $mybb;
+
+    $isAjaxCall = $mybb->get_input('viewAwards', MyBB::INPUT_INT) === 1;
+
+    if (!$isAjaxCall) {
+        return;
+    }
+
+    global $thread;
+
+    $threadID = $mybb->get_input('tid', \MyBB::INPUT_INT);
+
+    $postID = $mybb->get_input('pid', \MyBB::INPUT_INT);
+
+    $postData = get_post($postID);
+
+    $userID = $mybb->get_input('uid', \MyBB::INPUT_INT);
+
+    if ($threadID !== (int)$thread['tid'] || $threadID !== (int)$postData['tid'] || $userID !== (int)$postData['uid']) {
+        return;
+    }
+
+    $userData = array_merge(get_post($postID), get_user($userID));
+
+    member_profile_end($userData);
+}
 
 function member_profile_end(&$userData = []): array
 {
@@ -382,8 +410,10 @@ function member_profile_end(&$userData = []): array
 
     static $usersAwardsCache = [];
 
-    if (isset($usersAwardsCache[$userID])) {
-        return array_merge($usersAwardsCache[$userID], $userData);
+    // todo, we remove this for now because it is using the same pid for all posts, which breaks the pagination
+    // instead should bulk query and only query results should be cached
+    if (false && isset($usersAwardsCache[$userID])) {
+        return array_merge($userData, $usersAwardsCache[$userID]);
     } else {
         $usersAwardsCache[$userID]['ougc_awards'] = &$userData['ougc_awards'];
 
@@ -571,7 +601,7 @@ function member_profile_end(&$userData = []): array
         }
     }
 
-    $isAjaxCall = $mybb->get_input('ajax', MyBB::INPUT_INT) === 1;
+    $isAjaxCall = $mybb->get_input('viewAwards', MyBB::INPUT_INT) === 1;
 
     $currentSectionID = $mybb->get_input('sectionID', MyBB::INPUT_INT);
 
@@ -629,10 +659,7 @@ function member_profile_end(&$userData = []): array
         $startPage = 0;
 
         if ($maximumAwardsToDisplay && $totalGrantedCount) {
-            $currentPage = $mybb->get_input('view') === 'awards' ? $mybb->get_input(
-                'page' . $sectionID,
-                MyBB::INPUT_INT
-            ) : 1;
+            $currentPage = $isAjaxCall ? $mybb->get_input('page' . $sectionID, MyBB::INPUT_INT) : 1;
 
             if ($currentPage > 0) {
                 $startPage = ($currentPage - 1) * $maximumAwardsToDisplay;
@@ -749,7 +776,7 @@ function member_profile_end(&$userData = []): array
 
         header("Content-type: application/json; charset={$charset}");
 
-        echo json_encode(['content' => $sectionContents, 'pagination' => $mybb->input]);
+        echo json_encode(['content' => $sectionContents]);
 
         exit;
     }
