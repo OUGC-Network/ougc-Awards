@@ -2078,10 +2078,15 @@ function awardGetIcon(int $awardID): string
 
     $replaceObjects = [
         '{bburl}' => $mybb->settings['bburl'],
+        '{forum_url}' => $mybb->settings['bburl'],
         '{homeurl}' => $mybb->settings['homeurl'],
+        '{home_url}' => $mybb->settings['homeurl'],
         '{imgdir}' => $theme['imgdir'] ?? '',
+        '{images_url}' => $theme['imgdir'] ?? '',
         '{aid}' => $awardID,
-        '{cid}' => (int)$awardData['cid']
+        '{award_id}' => $awardID,
+        '{cid}' => (int)$awardData['cid'],
+        '{category_id}' => (int)$awardData['cid']
     ];
 
     $awardImage = str_replace(array_keys($replaceObjects), array_values($replaceObjects), $awardData['image']);
@@ -2209,7 +2214,23 @@ function grantInsert(
             $awardData['name']
         ),
         'message' => $lang->sprintf(
-            $awardData['pm'],
+            str_replace(
+                [
+                    '{user_name}',
+                    '{award_name}',
+                    '{grant_reason}',
+                    '{award_icon}',
+                    '{forum_name}'
+                ],
+                [
+                    $userData['username'],
+                    $awardData['name'],
+                    (empty($reasonText) ? $lang->ougcAwardsNoReason : $reasonText),
+                    awardGetIcon($awardID),
+                    $mybb->settings['bbname']
+                ],
+                $awardData['pm']
+            ),
             $userData['username'],
             $awardData['name'],
             (empty($reasonText) ? $lang->ougcAwardsNoReason : $reasonText),

@@ -99,7 +99,7 @@ function admin_config_plugins_begin()
                 'reason' => 'reason',
                 'TIME_NOW' => 'date_given'
             ];
-            $img_prefix = '{bburl}/images/awards/';
+            $img_prefix = '{forum_url}/images/awards/';
             $lang_var = 'ougc_awards_import_confirm_nickawards';
             break;
         default;
@@ -115,7 +115,7 @@ function admin_config_plugins_begin()
                 'reason' => 'awreason',
                 'TIME_NOW' => 'awutime'
             ];
-            $img_prefix = '{bburl}/uploads/awards/';
+            $img_prefix = '{forum_url}/uploads/awards/';
             $lang_var = 'ougc_awards_import_confirm_myawards';
             break;
     }

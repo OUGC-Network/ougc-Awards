@@ -120,11 +120,10 @@ $l = [
     'ougcAwardsControlPanelNewAwardImageFileNote' => 'El icono del archivo actual será reemplazado si se sube un nuevo archivo.',
     'ougcAwardsControlPanelNewAwardImageType' => 'URL / Clase',
     'ougcAwardsControlPanelNewAwardImageTypeDescription' => 'Ingresa la ruta de la imagen o el nombre de la clase para este premio a continuación. Las siguientes variables están disponibles.<br />Deja vacío para usar el icono del archivo subido.<br /><pre style="color: darkgreen;">
-{bburl} -> URL del Foro
-{homeurl} -> URL de Inicio
-{imgdir} -> URL del Directorio del Tema
-{aid} -> ID del Premio
-{cid} -> ID de la Categoría
+{forum_url} -> URL del foro
+{images_url} -> URL de las imagenes del estilo
+{award_id} -> Identificador del premio
+{category_id} -> Identificador de la categoria
 </pre>',
     'ougcAwardsControlPanelNewAwardTemplateType' => 'Tipo de Icono',
     'ougcAwardsControlPanelNewAwardTemplateTypeDescription' => 'Selecciona qué tipo de icono usar para este premio.<br /><pre style="color: darkgreen;">
@@ -139,10 +138,11 @@ Icono Personalizado (Avanzado): Una plantilla personalizada para este premio.
     'ougcAwardsControlPanelNewAwardAllowRequestsDescription' => 'Permitir a los usuarios solicitar este premio.',
     'ougcAwardsControlPanelNewAwardPrivateMessage' => 'Contenido del Mensaje Privado',
     'ougcAwardsControlPanelNewAwardPrivateMessageDescription' => 'Si no está vacío, se enviará un Mensaje Privado cada vez que se otorgue este premio.<br /><pre style="color: darkgreen;">
-{1} = Nombre de Usuario
-{2} = Nombre del Premio
-{3} = Razón
-{4} = Imagen
+{user_name} = Nombre de Usuario
+{award_name} = Nombre del Premio
+{grant_reason} = Razón
+{award_icon} = Imagen
+{forum_name} = Nombre del foro
 </pre>',
     'ougcAwardsControlPanelNewAwardDisplayType' => 'Tipo de Visualización',
     'ougcAwardsControlPanelNewAwardDisplayTypeDescription' => 'Selecciona si este premio se mostrará en publicaciones, perfiles o ambos.',

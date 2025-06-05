@@ -120,11 +120,10 @@ $l = [
     'ougcAwardsControlPanelNewAwardImageFileNote' => 'Current file icon will be replaced if a new file is uploaded.',
     'ougcAwardsControlPanelNewAwardImageType' => 'URL / Class',
     'ougcAwardsControlPanelNewAwardImageTypeDescription' => 'Enter the image path or class name for this award below. The following variables are available.<br />Leave empty to use the uploaded file icon.<br /><pre style="color: darkgreen;">
-{bburl} -> Forum URL
-{homeurl} -> Home URL
-{imgdir} -> Theme Directory URL
-{aid} -> Award ID
-{cid} -> Category ID
+{forum_url} -> Forum URL
+{images_url} -> Theme images URL
+{award_id} -> Award identifier
+{category_id} -> Category identifier
 </pre>',
     'ougcAwardsControlPanelNewAwardTemplateType' => 'Icon Type',
     'ougcAwardsControlPanelNewAwardTemplateTypeDescription' => 'Select what icon type to use for this award.<br /><pre style="color: darkgreen;">
@@ -139,10 +138,11 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelNewAwardAllowRequestsDescription' => 'Allow users to request this award.',
     'ougcAwardsControlPanelNewAwardPrivateMessage' => 'Private Message Content',
     'ougcAwardsControlPanelNewAwardPrivateMessageDescription' => 'If not empty, will send a Private Message whenever this award is granted.<br /><pre style="color: darkgreen;">
-{1} = Username
-{2} = Award name
-{3} = Reason
-{4} = Image
+{user_name} = Username
+{award_name} = Award name
+{grant_reason} = Reason
+{award_icon} = Image
+{forum_name} = Forum name
 </pre>',
     'ougcAwardsControlPanelNewAwardDisplayType' => 'Display Type',
     'ougcAwardsControlPanelNewAwardDisplayTypeDescription' => 'Select if this award will be displayed in posts, profiles, or both.',
