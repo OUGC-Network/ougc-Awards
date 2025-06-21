@@ -965,7 +965,7 @@ function executeTask(
 				SELECT uid, COUNT(tid) AS {$requirementType}
 				FROM {$db->table_prefix}threads
 				WHERE fid IN ('{$forumIDs}') AND visible > 0 AND closed NOT LIKE 'moved|%'
-				GROUP BY uid
+				GROUP BY uid, tid
 			) t ON (t.uid=u.uid)";
 
                 $whereClauses[] = "t.{$requirementType}{$taskData[$requirementType.'type']}'{$forumThreads}'";
@@ -995,7 +995,7 @@ function executeTask(
 				FROM {$db->table_prefix}posts p
 				LEFT JOIN {$db->table_prefix}threads t ON (t.tid=p.tid)
 				WHERE p.fid IN ('{$forumIDs}') AND t.visible > 0 AND p.visible > 0
-				GROUP BY p.uid
+				GROUP BY p.uid, p.pid
 			) p ON (p.uid=u.uid)";
 
                 $whereClauses[] = "p.{$requirementType}{$taskData[$requirementType.'type']}'{$forumPosts}'";
@@ -1135,7 +1135,7 @@ function executeTask(
                             SELECT g.uid, g.aid, COUNT(g.gid) AS {$requirementType}{$previousAwardID}
                             FROM {$db->table_prefix}ougc_awards_users g
                             WHERE g.aid='{$previousAwardID}' AND g.aid IN ('{$awardIDs}')
-                            GROUP BY g.uid, g.aid
+                            GROUP BY g.uid, g.aid, g.gid
                         ) aw{$previousAwardID} ON (aw{$previousAwardID}.uid=u.uid)";
 
                     $whereClauses[] = "aw{$previousAwardID}.{$requirementType}{$previousAwardID}>='1'";
@@ -1222,7 +1222,7 @@ function executeTask(
                     SELECT uid, COUNT(aid) AS totalUserGrants
                     FROM {$db->table_prefix}ougc_awards_users
                     WHERE aid IN ('{$taskGrantAwardID}')
-                    GROUP BY uid
+                    GROUP BY uid, aid
                 ) a ON (u.uid=a.uid)";
 
                 $whereClauses[] = "(a.totalUserGrants<'1' || a.totalUserGrants IS NULL)";
@@ -1237,7 +1237,7 @@ function executeTask(
                     SELECT uid, COUNT(aid) AS totalUserGrants
                     FROM {$db->table_prefix}ougc_awards_users
                     WHERE aid='{$taskRevokeAwardID}'
-                    GROUP BY uid
+                    GROUP BY uid, aid
                 ) a ON (u.uid=a.uid)";*/
 
             $taskGrantAwardID = 0;
@@ -1253,7 +1253,7 @@ function executeTask(
 					SELECT uid, COUNT(lid) AS totalUserLogs
 					FROM {$db->table_prefix}ougc_awards_tasks_logs
 					WHERE tid='{$taskID}'
-					GROUP BY uid
+					GROUP BY uid, lid
 				) l ON (u.uid=l.uid)";
 
         $whereClauses[] = "l.totalUserLogs<'1' OR l.totalUserLogs IS NULL";
@@ -1521,13 +1521,21 @@ function rebuildOwners(): bool
     return true;
 }
 
-function ownerGetSingle(array $whereClauses = [], array $queryFields = ['uid', 'aid', 'date']): array
-{
+function ownerGetSingle(
+    array $whereClauses = [],
+    array $queryFields = ['uid', 'aid', 'date'],
+    array $queryOptions = []
+): array {
     global $db;
 
     $queryFields[] = 'oid';
 
-    $dbQuery = $db->simple_select('ougc_awards_owners', implode(',', $queryFields), implode(' AND ', $whereClauses));
+    $dbQuery = $db->simple_select(
+        'ougc_awards_owners',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -1652,7 +1660,8 @@ function rebuildOwnersCategories(): bool
 
 function ownerCategoryGetSingle(
     array $whereClauses = [],
-    array $queryFields = ['userID', 'categoryID', 'ownerDate']
+    array $queryFields = ['userID', 'categoryID', 'ownerDate'],
+    array $queryOptions = []
 ): array {
     global $db;
 
@@ -1661,7 +1670,8 @@ function ownerCategoryGetSingle(
     $dbQuery = $db->simple_select(
         'ougc_awards_category_owners',
         implode(',', $queryFields),
-        implode(' AND ', $whereClauses)
+        implode(' AND ', $whereClauses),
+        $queryOptions
     );
 
     if ($db->num_rows($dbQuery)) {
@@ -2304,13 +2314,19 @@ function grantDelete(int $grantID): bool
 
 function grantGetSingle(
     array $whereClauses = [],
-    array $queryFields = ['uid', 'oid', 'aid', 'rid', 'tid', 'thread', 'reason', 'pm', 'date', 'disporder', 'visible']
+    array $queryFields = ['uid', 'oid', 'aid', 'rid', 'tid', 'thread', 'reason', 'pm', 'date', 'disporder', 'visible'],
+    array $queryOptions = []
 ): array {
     global $db;
 
     $queryFields[] = 'gid';
 
-    $dbQuery = $db->simple_select('ougc_awards_users', implode(',', $queryFields), implode(' AND ', $whereClauses));
+    $dbQuery = $db->simple_select(
+        'ougc_awards_users',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -2357,15 +2373,23 @@ function requestUpdate(array $updateData, int $requestID): int
     return requestInsert($updateData, $requestID, true);
 }
 
-function requestGet(array $whereClauses = [], array $queryFields = ['aid', 'uid', 'muid', 'message', 'status']): array
-{
+function requestGet(
+    array $whereClauses = [],
+    array $queryFields = ['aid', 'uid', 'muid', 'message', 'status'],
+    array $queryOptions = []
+): array {
     global $db;
 
     $queryFields[] = 'rid';
 
     $requestData = [];
 
-    $dbQuery = $db->simple_select('ougc_awards_requests', implode(',', $queryFields), implode(' AND ', $whereClauses));
+    $dbQuery = $db->simple_select(
+        'ougc_awards_requests',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
 
     if ($db->num_rows($dbQuery)) {
         return $db->fetch_array($dbQuery);
@@ -2413,7 +2437,8 @@ function requestGetPendingTotal(array $whereClauses = []): int
 {
     $pendingRequestTotal = requestGetPending(
         $whereClauses,
-        ['COUNT(rid) as pendingRequestTotal']
+        ['COUNT(rid) as pendingRequestTotal'],
+        ['group_by' => 'rid']
     );
 
     if (!empty($pendingRequestTotal['pendingRequestTotal'])) {
@@ -2891,7 +2916,7 @@ function cacheUpdate(): bool
         $totalRequestsCount = requestGetPending(
             $whereClauses,
             ['COUNT(rid) AS totalRequests'],
-            ['limit' => 1]
+            ['limit' => 1, 'group_by' => 'rid']
         );
 
         if (!empty($totalRequestsCount['totalRequests'])) {

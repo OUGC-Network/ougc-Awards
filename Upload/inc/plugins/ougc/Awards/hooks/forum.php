@@ -203,7 +203,8 @@ function global_intermediate(): bool
 
         $pendingRequestCount = (int)(requestGet(
             ["status='{$statusPending}'", "aid IN ('{$ownerAwardIDs}')"],
-            ['COUNT(rid) AS total_pending_requests']
+            ['COUNT(rid) AS total_pending_requests'],
+            ['group_by' => 'rid']
         )['total_pending_requests'] ?? 0);
     }
 
@@ -641,7 +642,7 @@ function member_profile_end(&$userData = []): array
         $totalGrantedCount = awardGetUser(
             $sectionData['whereClauses'],
             ["COUNT({$countField}) AS totalGranted"],
-            ['limit' => 1]
+            ['limit' => 1, 'group_by' => $countField]
         );
 
         if ($totalGrantedCount > $maximumAwardsToDisplay && empty($userData['ougc_awards_view_all'])) {

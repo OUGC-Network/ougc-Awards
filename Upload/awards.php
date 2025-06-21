@@ -1433,7 +1433,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         )
     );
 
-    $grantedTotal = grantGetSingle(["aid IN ('{$awardIDs}')"], ['COUNT(*) AS grantedTotal']);
+    $grantedTotal = grantGetSingle(["aid IN ('{$awardIDs}')"], ['COUNT(gid) AS grantedTotal'], ['group_by' => 'gid']);
 
     if (!empty($grantedTotal['grantedTotal'])) {
         $grantedTotal = my_number_format($grantedTotal['grantedTotal']);
@@ -1441,7 +1441,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $grantedTotal = 0;
     }
 
-    $ownersCategoryTotal = ownerCategoryGetSingle(["categoryID='{$categoryID}'"], ['COUNT(*) AS ownersTotal']);
+    $ownersCategoryTotal = ownerCategoryGetSingle(
+        ["categoryID='{$categoryID}'"],
+        ['COUNT(ownerID) AS ownersTotal'],
+        ['group_by' => 'ownerID']
+    );
 
     if (!empty($ownersCategoryTotal['ownersTotal'])) {
         $ownersCategoryTotal = my_number_format($ownersCategoryTotal['ownersTotal']);
@@ -1449,7 +1453,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $ownersCategoryTotal = 0;
     }
 
-    $ownersTotal = ownerGetSingle(["aid IN ('{$awardIDs}')"], ['COUNT(*) AS ownersTotal']);
+    $ownersTotal = ownerGetSingle(["aid IN ('{$awardIDs}')"], ['COUNT(oid) AS ownersTotal'], ['group_by' => 'oid']);
 
     if (!empty($ownersTotal['ownersTotal'])) {
         $ownersTotal = my_number_format($ownersTotal['ownersTotal']);
@@ -1690,7 +1694,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         )
     );
 
-    $grantedTotal = grantGetSingle(["aid='{$awardID}'"], ['COUNT(*) AS grantedTotal']);
+    $grantedTotal = grantGetSingle(["aid='{$awardID}'"], ['COUNT(gid) AS grantedTotal'], ['group_by' => 'gid']);
 
     if (!empty($grantedTotal['grantedTotal'])) {
         $grantedTotal = my_number_format($grantedTotal['grantedTotal']);
@@ -1698,7 +1702,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $grantedTotal = 0;
     }
 
-    $ownersTotal = ownerGetSingle(["aid='{$awardID}'"], ['COUNT(*) AS ownersTotal']);
+    $ownersTotal = ownerGetSingle(["aid='{$awardID}'"], ['COUNT(oid) AS ownersTotal'], ['group_by' => 'oid']);
 
     if (!empty($ownersTotal['ownersTotal'])) {
         $ownersTotal = my_number_format($ownersTotal['ownersTotal']);
@@ -1832,7 +1836,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $totalGrantedCount = awardGetUser(
             $sectionData['whereClauses'],
             ['COUNT(gid) AS totalGranted'],
-            ['limit' => 1]
+            ['limit' => 1, 'group_by' => 'gid']
         );
 
         if (empty($totalGrantedCount['totalGranted'])) {
@@ -2121,7 +2125,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $totalGrantedCount = awardGetUser(
         ["aid='{$awardID}'"],
         ['COUNT(gid) AS totalGranted'],
-        ['limit' => 1]
+        ['limit' => 1, 'group_by' => 'gid']
     );
 
     if (empty($totalGrantedCount['totalGranted'])) {
@@ -2355,9 +2359,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    $totalOwnersCount = ownerCategoryGetUser(["categoryID='{$categoryID}'"],
+    $totalOwnersCount = ownerCategoryGetUser(
+        ["categoryID='{$categoryID}'"],
         ['COUNT(ownerID) AS totalOwners'],
-        ['limit' => 1]);
+        ['limit' => 1, 'group_by' => 'ownerID']
+    );
 
     if (empty($totalOwnersCount['totalOwners'])) {
         $totalOwnersCount = 0;
@@ -2541,7 +2547,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $totalOwnersCount = ownerGetUser(["aid='{$awardID}'"],
         ['COUNT(oid) AS totalOwners'],
-        ['limit' => 1]);
+        ['limit' => 1, 'group_by' => 'oid']);
 
     if (empty($totalOwnersCount['totalOwners'])) {
         $totalOwnersCount = 0;
@@ -2792,7 +2798,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $totalRequestsCount = requestGetPending(
         $whereClauses,
         ['COUNT(rid) AS total_pending_requests'],
-        ['limit' => 1]
+        ['limit' => 1, 'group_by' => 'rid']
     );
 
     if (empty($totalRequestsCount['total_pending_requests'])) {
@@ -3249,7 +3255,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $totalGrantedCount = (int)(awardGetUser(
             $whereClauses,
             ['COUNT(gid) AS totalGranted'],
-            ['limit' => 1]
+            ['limit' => 1, 'group_by' => 'gid']
         )['totalGranted'] ?? 0);
 
         $startPage = 0;
@@ -3999,7 +4005,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $totalLogsCount = (int)(logGet(
         $whereClauses,
         ['COUNT(lid) AS total_logs'],
-        ['limit' => 1]
+        ['limit' => 1, 'group_by' => 'lid']
     )['total_logs'] ?? 0);
 
     $startPage = 0;
