@@ -631,10 +631,12 @@ function member_profile_end(&$userData = []): array
             );
         }
 
-        $countField = 'gid';
+        $countField = $groupField = 'gid';
 
         if ($groupAwardGrants) {
             $countField = 'DISTINCT aid';
+
+            $groupField = 'aid';
         }
 
         $grantedList = '';
@@ -642,7 +644,7 @@ function member_profile_end(&$userData = []): array
         $totalGrantedCount = awardGetUser(
             $sectionData['whereClauses'],
             ["COUNT({$countField}) AS totalGranted"],
-            ['limit' => 1, 'group_by' => $countField]
+            ['limit' => 1, 'group_by' => $groupField]
         );
 
         if ($totalGrantedCount > $maximumAwardsToDisplay && empty($userData['ougc_awards_view_all'])) {
