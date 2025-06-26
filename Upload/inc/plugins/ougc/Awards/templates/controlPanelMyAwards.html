@@ -25,11 +25,11 @@
     {$grantedList}
 </table>
 <br/>
-<form action="{$formUrl}" method="post" id="controlPanelMyAwardsForm{$categoryID}"></form>
-<input type="hidden" name="action" value="myAwards" form="controlPanelMyAwardsForm{$categoryID}"/>
+<form action="{$formUrl}" method="post" id="controlPanelMyAwardsForm{$sectionID}"></form>
+<input type="hidden" name="action" value="myAwards" form="controlPanelMyAwardsForm{$sectionID}"/>
 <div align="center">
     <input type="submit" class="button" value="{$lang->ougcAwardsControlPanelButtonUpdate}"
-           form="controlPanelMyAwardsForm{$categoryID}"/>
+           form="controlPanelMyAwardsForm{$sectionID}"/>
 </div>
 <br/>
 {$paginationMenu}

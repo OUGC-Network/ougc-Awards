@@ -1804,11 +1804,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         ]
     ];
 
-    foreach ($awardsCategoriesCache as $categoryID => $categoryData) {
-        if (!empty($categoryData['outputInCustomSection']) && !empty($categorySectionsAwardsIDs[$categoryID])) {
-            $sectionAwardsIDs = implode("','", $categorySectionsAwardsIDs[$categoryID]);
+    foreach ($awardsCategoriesCache as $sectionID => $categoryData) {
+        if (!empty($categoryData['outputInCustomSection']) && !empty($categorySectionsAwardsIDs[$sectionID])) {
+            $sectionAwardsIDs = implode("','", $categorySectionsAwardsIDs[$sectionID]);
 
-            $sectionObjects[$categoryID] = [
+            $sectionObjects[$sectionID] = [
                 'whereClauses' => array_merge($whereClauses, ["aid IN ('{$sectionAwardsIDs}')"]),
                 'queryFields' => [
                     'uid',
@@ -1823,10 +1823,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
                     'disporder',
                     'visible'
                 ],
-                //'sectionVariable' => &$userData["ougcAwardsSection{$categoryID}"]
+                //'sectionVariable' => &$userData["ougcAwardsSection{$sectionID}"]
             ];
 
-            $urlParams['page' . $categoryID] = $mybb->get_input('page' . $categoryID, MyBB::INPUT_INT);
+            $urlParams['page' . $sectionID] = $mybb->get_input('page' . $sectionID, MyBB::INPUT_INT);
         }
     }
 
@@ -1925,7 +1925,12 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $rowColumnSpan = 7;
 
-        $functionMyAwardsRenderGrant = static function (array $grantData) use ($mybb, $lang, $urlParams): string {
+        $functionMyAwardsRenderGrant = static function (array $grantData) use (
+            $mybb,
+            $lang,
+            $urlParams,
+            $sectionID
+        ): string {
             global $alternativeBackground;
 
             $grantID = (int)$grantData['gid'];
@@ -1934,9 +1939,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
             $awardData = awardGet($awardID);
 
-            $categoryID = (int)$awardData['cid'];
+            //$categoryID = (int)$awardData['cid'];
 
-            $categoryData = categoryGet($categoryID);
+            $categoryData = categoryGet($sectionID);
 
             $awardName = htmlspecialchars_uni($awardData['name']);
 
