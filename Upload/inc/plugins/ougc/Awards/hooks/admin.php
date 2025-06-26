@@ -32,6 +32,7 @@ namespace ougc\Awards\Hooks\Admin;
 
 use MyBB;
 
+use function ougc\Awards\Core\executeTask;
 use function ougc\Awards\Core\allowImports;
 use function ougc\Awards\Core\grantInsert;
 use function ougc\Awards\Core\awardInsert;
@@ -39,7 +40,16 @@ use function ougc\Awards\Core\categoryInsert;
 use function ougc\Awards\Core\loadLanguage;
 use function ougc\Awards\Core\runHooks;
 
-function admin_config_plugins_deactivate()
+use const ougc\Awards\Core\DEBUG;
+
+function admin_load(): void
+{
+    if (DEBUG) {
+        executeTask();
+    }
+}
+
+function admin_config_plugins_deactivate(): void
 {
     global $mybb, $page;
 
@@ -62,27 +72,27 @@ function admin_config_plugins_deactivate()
     }
 }
 
-function admin_config_settings_start()
+function admin_config_settings_start(): void
 {
     loadLanguage();
 }
 
-function admin_style_templates_set()
+function admin_style_templates_set(): void
 {
     loadLanguage();
 }
 
-function admin_config_settings_change()
+function admin_config_settings_change(): void
 {
     loadLanguage();
 }
 
-function admin_config_plugins_begin()
+function admin_config_plugins_begin(): void
 {
     global $mybb;
 
     if (!allowImports() || !($type = $mybb->get_input('ougc_awards_import'))) {
-        return false;
+        return;
     }
 
     switch ($type) {
@@ -140,7 +150,7 @@ function admin_config_plugins_begin()
         }
 
         if (isset($mybb->input['no'])) {
-            return true;
+            return;
         }
 
         global $db;
@@ -215,6 +225,4 @@ function admin_config_plugins_begin()
         $lang->{$lang_var},
         $lang->ougc_awards_import_title
     );
-
-    return true;
 }
