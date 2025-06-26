@@ -308,6 +308,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelLogsTableOptions' => 'Options',
     'ougcAwardsControlPanelLogsTableOptionsDeleteLog' => 'Delete Log',
     'ougcAwardsControlPanelLogsTableEmpty' => 'There are currently no logs for this task.',
+    'ougcAwardsControlPanelLogsDeleteLogsButton' => 'Delete Logs',
 
     'ougcAwardsControlPanelButtonManageTasks' => 'View Tasks',
     'ougcAwardsControlPanelButtonNewTask' => 'New Task',
@@ -508,6 +509,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsRedirectPresetUpdated' => 'The award preset was updated successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectPresetDeleted' => 'The award preset was deleted successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectLogDeleted' => 'The task log was deleted successfully.<br />You will now be redirected back.',
+    'ougcAwardsRedirectLogsDeleted' => 'The task logs were deleted successfully.<br />You will now be redirected back.',
 
     'ougcAwardsRedirectRequest' => 'The award request was sent successfully.',
 

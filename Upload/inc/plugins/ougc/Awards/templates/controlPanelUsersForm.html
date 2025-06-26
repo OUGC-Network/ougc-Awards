@@ -1,6 +1,7 @@
 <br/>
 <form action="{$formUrl}" method="post" id="controlPanelViewUsers"></form>
 <input type="hidden" name="action" value="viewUsers" form="controlPanelViewUsers"/>
+<input type="hidden" name="my_post_key" form="controlPanelViewUsers" value="{$mybb->post_code}"/>
 <div align="center">
     <input type="submit" class="button" value="{$lang->ougcAwardsControlPanelUsersRevokeButton}"
            form="controlPanelViewUsers"/>

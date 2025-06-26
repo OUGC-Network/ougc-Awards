@@ -2847,7 +2847,7 @@ function logAction(): bool
         $data = [];
     }
 
-    global $awardID, $userID, $grantID, $categoryID, $requestID, $taskID;
+    global $awardID, $userID, $grantID, $categoryID, $requestID, $taskID, $logID;
 
     if (!empty($awardID)) {
         $data['aid'] = (int)$awardID;
@@ -2871,6 +2871,10 @@ function logAction(): bool
 
     if (!empty($taskID)) {
         $data['tid'] = (int)$taskID;
+    }
+
+    if (!empty($logID)) {
+        $data['logID'] = (int)$logID;
     }
 
     if (defined('IN_ADMINCP')) {

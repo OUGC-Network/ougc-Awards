@@ -308,6 +308,7 @@ Icono Personalizado (Avanzado): Una plantilla personalizada para este premio.
     'ougcAwardsControlPanelLogsTableOptions' => 'Opciones',
     'ougcAwardsControlPanelLogsTableOptionsDeleteLog' => 'Eliminar Registro',
     'ougcAwardsControlPanelLogsTableEmpty' => 'Actualmente no hay registros para mostrar.',
+    'ougcAwardsControlPanelLogsDeleteLogsButton' => 'Eliminar Registros',
 
     'ougcAwardsControlPanelButtonManageTasks' => 'Ver Tareas',
     'ougcAwardsControlPanelButtonNewTask' => 'Nueva Tarea',
@@ -505,6 +506,7 @@ Icono Personalizado (Avanzado): Una plantilla personalizada para este premio.
     'ougcAwardsRedirectPresetUpdated' => 'El ajuste preestablecido del premio se actualizó correctamente.<br />Ahora serás redirigido de vuelta.',
     'ougcAwardsRedirectPresetDeleted' => 'El ajuste preestablecido del premio se eliminó correctamente.<br />Ahora serás redirigido de vuelta.',
     'ougcAwardsRedirectLogDeleted' => 'El registro de la tarea se eliminó correctamente.<br />Ahora serás redirigido de vuelta.',
+    'ougcAwardsRedirectLogsDeleted' => 'Los registros seleccionados de la tarea se eliminaron correctamente.<br />Ahora serás redirigido de vuelta.',
 
     'ougcAwardsRedirectRequest' => 'La solicitud de premio se envió correctamente.',
 

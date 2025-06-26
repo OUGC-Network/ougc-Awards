@@ -2051,6 +2051,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 } elseif ($mybb->get_input('action') === 'viewUsers') {
     if ($mybb->request_method === 'post') {
         if (isset($mybb->input['userGrants'])) {
+            verify_post_check($mybb->get_input('my_post_key'));
+            
             $revokeGrantIDs = array_keys($mybb->get_input('userGrants', MyBB::INPUT_ARRAY));
 
             foreach ($revokeGrantIDs as $grantID) {
@@ -4022,6 +4024,22 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     if ($mybb->request_method === 'post') {
         verify_post_check($mybb->get_input('my_post_key'));
 
+        if (isset($mybb->input['taskLogs'])) {
+            $logIDs = array_keys($mybb->get_input('taskLogs', MyBB::INPUT_ARRAY));
+
+            foreach ($logIDs as $logID) {
+                if (!logGet(["lid='{$logID}'"])) {
+                    continue;
+                }
+
+                logDelete(["lid='{$logID}'"]);
+
+                logAction();
+            }
+
+            redirect(urlHandlerBuild($urlParams), $lang->ougcAwardsRedirectLogsDeleted);
+        }
+
         $logID = $mybb->get_input('logID', MyBB::INPUT_INT);
 
         if (!logGet(["lid='{$logID}'"])) {
@@ -4029,6 +4047,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
 
         logDelete(["lid='{$logID}'"]);
+
+        logAction();
 
         redirect(urlHandlerBuild($urlParams), $lang->ougcAwardsRedirectLogDeleted);
     }
@@ -4153,6 +4173,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
 
         $logDate = my_date('relative', (int)$logData['date']);
+
+        $checkedElement = '';
 
         $logsRows .= eval(getTemplate('controlPanelLogsRow'));
 

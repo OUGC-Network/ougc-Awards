@@ -12,4 +12,8 @@
             <input type="submit" class="button" value="{$lang->ougcAwardsControlPanelLogsTableOptionsDeleteLog}"/>
         </form>
     </td>
+    <td class="{$alternativeBackground}" align="center">
+        <input type="checkbox" name="taskLogs[{$logID}]" value="1" class="checkbox" {$checkedElement}
+               form="controlPanelTaskLogs"/>
+    </td>
 </tr>
