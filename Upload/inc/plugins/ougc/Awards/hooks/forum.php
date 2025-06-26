@@ -642,7 +642,7 @@ function member_profile_end(&$userData = []): array
         $totalGrantedCount = awardGetUser(
             $sectionData['whereClauses'],
             ["COUNT({$countField}) AS totalGranted"],
-            ['limit' => 1, 'group_by' => $countField]
+            ['limit' => 1] + ($groupAwardGrants ? [] : ['group_by' => $countField])
         );
 
         if ($totalGrantedCount > $maximumAwardsToDisplay && empty($userData['ougc_awards_view_all'])) {
