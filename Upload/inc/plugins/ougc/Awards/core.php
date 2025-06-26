@@ -912,7 +912,7 @@ function executeTask(
 
             $userWhereClauses[] = '(' . implode(' OR ', $whereClause) . ')';
 
-            return false;
+            return true;
         },
         TASK_REQUIREMENT_TYPE_THREADS => function (
             array $taskData,
@@ -925,9 +925,11 @@ function executeTask(
                 $userThreads = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.threadnum{$taskData[$requirementType.'type']}'{$userThreads}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_POSTS => function (
             array $taskData,
@@ -940,9 +942,11 @@ function executeTask(
                 $userThreads = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.postnum{$taskData[$requirementType.'type']}'{$userThreads}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_THREADS_FORUM => function (
             array $taskData,
@@ -969,9 +973,11 @@ function executeTask(
 			) t ON (t.uid=u.uid)";
 
                 $whereClauses[] = "t.{$requirementType}{$taskData[$requirementType.'type']}'{$forumThreads}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_POSTS_FORUM => function (
             array $taskData,
@@ -999,9 +1005,11 @@ function executeTask(
 			) p ON (p.uid=u.uid)";
 
                 $whereClauses[] = "p.{$requirementType}{$taskData[$requirementType.'type']}'{$forumPosts}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_REGISTRATION => function (
             array $taskData,
@@ -1034,9 +1042,11 @@ function executeTask(
 
             if ($registeredSeconds > 0) {
                 $userWhereClauses[] = "u.regdate<='{$registeredSeconds}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_ONLINE => function (
             array $taskData,
@@ -1067,9 +1077,11 @@ function executeTask(
 
             if ($onlineSeconds > 0) {
                 $userWhereClauses[] = "u.timeonline>='{$onlineSeconds}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_REPUTATION => function (
             array $taskData,
@@ -1099,9 +1111,11 @@ function executeTask(
                 $userReferrals = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.{$requirementType}{$taskData[$requirementType.'type']}'{$userReferrals}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_WARNINGS => function (
             array $taskData,
@@ -1114,9 +1128,11 @@ function executeTask(
                 $userWarningPoints = (int)$taskData[$requirementType];
 
                 $userWhereClauses[] = "u.warningpoints{$taskData[$requirementType.'type']}'{$userWarningPoints}'";
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_AWARDS_GRANTED => function (
             array $taskData,
@@ -1140,9 +1156,11 @@ function executeTask(
 
                     $whereClauses[] = "aw{$previousAwardID}.{$requirementType}{$previousAwardID}>='1'";
                 }
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         TASK_REQUIREMENT_TYPE_FILLED_PROFILE_FIELDS => function (
             array $taskData,
@@ -1159,9 +1177,11 @@ function executeTask(
                 foreach (array_map('intval', explode(',', $taskData[$requirementType])) as $fieldID) {
                     $whereClauses[] = "uf.fid{$fieldID}!=''";
                 }
+
+                return true;
             }
 
-            return true;
+            return false;
         },
         /*
         TASK_REQUIREMENT_TYPE_NEWPOINTS => function (array $taskData, string $requirementType) use (
@@ -1267,13 +1287,39 @@ function executeTask(
 
         $userWhereClauses = [];
 
+        $taskRequirements = explode(',', $awardTaskData['requirements']);
+
+        $executedRequirements = [];
+
+        $hookArguments['executedRequirements'] = &$executedRequirements;
+
         foreach ($requirementCriteria as $requirementType => $callback) {
-            if (in_array($requirementType, explode(',', $awardTaskData['requirements']))) {
-                $callback($awardTaskData, $requirementType, $whereClauses, $tableLeftJoins, $userWhereClauses);
+            if (in_array($requirementType, $taskRequirements)) {
+                $callbackResult = $callback(
+                    $awardTaskData,
+                    $requirementType,
+                    $whereClauses,
+                    $tableLeftJoins,
+                    $userWhereClauses
+                );
+
+                if ($callbackResult) {
+                    $executedRequirements[$requirementType] = $requirementType;
+                }
             }
         }
 
+        // if not all requirements were ran then skip this task, as it may be misconfigured or if a third party plugin then it may be disabled
+        if (count($taskRequirements) !== count($executedRequirements)) {
+            continue;
+        }
+
         $whereClauses = array_merge($whereClauses, $userWhereClauses);
+
+        // no task should lack where clauses, because that would make the task to apply to all users
+        if (empty($whereClauses)) {
+            continue;
+        }
 
         $exemptUsersIDs = [];
 
@@ -1290,7 +1336,7 @@ function executeTask(
         $hookArguments = runHooks('task_intermediate', $hookArguments);
 
         if ($exemptUsersIDs) {
-            $exemptUsersIDs = implode("','", $exemptUsersIDs);
+            $exemptUsersIDs = implode("','", array_filter($exemptUsersIDs));
 
             $whereClauses[] = "u.uid NOT IN ('{$exemptUsersIDs}')";
         }
