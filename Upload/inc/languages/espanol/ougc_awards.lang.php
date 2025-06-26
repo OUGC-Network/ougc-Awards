@@ -184,6 +184,7 @@ Icono Personalizado (Avanzado): Una plantilla personalizada para este premio.
     'ougcAwardsControlPanelUsersTableDate' => 'Fecha',
     'ougcAwardsControlPanelUsersTableOptions' => 'Opciones',
     'ougcAwardsControlPanelUsersTableOptionsEditGrant' => 'Editar Otorgamiento',
+    'ougcAwardsControlPanelUsersRevokeButton' => 'Revocar Otorgamiento',
 
     'ougcAwardsControlPanelMyAwardsEmpty' => 'Actualmente no hay premios para mostrar.',
 
@@ -498,6 +499,7 @@ Icono Personalizado (Avanzado): Una plantilla personalizada para este premio.
     'ougcAwardsRedirectOwnerRevoked' => 'El propietario del premio se revocó correctamente.<br />Ahora serás redirigido de vuelta.',
     'ougcAwardsRedirectGranted' => 'El premio se concedió correctamente.<br />Ahora serás redirigido de vuelta.',
     'ougcAwardsRedirectGrantedUpdated' => 'La concesión del premio se actualizó correctamente.<br />Ahora serás redirigido de vuelta.',
+    'ougcAwardsRedirectGrantRevokedMultiple' => 'Los otorgamientos del premio seleccionados han sido revocados correctamente.<br />Ahora serás redirigido de vuelta.',
     'ougcAwardsRedirectGrantRevoked' => 'La concesión del premio se revocó correctamente.<br />Ahora serás redirigido de vuelta.',
     'ougcAwardsRedirectPresetCreated' => 'El ajuste preestablecido del premio se creó correctamente.<br />Ahora serás redirigido de vuelta.',
     'ougcAwardsRedirectPresetUpdated' => 'El ajuste preestablecido del premio se actualizó correctamente.<br />Ahora serás redirigido de vuelta.',

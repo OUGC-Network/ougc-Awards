@@ -184,6 +184,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelUsersTableDate' => 'Date',
     'ougcAwardsControlPanelUsersTableOptions' => 'Options',
     'ougcAwardsControlPanelUsersTableOptionsEditGrant' => 'Edit Grant',
+    'ougcAwardsControlPanelUsersRevokeButton' => 'Revoke Grants',
 
     'ougcAwardsControlPanelMyAwardsEmpty' => 'There are currently no awards to display.',
 
@@ -501,6 +502,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsRedirectOwnerRevoked' => 'The award owner was revoked successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectGranted' => 'The award was granted successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectGrantedUpdated' => 'The award grant was updated successfully.<br />You will now be redirected back.',
+    'ougcAwardsRedirectGrantRevokedMultiple' => 'The selected award grants were revoked successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectGrantRevoked' => 'The award grant was revoked successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectPresetCreated' => 'The award preset was created successfully.<br />You will now be redirected back.',
     'ougcAwardsRedirectPresetUpdated' => 'The award preset was updated successfully.<br />You will now be redirected back.',

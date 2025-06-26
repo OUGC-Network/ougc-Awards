@@ -374,13 +374,13 @@ function showthread_start(): void
 
     global $thread;
 
-    $threadID = $mybb->get_input('tid', \MyBB::INPUT_INT);
+    $threadID = $mybb->get_input('tid', MyBB::INPUT_INT);
 
-    $postID = $mybb->get_input('pid', \MyBB::INPUT_INT);
+    $postID = $mybb->get_input('pid', MyBB::INPUT_INT);
 
     $postData = get_post($postID);
 
-    $userID = $mybb->get_input('uid', \MyBB::INPUT_INT);
+    $userID = $mybb->get_input('uid', MyBB::INPUT_INT);
 
     if ($threadID !== (int)$thread['tid'] || $threadID !== (int)$postData['tid'] || $userID !== (int)$postData['uid']) {
         return;

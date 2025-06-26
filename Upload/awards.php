@@ -57,6 +57,7 @@ use function ougc\Awards\Core\getTimeTypes;
 use function ougc\Awards\Core\getUserByUserName;
 use function ougc\Awards\Core\grantDelete;
 use function ougc\Awards\Core\grantFind;
+use function ougc\Awards\Core\grantGet;
 use function ougc\Awards\Core\grantGetSingle;
 use function ougc\Awards\Core\grantInsert;
 use function ougc\Awards\Core\grantUpdate;
@@ -202,11 +203,13 @@ $templatelist = 'ougcawards_' . implode(',ougcawards_', [
         'controlPanelUsers',
         'controlPanelUsersColumnOptions',
         'controlPanelUsersEmpty',
+        'controlPanelUsersForm',
         'controlPanelUsersFormGrant',
         'controlPanelUsersFormRevoke',
         'controlPanelUsersRow',
         'controlPanelUsersRowLink',
         'controlPanelUsersRowOptions',
+        'controlPanelUsersRowSelect',
         'inputField',
         'modcp_requests_buttons',
         'page',
@@ -2047,6 +2050,27 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $pageContents = $categoriesContents;
 } elseif ($mybb->get_input('action') === 'viewUsers') {
     if ($mybb->request_method === 'post') {
+        if (isset($mybb->input['userGrants'])) {
+            $revokeGrantIDs = array_keys($mybb->get_input('userGrants', MyBB::INPUT_ARRAY));
+
+            foreach ($revokeGrantIDs as $grantID) {
+                $grantData = grantGet(["gid='{$grantID}'"], ['uid'], ['limit' => 1]);
+
+                if (!canManageUsers((int)$grantData['uid'])) {
+                    continue;
+                }
+
+                grantDelete($grantID);
+
+                logAction();
+            }
+
+            redirect(
+                urlHandlerBuild(['action' => 'viewUsers', 'awardID' => $awardID]),
+                $lang->ougcAwardsRedirectGrantRevoked
+            );
+        }
+
         $userNames = explode(',', $mybb->get_input('username'));
 
         $usersCache = [];
@@ -2280,6 +2304,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         if (($isModerator || ownerCategoryFind($categoryID, $currentUserID))) {
             $columnRow = eval(getTemplate('controlPanelUsersRowOptions'));
+
+            $checkedElement = '';
+
+            $columnRow .= eval(getTemplate('controlPanelUsersRowSelect'));
         }
 
         $grantedList .= eval(getTemplate('controlPanelUsersRow'));
@@ -2297,10 +2325,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $theadColumSpan = 4;
 
-    $columnHeader = $grantForm = $revokeForm = '';
+    $columnHeader = $formCode = $grantForm = $revokeForm = '';
 
     if (($isModerator || $isCategoryOwner)) {
-        ++$theadColumSpan;
+        $theadColumSpan += 2;
 
         $inputUserName = htmlspecialchars_uni($mybb->get_input('username'));
 
@@ -2309,6 +2337,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $inputThread = htmlspecialchars_uni($mybb->get_input('thread'));
 
         $columnHeader = eval(getTemplate('controlPanelUsersColumnOptions'));
+
+        $formCode = eval(getTemplate('controlPanelUsersForm'));
 
         $grantForm = eval(getTemplate('controlPanelUsersFormGrant'));
 
