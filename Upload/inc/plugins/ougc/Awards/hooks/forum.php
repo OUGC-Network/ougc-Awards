@@ -395,9 +395,10 @@ function member_profile_end(&$userData = []): array
 {
     global $mybb, $plugins, $lang, $theme;
 
-    $isProfilePage = $plugins->current_hook === 'member_profile_end';
+    // THIS_SCRIPT check is a workaround for https://github.com/mybb/mybb/issues/4861
+    $isProfilePage = $plugins->current_hook === 'member_profile_end' || THIS_SCRIPT === 'member.php';
 
-    $isShowcasePage = $plugins->current_hook === 'myshowcase_system_render_build_entry_comment_end';
+    $isShowcasePage = $plugins->current_hook === 'myshowcase_system_render_build_entry_comment_end' || THIS_SCRIPT === 'showcase.php';
 
     if ($isProfilePage) {
         global $memprofile;
