@@ -35,6 +35,8 @@ function task_ougc_awards(array $taskData): bool
 {
     global $lang;
 
+    loadLanguage(true);
+
     executeTask();
 
     add_task_log($taskData, $lang->ougcAwardsTaskRan);

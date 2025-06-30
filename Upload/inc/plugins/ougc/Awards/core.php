@@ -783,7 +783,7 @@ function loadLanguage(bool $isDataHandler = false): bool
 {
     global $lang;
 
-    if (!isset($lang->ougcAwards)) {
+    if ($isDataHandler && !isset($lang->ougcAwards) || !$isDataHandler && !isset($lang->ougcAwardsDescription)) {
         if (!$isDataHandler && defined('IN_ADMINCP')) {
             $lang->load('user_ougc_awards', $isDataHandler);
         } else {
@@ -805,7 +805,7 @@ function urlHandler(string $newUrl = ''): string
     return $setUrl;
 }
 
-function urlHandlerSet(string $newUrl)
+function urlHandlerSet(string $newUrl): void
 {
     urlHandler($newUrl);
 }
@@ -3710,7 +3710,7 @@ function getComparisonTypes(): array
 {
     global $lang;
 
-    loadLanguage();
+    loadLanguage(true);
 
     return [
         COMPARISON_TYPE_GREATER_THAN => $lang->ougcAwardsControlPanelGreaterThan,
