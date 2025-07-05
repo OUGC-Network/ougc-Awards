@@ -2165,6 +2165,10 @@ function awardGetUser(
 
     $queryFields[] = 'gid';
 
+    if (isset($queryOptions['group_by'])) {
+        $queryOptions['group_by'] .= ', gid';
+    }
+
     $dbQuery = $db->simple_select(
         'ougc_awards_users',
         implode(',', $queryFields),
