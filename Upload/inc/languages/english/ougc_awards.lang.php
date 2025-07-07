@@ -550,6 +550,8 @@ Greetings.',
     'ougcAwardsViewUserEmpty' => 'There are currently no awards to display.',
     'ougcAwardsMyAlerts' => '{2} has granted you the {3} award.',
 
+    'ougcAwardsGlobalAllCategories' => 'All Categories',
+
     // {4} outputs the award formatted image
     'myalerts_setting_ougc_awards' => 'Receive alert when an award is granted or an award request is rejected?',
 

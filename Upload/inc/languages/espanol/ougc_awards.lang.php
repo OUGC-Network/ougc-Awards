@@ -547,6 +547,8 @@ Saludos.',
     'ougcAwardsViewUserEmpty' => 'Actualmente no hay premios para mostrar.',
     'ougcAwardsMyAlerts' => '{2} te ha otorgado el premio {3}.',
 
+    'ougcAwardsGlobalAllCategories' => 'Cualquier Categoria',
+
     // {4} outputs the award formatted image
     'myalerts_setting_ougc_awards' => '¿Recibir alerta cuando se otorga un premio o se rechaza una solicitud de premio?',
 

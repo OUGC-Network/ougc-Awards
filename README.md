@@ -207,7 +207,7 @@ Follow the next steps in order to update your copy of this plugin.
 
 ### Template Modifications <a name = "template_modifications"></a>
 
-To display Awards data it is required that you edit the following template for each of your themes.
+To display Awards data it is required that you edit the following templates for each of your themes.
 
 1. Place `{$ougcAwardsJavaScript}` in the `headerinclude` template.
 2. Place `{$ougcAwardsCSS}` in the `headerinclude` template.

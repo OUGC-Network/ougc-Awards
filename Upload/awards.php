@@ -2052,7 +2052,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     if ($mybb->request_method === 'post') {
         if (isset($mybb->input['userGrants'])) {
             verify_post_check($mybb->get_input('my_post_key'));
-            
+
             $revokeGrantIDs = array_keys($mybb->get_input('userGrants', MyBB::INPUT_ARRAY));
 
             foreach ($revokeGrantIDs as $grantID) {
@@ -3905,7 +3905,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
 
         foreach ($taskRequirements as $taskRequirementKey => &$taskRequirementValue) {
-            if (isset($lang->{$requirementCriteria[$taskRequirementKey]['languageVar']})) {
+            if (isset($requirementCriteria[$taskRequirementKey]) &&
+                isset($lang->{$requirementCriteria[$taskRequirementKey]['languageVar']})) {
                 $taskRequirementValue = $lang->{$requirementCriteria[$taskRequirementKey]['languageVar']};
             }
         }

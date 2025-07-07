@@ -30,6 +30,7 @@ declare(strict_types=1);
 
 namespace ougc\Awards\Core;
 
+use Exception;
 use JetBrains\PhpStorm\Deprecated;
 use MyBB;
 use pluginSystem;
@@ -732,7 +733,7 @@ const COMPARISON_TYPE_LESS_THAN_OR_EQUAL = '<=';
 
 const COMPARISON_TYPE_LESS_THAN = '<';
 
-function addHooks(string $namespace)
+function addHooks(string $namespace): void
 {
     global $plugins;
 
@@ -2561,10 +2562,13 @@ function taskInsert(array $taskData, int $taskID = 0, bool $isUpdate = false): i
 {
     global $db;
 
+    $fieldsData = FIELDS_DATA;
+
     $hookArguments = [
         'taskData' => &$taskData,
         'taskID' => &$taskID,
         'isUpdate' => &$isUpdate,
+        'fieldsData' => &$fieldsData,
     ];
 
     $inputDataFields = [
@@ -2707,11 +2711,17 @@ function taskInsert(array $taskData, int $taskID = 0, bool $isUpdate = false): i
 
     $hookArguments = runHooks('task_insert_end', $hookArguments);
 
-    if ($isUpdate) {
-        return (int)$db->update_query('ougc_awards_tasks', $insertData, "tid='{$taskID}'");
-    } else {
-        return (int)$db->insert_query('ougc_awards_tasks', $insertData);
+    try {
+        if ($isUpdate) {
+            return (int)$db->update_query('ougc_awards_tasks', $insertData, "tid='{$taskID}'");
+        } else {
+            $taskID = (int)$db->insert_query('ougc_awards_tasks', $insertData);
+        }
+    } catch (Exception $e) {
+        error($e->getMessage());
     }
+
+    return $taskID;
 }
 
 function taskUpdate(array $taskData, int $taskID): int
@@ -3133,15 +3143,32 @@ function generateSelectGrant(int $awardID, int $userID, int $selectedID): string
     return $selectCode;
 }
 
-function generateSelectCategory(int $selectedID): string
-{
+function generateSelectCategory(
+    int $selectedID,
+    string $selectName = 'categoryID',
+    bool $showAllSelect = false
+): string {
     global $db, $mybb;
-
-    $selectName = 'categoryID';
 
     $dbQuery = $db->simple_select('ougc_awards_categories', 'cid, name', '', ['order_by' => 'disporder']);
 
     $selectOptions = $multipleOption = '';
+
+    if ($showAllSelect) {
+        global $lang;
+
+        $optionValue = 0;
+
+        $selectedElement = '';
+
+        if ($selectedID === 0) {
+            $selectedElement = 'selected="selected"';
+        }
+
+        $optionName = $lang->ougcAwardsGlobalAllCategories;
+
+        $selectOptions .= eval(getTemplate('selectFieldOption'));
+    }
 
     while ($categoryData = $db->fetch_array($dbQuery)) {
         $selectedElement = '';
