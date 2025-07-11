@@ -108,7 +108,9 @@ A setup that meets the following requirements is necessary to use this plugin.
    │ │ │ │ │ ├── controlPanelLogsRow.html
    │ │ │ │ │ ├── controlPanelMyAwards.html
    │ │ │ │ │ ├── controlPanelMyAwardsEmpty.html
+   │ │ │ │ │ ├── controlPanelMyAwardsHeaderDisplayOrder.html
    │ │ │ │ │ ├── controlPanelMyAwardsRow.html
+   │ │ │ │ │ ├── controlPanelMyAwardsRowDisplayOrder.html
    │ │ │ │ │ ├── controlPanelMyAwardsRowLink.html
    │ │ │ │ │ ├── controlPanelNewEditAwardForm.html
    │ │ │ │ │ ├── controlPanelNewEditAwardFormUpload.html
@@ -424,7 +426,11 @@ The following is a list of templates available for this plugin.
     - _front end_;
 - `ougcawards_controlPanelMyAwardsEmpty`
     - _front end_;
+- `ougcawards_controlPanelMyAwardsHeaderDisplayOrder`
+    - _front end_;
 - `ougcawards_controlPanelMyAwardsRow`
+    - _front end_;
+- `ougcawards_controlPanelMyAwardsRowDisplayOrder`
     - _front end_;
 - `ougcawards_controlPanelMyAwardsRowLink`
     - _front end_;

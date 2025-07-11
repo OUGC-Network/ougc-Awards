@@ -39,6 +39,7 @@ use function ougc\Awards\Core\awardInsert;
 use function ougc\Awards\Core\categoryInsert;
 use function ougc\Awards\Core\loadLanguage;
 use function ougc\Awards\Core\runHooks;
+use function ougc\Awards\Admin\recount_rebuild_award_grants_display_order;
 
 use const ougc\Awards\Core\DEBUG;
 
@@ -225,4 +226,49 @@ function admin_config_plugins_begin(): void
         $lang->{$lang_var},
         $lang->ougc_awards_import_title
     );
+}
+
+function admin_tools_recount_rebuild_output_list(): void
+{
+    global $lang;
+    global $form_container, $form;
+
+    loadLanguage();
+
+    $form_container->output_cell(
+        "<label>{$lang->ougcAwardsRecountRebuildGrantsDisplayOrder}</label><div class=\"description\">{$lang->ougcAwardsRecountRebuildGrantsDisplayOrderDescription}</div>"
+    );
+
+    $form_container->output_cell(
+        $form->generate_numeric_field(
+            'ougc_awards_rebuild_grants_display_order',
+            50,
+            ['style' => 'width: 150px;', 'min' => 1]
+        )
+    );
+
+    $form_container->output_cell(
+        $form->generate_submit_button($lang->go, ['name' => 'do_rebuild_ougc_awards_grants_display_order'])
+    );
+
+    $form_container->construct_row();
+}
+
+function admin_tools_do_recount_rebuild(): void
+{
+    global $mybb;
+
+    if (isset($mybb->input['do_rebuild_ougc_awards_grants_display_order'])) {
+        if ($mybb->get_input('page', MyBB::INPUT_INT) === 1) {
+            log_admin_action('rebuild_award_grants_display_order');
+        }
+
+        /*$per_page = $mybb->get_input('newpoints_recount', MyBB::INPUT_INT);
+
+        if (!$per_page || $per_page <= 0) {
+            $mybb->input['newpoints_recount'] = 50;
+        }*/
+
+        recount_rebuild_award_grants_display_order();
+    }
 }

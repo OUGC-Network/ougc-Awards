@@ -83,10 +83,17 @@ $l = [
     'setting_ougc_awards_privateMessageSenderUserID_desc' => 'Selecciona el identificador de usuario (UID) que enviará los mensajes privados a los usuarios al recibir un premio. El valor predeterminado es <code>0</code>.',
     'setting_ougc_awards_groupsTasks' => 'Grupos de Vista de Tareas',
     'setting_ougc_awards_groupsTasks_desc' => 'Grupos permitidos para ver la página de tareas de premios.',
-    'setting_ougc_awards_groupsMyAwards' => 'Grupos de Vista de Mis Premios',
+    'setting_ougc_awards_groupsMyAwards' => 'Mis Premios: Grupos de Permitidos',
     'setting_ougc_awards_groupsMyAwards_desc' => 'Grupos permitidos para ver la página Mis Premios.',
+    'setting_ougc_awards_groupsMyAwardsDisplayOrder' => 'Mis Premios: Permiso de Orden',
+    'setting_ougc_awards_groupsMyAwardsDisplayOrder_desc' => 'Grupos permitidos para modificar el order de sus premios.',
     'setting_ougc_awards_enableDvzStream' => 'Habilitar Integración de DVZ Stream',
     'setting_ougc_awards_enableDvzStream_desc' => 'Habilitar la integración de DVZ Stream para premios otorgados.',
+
+    'ougcAwardsRecountRebuildGrantsDisplayOrder' => 'Premios: Reconstruir Orden de Visualización de Otorgamientos',
+    'ougcAwardsRecountRebuildGrantsDisplayOrderDescription' => 'Cuando esto se ejecute, el orden de visualización de los otorgamientos de premios se reconstruirá para coincidir con el orden de visualización de los premios.',
+
+    'ougcAwardsRecountRebuildGrantsDisplayOrderSuccess' => 'La reconstrucción del order de visualizacion de los otorgamientos fue exitosa.',
 
     'ougcAwardsTaskRan' => 'La tarea de premios se ejecutó con éxito.',
 

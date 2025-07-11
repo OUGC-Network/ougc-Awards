@@ -87,6 +87,10 @@
     "optionscode": "groupselect",
     "value": -1
   },
+  "groupsMyAwardsDisplayOrder": {
+    "optionscode": "groupselect",
+    "value": -1
+  },
   "enableDvzStream": {
     "optionscode": "yesno",
     "value": 1

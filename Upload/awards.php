@@ -174,8 +174,10 @@ $templatelist = 'ougcawards_' . implode(',ougcawards_', [
         'controlPanelLogsRow',
         'controlPanelMyAwards',
         'controlPanelMyAwardsEmpty',
+        'controlPanelMyAwardsHeaderDisplayOrder',
         'controlPanelMyAwardsPagination',
         'controlPanelMyAwardsRow',
+        'controlPanelMyAwardsRowDisplayOrder',
         'controlPanelMyAwardsRowLink',
         'controlPanelNewEditAwardForm',
         'controlPanelNewEditAwardFormUpload',
@@ -1734,12 +1736,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $visibleStatuses = $mybb->get_input('visibleStatus', MyBB::INPUT_ARRAY);
 
-        $updateGrandIDs = array_unique(array_merge(array_keys($displayOrders), array_keys($visibleStatuses)));
+        foreach ($mybb->get_input('formGrants', MyBB::INPUT_ARRAY) as $grantID) {
+            $updateData = [];
 
-        foreach ($updateGrandIDs as $grantID) {
-            $updateData = ['disporder' => (int)$displayOrders[$grantID]];
+            if (is_member(getSetting('groupsMyAwardsDisplayOrder'))) {
+                $updateData['disporder'] = (int)$displayOrders[$grantID];
+            }
 
-            if (isset($visibleStatuses[$grantID])) {
+            if (!empty($visibleStatuses[$grantID])) {
                 $updateData['visible'] = GRANT_STATUS_VISIBLE;
             } else {
                 $updateData['visible'] = GRANT_STATUS_NOT_VISIBLE;
@@ -1747,7 +1751,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
             runHooks('my_awards_update_end');
 
-            grantUpdate($updateData, $grantID);
+            grantUpdate($updateData, (int)$grantID);
         }
 
         redirect(
@@ -1994,6 +1998,12 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
             $displayOrder = (int)$grantData['disporder'];
 
+            $displayOrderColumn = '';
+
+            if (is_member(getSetting('groupsMyAwardsDisplayOrder'))) {
+                $displayOrderColumn = eval(getTemplate('controlPanelMyAwardsRowDisplayOrder'));
+            }
+
             $checkedElement = '';
 
             $visibleStatus = (int)$grantData['visible'];
@@ -2032,6 +2042,12 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         $formUrl = urlHandlerBuild(array_merge($urlParams, ['awardID' => $awardID]));
 
         $columnHeader = $grantForm = $revokeForm = '';
+
+        $displayOrderHeader = '';
+
+        if (is_member(getSetting('groupsMyAwardsDisplayOrder'))) {
+            $displayOrderHeader = eval(getTemplate('controlPanelMyAwardsHeaderDisplayOrder'));
+        }
 
         $categoriesContents .= eval(getTemplate('controlPanelMyAwards'));
     }

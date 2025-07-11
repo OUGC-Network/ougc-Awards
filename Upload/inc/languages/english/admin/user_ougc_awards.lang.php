@@ -83,10 +83,17 @@ $l = [
     'setting_ougc_awards_privateMessageSenderUserID_desc' => 'Select the user identifier (UID) that will send the private messages to users when receiving an award. Default is <code>0</code>.',
     'setting_ougc_awards_groupsTasks' => 'Tasks View Groups',
     'setting_ougc_awards_groupsTasks_desc' => 'Allowed groups to view the awards tasks page.',
-    'setting_ougc_awards_groupsMyAwards' => 'My Awards View Groups',
+    'setting_ougc_awards_groupsMyAwards' => 'My Awards: View Groups',
     'setting_ougc_awards_groupsMyAwards_desc' => 'Allowed groups to view the My Awards page.',
+    'setting_ougc_awards_groupsMyAwardsDisplayOrder' => 'My Awards: Display Order Permission',
+    'setting_ougc_awards_groupsMyAwardsDisplayOrder_desc' => 'Allowed groups to modify the display order of their award grants.',
     'setting_ougc_awards_enableDvzStream' => 'Enable DVZ Stream Integration',
     'setting_ougc_awards_enableDvzStream_desc' => 'Enable DVZ Stream integration for granted awards.',
+
+    'ougcAwardsRecountRebuildGrantsDisplayOrder' => 'Awards: Rebuild Grants Display Order',
+    'ougcAwardsRecountRebuildGrantsDisplayOrderDescription' => 'When this is run, the display order of user grants will be rebuilt to match the award display order.',
+
+    'ougcAwardsRecountRebuildGrantsDisplayOrderSuccess' => 'The awards grants rebuilt was successful.',
 
     'ougcAwardsTaskRan' => 'The awards task ran successfully.',
 

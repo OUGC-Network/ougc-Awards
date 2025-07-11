@@ -30,6 +30,7 @@ declare(strict_types=1);
 
 namespace ougc\Awards\Admin;
 
+use MyBB;
 use DirectoryIterator;
 use MybbStuff_MyAlerts_AlertTypeManager;
 use MybbStuff_MyAlerts_Entity_AlertType;
@@ -37,9 +38,12 @@ use PluginLibrary;
 use stdClass;
 
 use function ougc\Awards\Core\allowImports;
+use function ougc\Awards\Core\awardsCacheGet;
 use function ougc\Awards\Core\cacheUpdate;
 use function ougc\Awards\Core\categoryInsert;
 use function ougc\Awards\Core\getSetting;
+use function ougc\Awards\Core\grantGet;
+use function ougc\Awards\Core\grantUpdate;
 use function ougc\Awards\Core\loadLanguage;
 
 use const MYBB_ROOT;
@@ -648,4 +652,40 @@ function dbBuildFieldDefinition(array $fieldData): string
     }
 
     return $field_definition;
+}
+
+function recount_rebuild_award_grants_display_order(): void
+{
+    global $mybb, $lang;
+
+    loadLanguage();
+
+    $totalGrants = grantGet([], ['COUNT(gid) AS tota_user_grants'], ['limit' => 1]);
+
+    $currentPage = $mybb->get_input('page', MyBB::INPUT_INT);
+
+    $perPage = 50;
+
+    $start = ($currentPage - 1) * $perPage;
+
+    $end = $start + $perPage;
+
+    $awardsCache = awardsCacheGet()['awards'];
+
+    foreach (grantGet([], ['aid'], ['limit_start' => $start, 'limit' => $perPage]) as $grantID => $grantData) {
+        grantUpdate(
+            ['disporder' => $awardsCache[$grantData['aid']]['disporder'] ?? 0],
+            $grantID
+        );
+    }
+
+    check_proceed(
+        $totalGrants['tota_user_grants'] ?? 0,
+        $end,
+        ++$currentPage,
+        $perPage,
+        'ougc_awards_rebuild_grants_display_order',
+        'do_rebuild_ougc_awards_grants_display_order',
+        $lang->ougcAwardsRecountRebuildGrantsDisplayOrderSuccess
+    );
 }
