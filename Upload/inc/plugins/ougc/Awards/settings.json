@@ -27,7 +27,15 @@
     "optionscode": "numeric",
     "value": 10
   },
+  "perPageMyAwards": {
+    "optionscode": "numeric",
+    "value": 10
+  },
   "perPageViewUsers": {
+    "optionscode": "numeric",
+    "value": 10
+  },
+  "perPageViewUserModal": {
     "optionscode": "numeric",
     "value": 10
   },

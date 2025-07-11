@@ -1729,6 +1729,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         error_no_permission();
     }
 
+    $perPage = (int)getSetting('perPageMyAwards');
+
     $urlParams = ['action' => 'myAwards'];
 
     if ($mybb->request_method === 'post') {
@@ -2065,6 +2067,8 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = $categoriesContents;
 } elseif ($mybb->get_input('action') === 'viewUsers') {
+    $perPage = (int)getSetting('perPageViewUsers');
+
     if ($mybb->request_method === 'post') {
         if (isset($mybb->input['userGrants'])) {
             verify_post_check($mybb->get_input('my_post_key'));
@@ -3247,7 +3251,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $pageContents = eval(getTemplate('controlPanelPresets'));
 } elseif ($mybb->get_input('action') === 'viewUser') {
-    $perPage = (int)getSetting('perPageViewUsers');
+    $perPage = (int)getSetting('perPageViewUserModal');
 
     $userID = $mybb->get_input('userID', MyBB::INPUT_INT);
 
