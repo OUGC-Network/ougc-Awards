@@ -39,7 +39,7 @@ use function ougc\Awards\Core\awardInsert;
 use function ougc\Awards\Core\categoryInsert;
 use function ougc\Awards\Core\loadLanguage;
 use function ougc\Awards\Core\runHooks;
-use function ougc\Awards\Admin\recount_rebuild_award_grants_display_order;
+use function ougc\Awards\Admin\recountRebuildAwardGrantsDisplayOrder;
 
 use const ougc\Awards\Core\DEBUG;
 
@@ -269,6 +269,6 @@ function admin_tools_do_recount_rebuild(): void
             $mybb->input['newpoints_recount'] = 50;
         }*/
 
-        recount_rebuild_award_grants_display_order();
+        recountRebuildAwardGrantsDisplayOrder();
     }
 }

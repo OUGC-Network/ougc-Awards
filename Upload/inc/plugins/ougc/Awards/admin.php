@@ -42,6 +42,7 @@ use function ougc\Awards\Core\awardsCacheGet;
 use function ougc\Awards\Core\cacheUpdate;
 use function ougc\Awards\Core\categoryInsert;
 use function ougc\Awards\Core\getSetting;
+use function ougc\Awards\Core\grantCount;
 use function ougc\Awards\Core\grantGet;
 use function ougc\Awards\Core\grantUpdate;
 use function ougc\Awards\Core\loadLanguage;
@@ -654,13 +655,13 @@ function dbBuildFieldDefinition(array $fieldData): string
     return $field_definition;
 }
 
-function recount_rebuild_award_grants_display_order(): void
+function recountRebuildAwardGrantsDisplayOrder(): void
 {
     global $mybb, $lang;
 
     loadLanguage();
 
-    $totalGrants = grantGet([], ['COUNT(gid) AS tota_user_grants'], ['limit' => 1]);
+    $totalGrants = grantCount();
 
     $currentPage = $mybb->get_input('page', MyBB::INPUT_INT);
 
@@ -680,7 +681,7 @@ function recount_rebuild_award_grants_display_order(): void
     }
 
     check_proceed(
-        $totalGrants['tota_user_grants'] ?? 0,
+        $totalGrants['total_grants'] ?? 0,
         $end,
         ++$currentPage,
         $perPage,

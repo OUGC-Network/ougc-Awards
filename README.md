@@ -155,7 +155,7 @@ A setup that meets the following requirements is necessary to use this plugin.
    │ │ │ │ │ ├── postBitPreset.html
    │ │ │ │ │ ├── postBitViewAll.html
    │ │ │ │ │ ├── profile.html
-   │ │ │ │ │ ├── profile_row.html
+   │ │ │ │ │ ├── profileContent.html
    │ │ │ │ │ ├── profileEmpty.html
    │ │ │ │ │ ├── profilePagination.html
    │ │ │ │ │ ├── profilePresets.html
@@ -520,7 +520,7 @@ The following is a list of templates available for this plugin.
     - _front end_;
 - `ougcawards_profile`
     - _front end_;
-- `ougcawards_profile_row`
+- `ougcawards_profileContent`
     - _front end_;
 - `ougcawards_profileEmpty`
     - _front end_;

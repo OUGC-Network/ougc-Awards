@@ -60,17 +60,21 @@ use function ougc\Awards\Core\grantFind;
 use function ougc\Awards\Core\grantGet;
 use function ougc\Awards\Core\grantGetSingle;
 use function ougc\Awards\Core\grantInsert;
+use function ougc\Awards\Core\grantCount;
 use function ougc\Awards\Core\grantUpdate;
 use function ougc\Awards\Core\isModerator;
 use function ougc\Awards\Core\isVisibleAward;
 use function ougc\Awards\Core\isVisibleCategory;
+use function ougc\Awards\Core\logCount;
 use function ougc\Awards\Core\logDelete;
 use function ougc\Awards\Core\logGet;
+use function ougc\Awards\Core\ownerCategoryCount;
 use function ougc\Awards\Core\ownerCategoryDelete;
 use function ougc\Awards\Core\ownerCategoryFind;
 use function ougc\Awards\Core\ownerCategoryGetSingle;
 use function ougc\Awards\Core\ownerCategoryGetUser;
 use function ougc\Awards\Core\ownerCategoryInsert;
+use function ougc\Awards\Core\ownerCount;
 use function ougc\Awards\Core\ownerDelete;
 use function ougc\Awards\Core\ownerFind;
 use function ougc\Awards\Core\ownerGetSingle;
@@ -88,9 +92,9 @@ use function ougc\Awards\Core\presetGet;
 use function ougc\Awards\Core\presetInsert;
 use function ougc\Awards\Core\requestApprove;
 use function ougc\Awards\Core\requestGetPending;
-use function ougc\Awards\Core\requestGetPendingTotal;
 use function ougc\Awards\Core\requestInsert;
 use function ougc\Awards\Core\requestReject;
+use function ougc\Awards\Core\requestsCount;
 use function ougc\Awards\Core\runHooks;
 use function ougc\Awards\Core\taskDelete;
 use function ougc\Awards\Core\taskGet;
@@ -1432,39 +1436,15 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $awardIDs = implode("','", $awardIDs);
 
-    $pendingRequestTotal = my_number_format(
-        requestGetPendingTotal(
-            ["aid IN ('{$awardIDs}')"]
-        )
+    $pendingRequestTotal = my_number_format(requestsCount(["aid IN ('{$awardIDs}')"])['total_requests'] ?? 0);
+
+    $grantedTotal = my_number_format(grantCount(["aid IN ('{$awardIDs}')"])['total_grants'] ?? 0);
+
+    $ownersCategoryTotal = my_number_format(
+        ownerCategoryCount(["categoryID='{$categoryID}'"])['total_category_owners'] ?? 0
     );
 
-    $grantedTotal = grantGetSingle(["aid IN ('{$awardIDs}')"], ['COUNT(gid) AS grantedTotal'], ['group_by' => 'gid']);
-
-    if (!empty($grantedTotal['grantedTotal'])) {
-        $grantedTotal = my_number_format($grantedTotal['grantedTotal']);
-    } else {
-        $grantedTotal = 0;
-    }
-
-    $ownersCategoryTotal = ownerCategoryGetSingle(
-        ["categoryID='{$categoryID}'"],
-        ['COUNT(ownerID) AS ownersTotal'],
-        ['group_by' => 'ownerID']
-    );
-
-    if (!empty($ownersCategoryTotal['ownersTotal'])) {
-        $ownersCategoryTotal = my_number_format($ownersCategoryTotal['ownersTotal']);
-    } else {
-        $ownersCategoryTotal = 0;
-    }
-
-    $ownersTotal = ownerGetSingle(["aid IN ('{$awardIDs}')"], ['COUNT(oid) AS ownersTotal'], ['group_by' => 'oid']);
-
-    if (!empty($ownersTotal['ownersTotal'])) {
-        $ownersTotal = my_number_format($ownersTotal['ownersTotal']);
-    } else {
-        $ownersTotal = 0;
-    }
+    $ownersTotal = my_number_format(ownerCount(["aid IN ('{$awardIDs}')"])['total_owners'] ?? 0);
 
     $pageTitle = $lang->ougcAwardsControlPanelDeleteCategoryTitle;
 
@@ -1693,27 +1673,11 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         redirect(urlHandlerBuild(), $lang->ougcAwardsRedirectAwardDeleted);
     }
 
-    $pendingRequestTotal = my_number_format(
-        requestGetPendingTotal(
-            ["aid='{$awardID}'"]
-        )
-    );
+    $pendingRequestTotal = my_number_format(requestsCount(["aid='{$awardID}'"])['total_requests'] ?? 0);
 
-    $grantedTotal = grantGetSingle(["aid='{$awardID}'"], ['COUNT(gid) AS grantedTotal'], ['group_by' => 'gid']);
+    $grantedTotal = my_number_format(grantCount(["aid='{$awardID}'"])['total_grants'] ?? 0);
 
-    if (!empty($grantedTotal['grantedTotal'])) {
-        $grantedTotal = my_number_format($grantedTotal['grantedTotal']);
-    } else {
-        $grantedTotal = 0;
-    }
-
-    $ownersTotal = ownerGetSingle(["aid='{$awardID}'"], ['COUNT(oid) AS ownersTotal'], ['group_by' => 'oid']);
-
-    if (!empty($ownersTotal['ownersTotal'])) {
-        $ownersTotal = my_number_format($ownersTotal['ownersTotal']);
-    } else {
-        $ownersTotal = 0;
-    }
+    $ownersTotal = my_number_format(ownerCount(["aid='{$awardID}'"])['total_owners'] ?? 0);
 
     $pageTitle = $lang->ougcAwardsControlPanelDeleteAwardTitle;
 
@@ -1842,17 +1806,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $categoriesContents = '';
 
     foreach ($sectionObjects as $sectionID => $sectionData) {
-        $totalGrantedCount = awardGetUser(
-            $sectionData['whereClauses'],
-            ['COUNT(gid) AS totalGranted'],
-            ['limit' => 1, 'group_by' => 'gid']
-        );
-
-        if (empty($totalGrantedCount['totalGranted'])) {
-            $totalGrantedCount = 0;
-        } else {
-            $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
-        }
+        $totalGrantedCount = (int)(grantCount($sectionData['whereClauses'])['total_grants'] ?? 0);
 
         $currentPage = $mybb->get_input('page' . $sectionID, MyBB::INPUT_INT);
 
@@ -1962,7 +1916,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             )
             );
 
-            $awardUrl = urlHandlerBuild(array_merge($urlParams, ['awardID' => $awardID]));
+            $awardUrl = urlHandlerBuild(['action' => 'viewUsers', 'awardID' => $awardID]);
 
             $awardImage = eval(getTemplate('awardWrapper', false));
 
@@ -2173,17 +2127,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    $totalGrantedCount = awardGetUser(
-        ["aid='{$awardID}'"],
-        ['COUNT(gid) AS totalGranted'],
-        ['limit' => 1, 'group_by' => 'gid']
-    );
-
-    if (empty($totalGrantedCount['totalGranted'])) {
-        $totalGrantedCount = 0;
-    } else {
-        $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
-    }
+    $totalGrantedCount = (int)(grantCount(["aid='{$awardID}'"])['total_grants'] ?? 0);
 
     if ($mybb->get_input('page', MyBB::INPUT_INT) > 0) {
         $startPage = ($mybb->get_input('page', MyBB::INPUT_INT) - 1) * $perPage;
@@ -2416,22 +2360,12 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    $totalOwnersCount = ownerCategoryGetUser(
-        ["categoryID='{$categoryID}'"],
-        ['COUNT(ownerID) AS totalOwners'],
-        ['limit' => 1, 'group_by' => 'ownerID']
-    );
-
-    if (empty($totalOwnersCount['totalOwners'])) {
-        $totalOwnersCount = 0;
-    } else {
-        $totalOwnersCount = (int)$totalOwnersCount['totalOwners'];
-    }
+    $ownersCategoryTotal = (int)(ownerCategoryCount(["categoryID='{$categoryID}'"])['total_category_owners'] ?? 0);
 
     if ($mybb->get_input('page', MyBB::INPUT_INT) > 0) {
         $startPage = ($mybb->get_input('page', MyBB::INPUT_INT) - 1) * $perPage;
 
-        $totalPages = ceil($totalOwnersCount / $perPage);
+        $totalPages = ceil($ownersCategoryTotal / $perPage);
 
         if ($mybb->get_input('page', MyBB::INPUT_INT) > $totalPages) {
             $startPage = 0;
@@ -2464,7 +2398,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     }
 
     $paginationMenu = (string)multipage(
-        $totalOwnersCount,
+        $ownersCategoryTotal,
         $perPage,
         $mybb->get_input('page', MyBB::INPUT_INT),
         urlHandlerBuild(['action' => 'viewUsers', 'categoryID' => $categoryID])
@@ -2602,20 +2536,12 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    $totalOwnersCount = ownerGetUser(["aid='{$awardID}'"],
-        ['COUNT(oid) AS totalOwners'],
-        ['limit' => 1, 'group_by' => 'oid']);
-
-    if (empty($totalOwnersCount['totalOwners'])) {
-        $totalOwnersCount = 0;
-    } else {
-        $totalOwnersCount = (int)$totalOwnersCount['totalOwners'];
-    }
+    $ownersTotal = (int)(ownerCount(["aid='{$awardID}'"])['total_owners'] ?? 0);
 
     if ($mybb->get_input('page', MyBB::INPUT_INT) > 0) {
         $startPage = ($mybb->get_input('page', MyBB::INPUT_INT) - 1) * $perPage;
 
-        $totalPages = ceil($totalOwnersCount / $perPage);
+        $totalPages = ceil($ownersTotal / $perPage);
 
         if ($mybb->get_input('page', MyBB::INPUT_INT) > $totalPages) {
             $startPage = 0;
@@ -2648,7 +2574,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     }
 
     $paginationMenu = (string)multipage(
-        $totalOwnersCount,
+        $ownersTotal,
         $perPage,
         $mybb->get_input('page', MyBB::INPUT_INT),
         urlHandlerBuild(['action' => 'viewUsers', 'awardID' => $awardID])
@@ -2852,17 +2778,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
         }
     }
 
-    $totalRequestsCount = requestGetPending(
-        $whereClauses,
-        ['COUNT(rid) AS total_pending_requests'],
-        ['limit' => 1, 'group_by' => 'rid']
-    );
-
-    if (empty($totalRequestsCount['total_pending_requests'])) {
-        $totalRequestsCount = 0;
-    } else {
-        $totalRequestsCount = (int)$totalRequestsCount['total_pending_requests'];
-    }
+    $totalRequestsCount = (int)(requestsCount($whereClauses)['total_requests'] ?? 0);
 
     $requestsList = $buttons = '';
 
@@ -3309,11 +3225,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             "visible='{$grantStatusVisible}'",
         ];
 
-        $totalGrantedCount = (int)(awardGetUser(
-            $whereClauses,
-            ['COUNT(gid) AS totalGranted'],
-            ['limit' => 1, 'group_by' => 'gid']
-        )['totalGranted'] ?? 0);
+        $totalGrantedCount = (int)(grantCount($whereClauses)['total_grants'] ?? 0);
 
         $startPage = 0;
 
@@ -3400,9 +3312,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $statusPending = REQUEST_STATUS_PENDING;
 
-    $pendingRequestTotal = requestGetPendingTotal(
+    $pendingRequestTotal = (int)(requestsCount(
         ["aid='{$awardID}'", "uid='{$currentUserID}'", "status='{$statusPending}'"]
-    );
+    )['total_requests'] ?? 0);
 
     if ($pendingRequestTotal) {
         $errorMessages[] = $lang->ougcAwardsErrorPendingRequest;
@@ -3410,16 +3322,10 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $buttonContent = '';
 
-    if ($errorMessages) {
-        if (!empty($errorMessages)) {
-            $errorMessages = inline_error($errorMessages);
-        } else {
-            $errorMessages = '';
-        }
+    if ($errorMessages || empty($awardData)) {
+        $errorMessages = $errorMessages[0];
 
         $disabledElement = 'disabled="disabled"';
-
-        $buttonContent = eval(getTemplate('pageequestButton'));
 
         $formContents = eval(getTemplate('pageRequestError'));
     } elseif ($mybb->request_method === 'post') {
@@ -4078,11 +3984,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $whereClauses = ["tid='{$taskID}'"];
 
-    $totalLogsCount = (int)(logGet(
-        $whereClauses,
-        ['COUNT(lid) AS total_logs'],
-        ['limit' => 1, 'group_by' => 'lid']
-    )['total_logs'] ?? 0);
+    $totalLogsCount = (int)(logCount($whereClauses)['total_logs'] ?? 0);
 
     $startPage = 0;
 
@@ -4121,18 +4023,26 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
     $alternativeBackground = alt_trow(true);
 
+    $logObjects = logGet(
+        $whereClauses,
+        ['tid', 'uid', 'gave', 'revoked', 'date'],
+        [
+            'limit' => $perPage,
+            'limit_start' => $startPage,
+        ]
+    );
+
+    foreach ($logObjects as $v) {
+        if (!is_array($v)) {
+            $logObjects = [$logObjects];
+
+            break;
+        }
+    }
+
     $logsRows = '';
 
-    foreach (
-        logGet(
-            $whereClauses,
-            ['tid', 'uid', 'gave', 'revoked', 'date'],
-            [
-                'limit' => $perPage,
-                'limit_start' => $startPage,
-            ]
-        ) as $logData
-    ) {
+    foreach ($logObjects as $logData) {
         $logID = (int)$logData['lid'];
 
         $userID = (int)$logData['uid'];

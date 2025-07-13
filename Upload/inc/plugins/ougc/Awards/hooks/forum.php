@@ -38,6 +38,7 @@ use function ougc\Awards\Core\awardGetUser;
 use function ougc\Awards\Core\awardsCacheGet;
 use function ougc\Awards\Core\cacheUpdate;
 use function ougc\Awards\Core\executeTask;
+use function ougc\Awards\Core\grantCount;
 use function ougc\Awards\Core\isModerator;
 use function ougc\Awards\Core\myAlertsInitiate;
 use function ougc\Awards\Core\ownerGetUserAwards;
@@ -47,6 +48,7 @@ use function ougc\Awards\Core\presetUpdate;
 use function ougc\Awards\Core\loadLanguage;
 use function ougc\Awards\Core\getTemplate;
 use function ougc\Awards\Core\requestGet;
+use function ougc\Awards\Core\requestsCount;
 use function ougc\Awards\Core\urlHandlerBuild;
 use function ougc\Awards\Core\getSetting;
 
@@ -97,8 +99,6 @@ function global_start05(): bool
             'postBitViewAll',
             'postBitViewAllSection',
             'profile',
-            'profile_row',
-            'profile_rowLink',
             'profileContent',
             'profileEmpty',
             'profilePagination',
@@ -201,11 +201,9 @@ function global_intermediate(): bool
 
         $statusPending = REQUEST_STATUS_PENDING;
 
-        $pendingRequestCount = (int)(requestGet(
-            ["status='{$statusPending}'", "aid IN ('{$ownerAwardIDs}')"],
-            ['COUNT(rid) AS total_pending_requests'],
-            ['group_by' => 'rid']
-        )['total_pending_requests'] ?? 0);
+        $pendingRequestCount = (int)(requestsCount(
+            ["status='{$statusPending}'", "aid IN ('{$ownerAwardIDs}')"]
+        )['total_requests'] ?? 0);
     }
 
     if ($pendingRequestCount < 1) {
@@ -560,10 +558,6 @@ function member_profile_end(&$userData = []): array
         'order_dir' => 'desc'
     ];
 
-    if ($groupAwardGrants) {
-        $queryOptions['group_by'] = 'aid, uid, oid, rid, tid, thread, reason, pm, date, disporder, visible';
-    }
-
     $queryFields = [
         'uid',
         'oid',
@@ -577,10 +571,6 @@ function member_profile_end(&$userData = []): array
         'disporder',
         'visible'
     ];
-
-    if ($groupAwardGrants) {
-        $queryFields[] = 'COUNT(aid) AS total_award_grants';
-    }
 
     $sectionObjects = [
         0 => [
@@ -632,30 +622,22 @@ function member_profile_end(&$userData = []): array
             );
         }
 
-        $countField = $groupField = 'gid';
-
-        if ($groupAwardGrants) {
-            $countField = 'DISTINCT aid';
-
-            $groupField = 'aid';
-        }
-
         $grantedList = '';
 
-        $totalGrantedCount = awardGetUser(
-            $sectionData['whereClauses'],
-            ["COUNT({$countField}) AS totalGranted"],
-            ['limit' => 1, 'group_by' => $groupField]
-        );
+        if ($groupAwardGrants) {
+            $totalGrantedCount = (int)(grantCount(
+                $sectionData['whereClauses'],
+                ['limit' => 1, 'group_by' => 'aid'],
+                ['COUNT(DISTINCT aid) AS total_grants']
+            )['total_grants'] ?? 0);
+        } else {
+            $totalGrantedCount = (int)(grantCount(
+                $sectionData['whereClauses']
+            )['total_grants'] ?? 0);
+        }
 
         if ($totalGrantedCount > $maximumAwardsToDisplay && empty($userData['ougc_awards_view_all'])) {
             $userData['ougc_awards_view_all'] = eval(getTemplate($templatePrefix . 'ViewAll'));
-        }
-
-        if (empty($totalGrantedCount['totalGranted'])) {
-            $totalGrantedCount = 0;
-        } else {
-            $totalGrantedCount = (int)$totalGrantedCount['totalGranted'];
         }
 
         $paginationMenu = '';
@@ -692,11 +674,29 @@ function member_profile_end(&$userData = []): array
 
         $queryOptions['limit_start'] = $startPage;
 
-        $grantCacheData = awardGetUser(
-            $sectionData['whereClauses'],
-            $sectionData['queryFields'],
-            $queryOptions
-        );
+        $grantsGroupCache = [];
+
+        if ($groupAwardGrants) {
+            $grantsGroupCache = grantCount(
+                $sectionData['whereClauses'],
+                ['group_by' => 'aid'],
+                ['aid']
+            );
+        }
+
+        if ($groupAwardGrants) {
+            $grantCacheData = awardGetUser(
+                $sectionData['whereClauses'],
+                $sectionData['queryFields'],
+                array_merge($queryOptions, ['group_by' => 'aid'])
+            );
+        } else {
+            $grantCacheData = awardGetUser(
+                $sectionData['whereClauses'],
+                $sectionData['queryFields'],
+                $queryOptions
+            );
+        }
 
         foreach ($grantCacheData as $v) {
             if (!is_array($v)) {
@@ -711,7 +711,7 @@ function member_profile_end(&$userData = []): array
                 $grantedList = eval(getTemplate($templatePrefix . 'Empty'));
             }
         } elseif ($maximumAwardsToDisplay) {
-            parseUserAwards($grantedList, $grantCacheData, $templatePrefix . 'Row');
+            parseUserAwards($grantedList, $grantCacheData, $templatePrefix . 'Row', $grantsGroupCache);
         }
 
         if ($maximumAwardsToDisplay) {

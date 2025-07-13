@@ -1645,6 +1645,39 @@ function ownerFind(int $awardID, int $userID, array $queryFields = ['uid', 'aid'
     return [];
 }
 
+function ownerCount(
+    array $whereClauses = [],
+    array $queryOptions = ['limit' => 1],
+    array $queryFields = []
+): array {
+    global $db;
+
+    $queryFields[] = 'COUNT(oid) AS total_owners';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_owners',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
+
+    if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
+        return (array)$db->fetch_array($dbQuery);
+    }
+
+    $ownerObjects = [];
+
+    while ($ownerData = $db->fetch_array($dbQuery)) {
+        if (isset($queryOptions['group_by']) && isset($ownerData[$queryOptions['group_by']])) {
+            $ownerObjects[(int)$ownerData[$queryOptions['group_by']]] = $ownerData;
+        } else {
+            $ownerObjects[] = $ownerData;
+        }
+    }
+
+    return $ownerObjects;
+}
+
 function ownerCategoryInsert(int $categoryID, int $userID): bool
 {
     global $db;
@@ -1783,6 +1816,39 @@ function ownerCategoryFind(
     }
 
     return [];
+}
+
+function ownerCategoryCount(
+    array $whereClauses = [],
+    array $queryOptions = ['limit' => 1],
+    array $queryFields = []
+): array {
+    global $db;
+
+    $queryFields[] = 'COUNT(ownerID) AS total_category_owners';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_category_owners',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
+
+    if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
+        return (array)$db->fetch_array($dbQuery);
+    }
+
+    $ownerObjects = [];
+
+    while ($ownerData = $db->fetch_array($dbQuery)) {
+        if (isset($queryOptions['group_by']) && isset($ownerData[$queryOptions['group_by']])) {
+            $ownerObjects[(int)$ownerData[$queryOptions['group_by']]] = $ownerData;
+        } else {
+            $ownerObjects[] = $ownerData;
+        }
+    }
+
+    return $ownerObjects;
 }
 
 function ownerGetUserAwards(?int $userID = null): array
@@ -2162,13 +2228,11 @@ function awardGetUser(
 ): array {
     global $db;
 
-    $usersData = [];
-
     $queryFields[] = 'gid';
 
-    if (isset($queryOptions['group_by'])) {
+    /*if (isset($queryOptions['group_by'])) {
         $queryOptions['group_by'] .= ', gid';
-    }
+    }*/
 
     $dbQuery = $db->simple_select(
         'ougc_awards_users',
@@ -2177,17 +2241,17 @@ function awardGetUser(
         $queryOptions
     );
 
-    if ($db->num_rows($dbQuery)) {
-        if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
-            $usersData = (array)$db->fetch_array($dbQuery);
-        } else {
-            while ($userData = $db->fetch_array($dbQuery)) {
-                $usersData[] = $userData;
-            }
-        }
+    if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
+        return (array)$db->fetch_array($dbQuery);
     }
 
-    return $usersData;
+    $grantObjects = [];
+
+    while ($userData = $db->fetch_array($dbQuery)) {
+        $grantObjects[] = $userData;
+    }
+
+    return $grantObjects;
 }
 
 function awardsGetCache(
@@ -2408,6 +2472,39 @@ function grantFind(
     return [];
 }
 
+function grantCount(
+    array $whereClauses = [],
+    array $queryOptions = ['limit' => 1],
+    array $queryFields = []
+): array {
+    global $db;
+
+    $queryFields[] = 'COUNT(gid) AS total_grants';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_users',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
+
+    if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
+        return (array)$db->fetch_array($dbQuery);
+    }
+
+    $grantObjects = [];
+
+    while ($grantData = $db->fetch_array($dbQuery)) {
+        if (isset($queryOptions['group_by']) && isset($grantData[$queryOptions['group_by']])) {
+            $grantObjects[(int)$grantData[$queryOptions['group_by']]] = $grantData;
+        } else {
+            $grantObjects[] = $grantData;
+        }
+    }
+
+    return $grantObjects;
+}
+
 function requestInsert(array $requestData, int $requestID = 0, bool $updateRequest = false): int
 {
     global $db;
@@ -2447,6 +2544,39 @@ function requestGet(
     }
 
     return $requestData;
+}
+
+function requestsCount(
+    array $whereClauses = [],
+    array $queryOptions = ['limit' => 1],
+    array $queryFields = []
+): array {
+    global $db;
+
+    $queryFields[] = 'COUNT(rid) AS total_requests';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_requests',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
+
+    if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
+        return (array)$db->fetch_array($dbQuery);
+    }
+
+    $grantObjects = [];
+
+    while ($requestData = $db->fetch_array($dbQuery)) {
+        if (isset($queryOptions['group_by']) && isset($requestData[$queryOptions['group_by']])) {
+            $grantObjects[(int)$requestData[$queryOptions['group_by']]] = $requestData;
+        } else {
+            $grantObjects[] = $requestData;
+        }
+    }
+
+    return $grantObjects;
 }
 
 function requestGetPending(
@@ -2803,6 +2933,39 @@ function logDelete(array $whereClauses): bool
     $db->delete_query('ougc_awards_tasks_logs', implode(' AND ', $whereClauses));
 
     return true;
+}
+
+function logCount(
+    array $whereClauses = [],
+    array $queryOptions = ['limit' => 1],
+    array $queryFields = []
+): array {
+    global $db;
+
+    $queryFields[] = 'COUNT(lid) AS total_logs';
+
+    $dbQuery = $db->simple_select(
+        'ougc_awards_tasks_logs',
+        implode(',', $queryFields),
+        implode(' AND ', $whereClauses),
+        $queryOptions
+    );
+
+    if (isset($queryOptions['limit']) && $queryOptions['limit'] === 1) {
+        return (array)$db->fetch_array($dbQuery);
+    }
+
+    $logObjects = [];
+
+    while ($logData = $db->fetch_array($dbQuery)) {
+        if (isset($queryOptions['group_by']) && isset($logData[$queryOptions['group_by']])) {
+            $logObjects[(int)$logData[$queryOptions['group_by']]] = $logData;
+        } else {
+            $logObjects[] = $logData;
+        }
+    }
+
+    return $logObjects;
 }
 
 function sendPrivateMessage(array $privateMessage, int $fromUserID = 0, bool $adminOverride = false): bool
@@ -3352,7 +3515,8 @@ function parserObject(): postParser
 function parseUserAwards(
     string &$formattedContent,
     array $grantCacheData,
-    string $templateName = 'profile_row'
+    string $templateName,
+    array $grantsGroupCache = []
 ): string {
     $awardsCategoriesCache = awardsCacheGet()['categories'];
 
@@ -3407,7 +3571,11 @@ function parseUserAwards(
 
         $awardName = htmlspecialchars_uni($awardData['name']);
 
-        $totalAwardGrants = (int)($grantData['total_award_grants'] ?? 0);
+        $totalAwardGrants = 0;
+
+        if (!empty($grantsGroupCache[$awardID]['total_grants'])) {
+            $totalAwardGrants = (int)$grantsGroupCache[$awardID]['total_grants'];
+        }
 
         if ($totalAwardGrants > 1) {
             $totalAwardGrants = my_number_format($totalAwardGrants);
@@ -3472,6 +3640,8 @@ function parseUserAwards(
         $awardImage = eval(getTemplate('awardWrapper', false));
 
         $grantDate = my_date('normal', $grantData['date']);
+
+        global $theme;
 
         $formattedContent .= eval(getTemplate($templateName));
 
