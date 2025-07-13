@@ -32,6 +32,8 @@ namespace ougc\Awards\Hooks\Shared;
 
 use UserDataHandler;
 
+use const ougc\Awards\ROOT;
+
 function datahandler_user_insert(UserDataHandler &$dataHandler): UserDataHandler
 {
     $dataHandler->user_insert_data['ougc_awards'] = '';
@@ -56,4 +58,151 @@ function datahandler_user_delete_end(UserDataHandler &$dataHandler): UserDataHan
     $db->delete_query('ougc_awards_presets', "uid IN ({$dataHandler->delete_uids})");
 
     return $dataHandler;
+}
+
+function ougc_theme_file_templates_get(array &$hookArguments): array
+{
+    static $templates = null;
+
+    $templates !== null || $templates = array_map(function (string $template_name): string {
+        return 'ougcawards_' . $template_name;
+    }, [
+        'awardImage',
+        'awardImageClass',
+        'awardWrapper',
+        'checkBoxField',
+        'controlPanel',
+        'controlPanelButtons',
+        'controlPanelCategoryOwners',
+        'controlPanelConfirmation',
+        'controlPanelConfirmationDeleteAward',
+        'controlPanelConfirmationDeleteCategory',
+        'controlPanelConfirmationDeleteOwner',
+        'controlPanelContents',
+        'controlPanelEmpty',
+        'controlPanelGrantEdit',
+        'controlPanelList',
+        'controlPanelListButtonUpdateCategory',
+        'controlPanelListCategoryLinks',
+        'controlPanelListCategoryLinksModerator',
+        'controlPanelListColumnDisplayOrder',
+        'controlPanelListColumnEnabled',
+        'controlPanelListColumnOptions',
+        'controlPanelListColumnRequest',
+        'controlPanelListRow',
+        'controlPanelListRowDisplayOrder',
+        'controlPanelListRowEmpty',
+        'controlPanelListRowEnabled',
+        'controlPanelListRowOptions',
+        'controlPanelListRowRequest',
+        'controlPanelListRowRequestButton',
+        'controlPanelLogs',
+        'controlPanelLogsEmpty',
+        'controlPanelLogsPagination',
+        'controlPanelLogsRow',
+        'controlPanelMyAwards',
+        'controlPanelMyAwardsEmpty',
+        'controlPanelMyAwardsHeaderDisplayOrder',
+        'controlPanelMyAwardsPagination',
+        'controlPanelMyAwardsRow',
+        'controlPanelMyAwardsRowDisplayOrder',
+        'controlPanelMyAwardsRowLink',
+        'controlPanelNewEditAwardForm',
+        'controlPanelNewEditAwardFormUpload',
+        'controlPanelNewEditCategoryForm',
+        'controlPanelNewEditTaskForm',
+        'controlPanelNewEditTaskFormRequirementRow',
+        'controlPanelOwners',
+        'controlPanelOwnersEmpty',
+        'controlPanelOwnersRow',
+        'controlPanelPresets',
+        'controlPanelPresetsAward',
+        'controlPanelPresetsDefault',
+        'controlPanelPresetsForm',
+        'controlPanelPresetsRow',
+        'controlPanelPresetsSelect',
+        'controlPanelRequests',
+        'controlPanelRequestsEmpty',
+        'controlPanelRequestsRow',
+        'controlPanelTasks',
+        'controlPanelTasksEmpty',
+        'controlPanelTasksRow',
+        'controlPanelTasksRowOptions',
+        'controlPanelTasksRowRequirement',
+        'controlPanelTasksThead',
+        'controlPanelUsers',
+        'controlPanelUsersColumnOptions',
+        'controlPanelUsersEmpty',
+        'controlPanelUsersForm',
+        'controlPanelUsersFormGrant',
+        'controlPanelUsersFormRevoke',
+        'controlPanelUsersRow',
+        'controlPanelUsersRowLink',
+        'controlPanelUsersRowOptions',
+        'controlPanelUsersRowSelect',
+        'css',
+        'global_menu',
+        'globalNotification',
+        'globalPagination',
+        'inputField',
+        'js',
+        'modcp_requests_buttons',
+        'page',
+        'pageRequest',
+        'pageRequestButton',
+        'pageRequestError',
+        'pageRequestForm',
+        'pageRequestSuccess',
+        'postBit',
+        'postBitContent',
+        'postBitEmpty',
+        'postBitPagination',
+        'postBitPreset',
+        'postBitPresets',
+        'postBitPresetsRow',
+        'postBitPresetsRowLink',
+        'postBitRow',
+        'postBitRowLink',
+        'postBitRowTotalCount',
+        'postBitViewAll',
+        'postBitViewAllSection',
+        'profile',
+        'profileContent',
+        'profileEmpty',
+        'profilePagination',
+        'profilePresets',
+        'profilePresetsRow',
+        'profilePresetsRowLink',
+        'profileRow',
+        'profileRowLink',
+        'profileRowTotalCount',
+        'profileViewAll',
+        'profileViewAllSection',
+        'radioField',
+        'selectField',
+        'selectFieldOption',
+        'stats',
+        'stats_empty',
+        'statsUserRow',
+        'streamItem',
+        'textAreaField',
+        'viewAll',
+        'viewAllSection',
+        'viewUser',
+        'viewUserEmpty',
+        'viewUserError',
+        'viewUserRow'
+    ]);
+
+    if (!in_array($hookArguments['title'], $templates)) {
+        return $hookArguments;
+    }
+
+    $filePath = ROOT . '/templates/' . str_replace('ougcawards_', '', $hookArguments['title']) . '.html';
+
+    if ($filePath) {
+        $hookArguments['filePath'] = $filePath;
+    }
+
+    return $hookArguments;
 }
