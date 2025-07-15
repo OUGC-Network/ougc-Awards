@@ -2324,6 +2324,7 @@ function grantInsert(
         'rid' => $requestID,
         'reason' => $db->escape_string($reasonText),
         'date' => TIME_NOW,
+        'disporder' => (int)$awardData['disporder'],
         'visible' => (int)getSetting('grantDefaultVisibleStatus')
     ];
 
