@@ -202,7 +202,8 @@ function pluginActivate(): bool
             $db->drop_column('ougc_awards_tasks', 'ougc_customrepids_g');
         }
 
-        if ($db->field_exists('revoke', 'ougc_awards_tasks')) {
+        if ($db->field_exists('revoke', 'ougc_awards_tasks') &&
+            !$db->field_exists('revokeAwardID', 'ougc_awards_tasks')) {
             $db->rename_column(
                 'ougc_awards_tasks',
                 'revoke',
