@@ -2816,6 +2816,14 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             ['limit_start' => $startPage, 'limit' => $perPage]
         );
 
+        foreach ($pendingRequestsCache as $v) {
+            if (!is_array($v)) {
+                $pendingRequestsCache = [$pendingRequestsCache];
+
+                break;
+            }
+        }
+
         $userIDs = [];
 
         foreach ($pendingRequestsCache as $grantData) {
