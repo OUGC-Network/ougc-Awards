@@ -56,7 +56,7 @@ The following information will assist you into getting a copy of this plugin up 
 A setup that meets the following requirements is necessary to use this plugin.
 
 - [MyBB](https://mybb.com/) >= 1.8
-- [MyShowcase](https://github.com/Sama34/MyShowcase-System) >= 3.0
+- [MyShowcase](https://github.com/Sama34/MyShowcase-System) >= 3.0 (Optional)
 - PHP >= 7
 - [MyBB-PluginLibrary](https://github.com/frostschutz/MyBB-PluginLibrary) >= 13
 
