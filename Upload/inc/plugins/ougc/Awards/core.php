@@ -266,6 +266,7 @@ const TABLES_DATA = [
             'default' => 1
         ],
         //'visible' => ['uidaid' => 'uid,aid', 'aiduid' => 'aid,uid']
+        'unique_key' => ['user_task_id' => 'uid,tid']
     ],
     'ougc_awards_category_owners' => [
         'ownerID' => [
@@ -875,7 +876,7 @@ function executeTask(
     #[Deprecated]
     array $awardTaskData = []
 ): bool {
-    global $db;
+    global $db, $error_handler;
 
     loadLanguage(true);
 
@@ -1364,13 +1365,21 @@ function executeTask(
                     $taskThreadID = (int)$awardsCustomThreadPerUserObjects[$taskID][$userID];
                 }
 
-                if (grantInsert(
-                    $taskGrantAwardID,
-                    $userID,
-                    (string)$awardTaskData['reason'],
-                    $taskThreadID,
-                    $taskID
-                )) {
+                $grantID = 0;
+
+                try {
+                    $grantID = grantInsert(
+                        $taskGrantAwardID,
+                        $userID,
+                        (string)$awardTaskData['reason'],
+                        $taskThreadID,
+                        $taskID
+                    );
+                } catch (Exception $exception) {
+                    $error_handler->log_error(\MYBB_TEMPLATE, $exception->getMessage(), __FILE__, __LINE__);
+                }
+
+                if ($grantID) {
                     $grandIDs[] = $taskGrantAwardID;
 
                     $logTaskGrant = true;
@@ -2328,7 +2337,11 @@ function grantInsert(
         'visible' => (int)getSetting('grantDefaultVisibleStatus')
     ];
 
-    $grantID = $db->insert_query('ougc_awards_users', $insertData);
+    $grantID = (int)$db->insert_query('ougc_awards_users', $insertData);
+
+    if (!$grantID) {
+        return 0;
+    }
 
     global $lang;
 
