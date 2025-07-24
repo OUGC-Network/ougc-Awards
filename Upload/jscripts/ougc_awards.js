@@ -27,15 +27,15 @@
 
 let ougcAwards = {
     RequestAward: function (awardID) {
-        var postData = 'action=requestAward&modal=1&awardID=' + parseInt(awardID);
+        const postData = 'action=requestAward&modal=1&awardID=' + parseInt(awardID);
 
         MyBB.popupWindow('/awards.php?' + postData);
     },
 
     ViewAwards: function (userID, currentPage, SectionID, postID = 0) {
-        var postData = 'viewAwards=1&uid=' + parseInt(userID) + '&sectionID=' + parseInt(SectionID) + '&page' + parseInt(SectionID) + '=' + parseInt(currentPage) + '&pid=' + parseInt(postID);
+        let postData = 'viewAwards=1&uid=' + parseInt(userID) + '&sectionID=' + parseInt(SectionID) + '&page' + parseInt(SectionID) + '=' + parseInt(currentPage) + '&pid=' + parseInt(postID);
 
-        if(parseInt(postID) === 0) {
+        if (parseInt(postID) === 0) {
             postData = postData + '&action=profile';
         }
 
@@ -60,7 +60,7 @@ let ougcAwards = {
     },
 
     DoRequestAward: function (awardID) {
-        var postData = $('.requestForm' + parseInt(awardID)).serialize();
+        const postData = $('.requestForm' + parseInt(awardID)).serialize();
 
         $.ajax(
             {
@@ -84,7 +84,7 @@ let ougcAwards = {
     },
 
     ViewAll: function (userID, currentPage = 1, sectionID = 0) {
-        var postData = 'action=viewUser&modal=1&userID=' + parseInt(userID) + '&sectionID=' + parseInt(sectionID) + '&page=' + parseInt(currentPage);
+        const postData = 'action=viewUser&modal=1&userID=' + parseInt(userID) + '&sectionID=' + parseInt(sectionID) + '&page=' + parseInt(currentPage);
 
         MyBB.popupWindow('/awards.php?' + postData);
     }
