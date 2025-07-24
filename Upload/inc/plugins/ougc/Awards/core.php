@@ -971,7 +971,7 @@ function executeTask(
 				SELECT uid, COUNT(tid) AS {$requirementType}
 				FROM {$db->table_prefix}threads
 				WHERE fid IN ('{$forumIDs}') AND visible > 0 AND closed NOT LIKE 'moved|%'
-				GROUP BY uid, tid
+				GROUP BY uid
 			) t ON (t.uid=u.uid)";
 
                 $whereClauses[] = "t.{$requirementType}{$taskData[$requirementType.'type']}'{$forumThreads}'";
@@ -1003,7 +1003,7 @@ function executeTask(
 				FROM {$db->table_prefix}posts p
 				LEFT JOIN {$db->table_prefix}threads t ON (t.tid=p.tid)
 				WHERE p.fid IN ('{$forumIDs}') AND t.visible > 0 AND p.visible > 0
-				GROUP BY p.uid, p.pid
+				GROUP BY p.uid
 			) p ON (p.uid=u.uid)";
 
                 $whereClauses[] = "p.{$requirementType}{$taskData[$requirementType.'type']}'{$forumPosts}'";
@@ -1150,10 +1150,10 @@ function executeTask(
 
                 foreach (array_map('intval', explode(',', $taskData[$requirementType])) as $previousAwardID) {
                     $tableLeftJoins[] = "(
-                            SELECT g.uid, g.aid, COUNT(g.gid) AS {$requirementType}{$previousAwardID}
+                            SELECT g.uid, COUNT(g.gid) AS {$requirementType}{$previousAwardID}
                             FROM {$db->table_prefix}ougc_awards_users g
                             WHERE g.aid='{$previousAwardID}' AND g.aid IN ('{$awardIDs}')
-                            GROUP BY g.uid, g.aid, g.gid
+                            GROUP BY g.uid
                         ) aw{$previousAwardID} ON (aw{$previousAwardID}.uid=u.uid)";
 
                     $whereClauses[] = "aw{$previousAwardID}.{$requirementType}{$previousAwardID}>='1'";
@@ -1244,7 +1244,7 @@ function executeTask(
                     SELECT uid, COUNT(aid) AS totalUserGrants
                     FROM {$db->table_prefix}ougc_awards_users
                     WHERE aid IN ('{$taskGrantAwardID}')
-                    GROUP BY uid, aid
+                    GROUP BY uid
                 ) a ON (u.uid=a.uid)";
 
                 $whereClauses[] = "(a.totalUserGrants<'1' || a.totalUserGrants IS NULL)";
@@ -1259,7 +1259,7 @@ function executeTask(
                     SELECT uid, COUNT(aid) AS totalUserGrants
                     FROM {$db->table_prefix}ougc_awards_users
                     WHERE aid='{$taskRevokeAwardID}'
-                    GROUP BY uid, aid
+                    GROUP BY uid
                 ) a ON (u.uid=a.uid)";*/
 
             $taskGrantAwardID = 0;
@@ -1275,7 +1275,7 @@ function executeTask(
 					SELECT uid, COUNT(lid) AS totalUserLogs
 					FROM {$db->table_prefix}ougc_awards_tasks_logs
 					WHERE tid='{$taskID}'
-					GROUP BY uid, lid
+					GROUP BY uid
 				) l ON (u.uid=l.uid)";
 
         $whereClauses[] = "l.totalUserLogs<'1' OR l.totalUserLogs IS NULL";
@@ -3176,7 +3176,7 @@ function cacheUpdate(): bool
 					SELECT g.uid, COUNT(g.aid) AS awards
 					FROM {$db->table_prefix}ougc_awards_users g
 					WHERE g.{$whereClauses}
-					GROUP BY g.uid, g.aid
+					GROUP BY g.uid
 				) a ON (u.uid=a.uid)
 				WHERE a.awards!=''
 				ORDER BY a.awards DESC
