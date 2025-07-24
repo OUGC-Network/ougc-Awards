@@ -363,7 +363,8 @@ if (in_array($mybb->get_input('action'), $validActions)) {
     if (!empty($categoryData['name'])) {
         add_breadcrumb(
             htmlspecialchars_uni($categoryData['name']),
-            urlHandlerBuild(['action' => 'viewCategory', 'categoryID' => $categoryID])
+            urlHandlerBuild() . '#categoryID' . $categoryID
+        //urlHandlerBuild(['action' => 'viewCategory', 'categoryID' => $categoryID])
         );
     }
 
