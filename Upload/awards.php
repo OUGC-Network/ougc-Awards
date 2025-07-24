@@ -4168,7 +4168,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
     $whereClauses = [];
 
     if (!$isModerator) {
-        $whereClauses[] = "cid IN ('" . implode("','", array_values($ownerAwardIDs)) . "')";
+        $ownerAwardIDsString = implode("','", array_keys($ownerAwardIDs));
+
+        $whereClauses[] = "(visible='1' OR cid IN ('{$ownerAwardIDsString}'))";
     }
 
     foreach (
