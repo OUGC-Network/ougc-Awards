@@ -57,7 +57,7 @@ A setup that meets the following requirements is necessary to use this plugin.
 
 - [MyBB](https://mybb.com/) >= 1.8
 - [MyShowcase](https://github.com/Sama34/MyShowcase-System) >= 3.0 (Optional)
-- PHP >= 7
+- PHP >= 8
 - [MyBB-PluginLibrary](https://github.com/frostschutz/MyBB-PluginLibrary) >= 13
 
 ### File structure <a name = "file_structure"></a>
