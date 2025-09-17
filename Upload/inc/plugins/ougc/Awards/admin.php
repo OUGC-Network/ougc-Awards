@@ -213,13 +213,17 @@ function pluginActivate(): bool
         }
     }
 
-    if ($db->table_exists('ougc_awards_tasks')) {
+    if ($db->table_exists('ougc_awards_users')) {
         if ($db->index_exists('ougc_awards_users', 'uidaid')) {
             $db->drop_index('ougc_awards_users', 'uidaid');
         }
 
         if ($db->index_exists('ougc_awards_users', 'aiduid')) {
             $db->drop_index('ougc_awards_users', 'uidaid');
+        }
+
+        if ($db->index_exists('ougc_awards_users', 'user_task_id')) {
+            $db->drop_index('ougc_awards_users', 'user_task_id');
         }
     }
 

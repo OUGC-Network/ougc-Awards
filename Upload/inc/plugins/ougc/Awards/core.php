@@ -266,7 +266,7 @@ const TABLES_DATA = [
             'default' => 1
         ],
         //'visible' => ['uidaid' => 'uid,aid', 'aiduid' => 'aid,uid']
-        'unique_key' => ['user_task_id' => 'uid,tid']
+        //'unique_key' => ['user_task_id' => 'uid,tid']
     ],
     'ougc_awards_category_owners' => [
         'ownerID' => [
