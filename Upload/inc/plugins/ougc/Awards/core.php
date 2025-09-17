@@ -44,9 +44,9 @@ use function ougc\Awards\Hooks\Forum\myalerts_register_client_alert_formatters;
 use const TIME_NOW;
 use const ougc\Awards\ROOT;
 
-const PLUGIN_VERSION = '2.2.0';
+const PLUGIN_VERSION = '2.3.0';
 
-const PLUGIN_VERSION_CODE = 2200;
+const PLUGIN_VERSION_CODE = 2300;
 
 const URL = 'awards.php';
 
