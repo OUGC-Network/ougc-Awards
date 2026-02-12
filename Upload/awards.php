@@ -141,6 +141,7 @@ use const ougc\Awards\Core\TASK_STATUS_DISABLED;
 use const ougc\Awards\Core\TASK_STATUS_ENABLED;
 use const ougc\Awards\Core\TASK_TYPE_GRANT;
 use const ougc\Awards\Core\TASK_TYPE_REVOKE;
+use const ougc\Awards\Core\TASK_TYPE_BOTH;
 
 const IN_MYBB = true;
 
@@ -3651,7 +3652,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             break;
     }
 
-    $selectedElementTypeGrant = $selectedElementTypedRevoke = '';
+    $selectedElementTypeGrant = $selectedElementTypedRevoke = $selectedElementTypedBoth = '';
 
     switch ($inputData['taskType']) {
         case TASK_TYPE_GRANT:
@@ -3659,6 +3660,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
             break;
         case TASK_TYPE_REVOKE:
             $selectedElementTypedRevoke = 'checked="checked"';
+            break;
+        case TASK_TYPE_BOTH:
+            $selectedElementTypedBoth = 'checked="checked"';
             break;
     }
 
@@ -3850,7 +3854,7 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
         $checkedElement = $taskGrantAwards = $taskRevokeAwards = '';
 
-        if ($taskType === TASK_TYPE_GRANT) {
+        if ($taskType === TASK_TYPE_GRANT || $taskType === TASK_TYPE_BOTH) {
             $taskGrantAwardIDs = (int)$taskData['give'];
 
             foreach (awardsGetCache(["aid IN ('{$taskGrantAwardIDs}')"]) as $awardID => $awardData) {
@@ -3870,7 +3874,9 @@ if (in_array($mybb->get_input('action'), ['newCategory', 'editCategory'])) {
 
                 $taskGrantAwards .= $awardImage;
             }
-        } else {
+        }
+
+        if ($taskType === TASK_TYPE_REVOKE || $taskType === TASK_TYPE_BOTH) {
             $taskRevokeAwardIDs = (int)$taskData['revokeAwardID'];
 
             foreach (awardsGetCache(["aid IN ('{$taskRevokeAwardIDs}')"]) as $awardID => $awardData) {

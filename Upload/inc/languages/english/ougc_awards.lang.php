@@ -359,6 +359,7 @@ Custom Icon (Advanced): A custom template for this award.
     'ougcAwardsControlPanelNewTaskType' => 'Type',
     'ougcAwardsControlPanelNewTaskTypeGrant' => 'Grant',
     'ougcAwardsControlPanelNewTaskTypeRevoke' => 'Revoke',
+    'ougcAwardsControlPanelNewTaskTypeBoth' => 'Both',
     'ougcAwardsControlPanelNewTaskTypeDescription' => 'Select if this is a grant or revoke task type.',
     'ougcAwardsControlPanelNewTaskRequirements' => 'Criteria Requirements',
     'ougcAwardsControlPanelNewTaskRequirementsDescription' => 'Select the rules to execute this task on users.',

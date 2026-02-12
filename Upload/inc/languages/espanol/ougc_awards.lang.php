@@ -358,6 +358,7 @@ Icono Personalizado (Avanzado): Una plantilla personalizada para este premio.
     'ougcAwardsControlPanelNewTaskType' => 'Tipo',
     'ougcAwardsControlPanelNewTaskTypeGrant' => 'Conceder',
     'ougcAwardsControlPanelNewTaskTypeRevoke' => 'Revocar',
+    'ougcAwardsControlPanelNewTaskTypeBoth' => 'Ambos',
     'ougcAwardsControlPanelNewTaskTypeDescription' => 'Seleccione si este es un tipo de tarea de concesión o revocación.',
     'ougcAwardsControlPanelNewTaskRequirements' => 'Requisitos de Criterios',
     'ougcAwardsControlPanelNewTaskRequirementsDescription' => 'Seleccione las reglas para ejecutar esta tarea en los usuarios.',

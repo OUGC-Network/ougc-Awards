@@ -68,6 +68,8 @@ const TASK_TYPE_GRANT = 1;
 
 const TASK_TYPE_REVOKE = 2;
 
+const TASK_TYPE_BOTH = 3;
+
 const TASK_STATUS_DISABLED = 0;
 
 const TASK_STATUS_ENABLED = 1;
@@ -1263,7 +1265,7 @@ function executeTask(
                 ) a ON (u.uid=a.uid)";*/
 
             $taskGrantAwardID = 0;
-        } else {
+        } elseif ($taskType !== TASK_TYPE_BOTH || !$taskGrantAwardID || !$taskRevokeAwardID) {
             continue;
         }
 
@@ -1356,7 +1358,7 @@ function executeTask(
 
             $userGrantedAwardIDs = $userRevokeAwardIDs = $grandIDs = $revokeAwardIDs = [];
 
-            if ($taskType === TASK_TYPE_GRANT) {
+            if ($taskType === TASK_TYPE_GRANT || $taskType === TASK_TYPE_BOTH) {
                 global $awardsCustomThreadPerUserObjects;
 
                 isset($awardsCustomThreadPerUserObjects) || $awardsCustomThreadPerUserObjects = [];
@@ -1384,7 +1386,9 @@ function executeTask(
 
                     $logTaskGrant = true;
                 }
-            } else {
+            }
+
+            if ($taskType === TASK_TYPE_REVOKE || $taskType === TASK_TYPE_BOTH) {
                 $queryGrants = $db->simple_select(
                     'ougc_awards_users',
                     'gid',

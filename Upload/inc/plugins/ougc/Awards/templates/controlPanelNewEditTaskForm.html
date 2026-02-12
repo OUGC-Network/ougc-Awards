@@ -57,12 +57,15 @@
                 </div>
             </td>
             <td class="trow2" style="vertical-align: middle;">
-                <input type="radio" class="radio" name="taskType" value="1" id="taskTypeYes"
+                <input type="radio" class="radio" name="taskType" value="1" id="taskTypeGrant"
                        {$selectedElementTypeGrant}>
-                <label for="taskTypeYes">{$lang->ougcAwardsControlPanelNewTaskTypeGrant}</label>
-                <input type="radio" class="radio" name="taskType" value="2" id="taskTypeNo"
+                <label for="taskTypeGrant">{$lang->ougcAwardsControlPanelNewTaskTypeGrant}</label>
+                <input type="radio" class="radio" name="taskType" value="2" id="taskTypeRevoke"
                        {$selectedElementTypedRevoke}>
-                <label for="taskTypeNo">{$lang->ougcAwardsControlPanelNewTaskTypeRevoke}</label>
+                <label for="taskTypeRevoke">{$lang->ougcAwardsControlPanelNewTaskTypeRevoke}</label>
+                <input type="radio" class="radio" name="taskType" value="3" id="taskTypeBoth"
+                       {$selectedElementTypedBoth}>
+                <label for="taskTypeBoth">{$lang->ougcAwardsControlPanelNewTaskTypeBoth}</label>
             </td>
         </tr>
         <tr>
